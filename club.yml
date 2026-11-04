@@ -53,7 +53,7 @@ posts:
   fixtures: {enabled: true, day: friday}
   results_roundup: {enabled: true, day: monday}
   match_results: {enabled: true, lookback_days: 1}
-  approval: review
+  approval: automatic   # review = wait for the approved label; automatic = post straight away
   networks: [facebook, instagram]
 
 juniors:
