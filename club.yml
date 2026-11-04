@@ -57,4 +57,7 @@ posts:
   networks: [facebook, instagram]
 
 juniors:
+  # How players' names appear: initial = "Ben T.", first = "Ben", full, or none
   names: initial
+  # true = use that for every team (juniors often play in adult and women's sides)
+  apply_to_all_teams: true
