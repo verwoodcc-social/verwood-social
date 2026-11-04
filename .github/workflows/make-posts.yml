@@ -5,6 +5,7 @@ name: Make posts
 on:
   schedule:
     - cron: "17 6 * * *"   # 06:17 UTC (06:17 in UK winter, 07:17 in summer). GitHub can start it a little late.
+    - cron: "17 8 * * *"   # a second try, in case Play-Cricket was briefly unavailable. Nothing is posted twice.
   workflow_dispatch:
     inputs:
       only:
