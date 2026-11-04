@@ -1,0 +1,59 @@
+{
+ "match_details": [
+  {
+   "id": 7759960,
+   "status": "New",
+   "published": "Yes",
+   "match_date": "24/10/2026",
+   "match_time": "11:00",
+   "ground_name": "Dorset Cricket Centre",
+   "no_of_innings": "1",
+   "toss": "",
+   "batted_first": "9009",
+   "result": "W",
+   "result_applied_to": "9009",
+   "result_description": "",
+   "innings": [
+    {
+     "team_batting_id": "9009",
+     "innings_number": 1,
+     "runs": "188",
+     "wickets": "8",
+     "overs": "12.0",
+     "balls": "",
+     "total_extras": "0",
+     "declared": false,
+     "forfeited_innings": false,
+     "revised_target_runs": "",
+     "revised_target_overs": "",
+     "bat": [],
+     "bowl": []
+    },
+    {
+     "team_batting_id": "5030",
+     "innings_number": 2,
+     "runs": "118",
+     "wickets": "8",
+     "overs": "10.5",
+     "balls": "",
+     "total_extras": "0",
+     "declared": false,
+     "forfeited_innings": false,
+     "revised_target_runs": "",
+     "revised_target_overs": "",
+     "bat": [],
+     "bowl": []
+    }
+   ],
+   "points": [],
+   "home_club_name": "Verwood CC",
+   "home_club_id": "8472",
+   "home_team_name": "Girls U13 Indoor",
+   "home_team_id": "5030",
+   "away_club_name": "Forest Edge CC",
+   "away_club_id": "1504",
+   "away_team_name": "Girls U13 Indoor",
+   "away_team_id": "9009"
+  }
+ ]
+}

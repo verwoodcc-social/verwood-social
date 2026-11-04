@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230">
+  <!-- Placeholder badge. Replace with your club's badge (same file name, or change branding → badge in club.yml). -->
+  <path d="M10 8 H190 V120 C190 175 150 205 100 225 C50 205 10 175 10 120 Z" fill="#FFFFFF" fill-opacity=".12" stroke="#FFFFFF" stroke-width="6"/>
+  <g stroke="#FFFFFF" stroke-width="9" stroke-linecap="round">
+    <line x1="74" y1="72" x2="74" y2="168"/><line x1="100" y1="72" x2="100" y2="168"/><line x1="126" y1="72" x2="126" y2="168"/>
+  </g>
+  <g stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"><line x1="70" y1="62" x2="98" y2="62"/><line x1="102" y1="62" x2="130" y2="62"/></g>
+</svg>

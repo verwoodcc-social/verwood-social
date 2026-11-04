@@ -1,0 +1,114 @@
+{
+ "match_details": [
+  {
+   "id": 7700001,
+   "status": "New",
+   "published": "Yes",
+   "match_date": "26/10/2026",
+   "match_time": "11:00",
+   "ground_name": "Dorset Cricket Centre",
+   "no_of_innings": "1",
+   "toss": "",
+   "batted_first": "9101",
+   "result": "W",
+   "result_applied_to": "5101",
+   "result_description": "",
+   "innings": [
+    {
+     "team_batting_id": "9101",
+     "innings_number": 1,
+     "runs": "168",
+     "wickets": "10",
+     "overs": "38.2",
+     "balls": "",
+     "total_extras": "0",
+     "declared": false,
+     "forfeited_innings": false,
+     "revised_target_runs": "",
+     "revised_target_overs": "",
+     "bat": [
+      {
+       "batsman_name": "Opp One",
+       "how_out": "c",
+       "runs": "60",
+       "balls": "70",
+       "fours": "0",
+       "sixes": "0"
+      }
+     ],
+     "bowl": [
+      {
+       "bowler_name": "Alex Archer",
+       "overs": "8.0",
+       "maidens": "0",
+       "runs": "31",
+       "wickets": "4",
+       "wides": "0",
+       "no_balls": "0"
+      },
+      {
+       "bowler_name": "Sam Seamer",
+       "overs": "7.2",
+       "maidens": "0",
+       "runs": "40",
+       "wickets": "3",
+       "wides": "0",
+       "no_balls": "0"
+      }
+     ]
+    },
+    {
+     "team_batting_id": "5101",
+     "innings_number": 2,
+     "runs": "169",
+     "wickets": "3",
+     "overs": "31.4",
+     "balls": "",
+     "total_extras": "0",
+     "declared": false,
+     "forfeited_innings": false,
+     "revised_target_runs": "",
+     "revised_target_overs": "",
+     "bat": [
+      {
+       "batsman_name": "Alex Archer",
+       "how_out": "not out",
+       "runs": "87",
+       "balls": "96",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Sam Seamer",
+       "how_out": "c",
+       "runs": "45",
+       "balls": "51",
+       "fours": "0",
+       "sixes": "0"
+      }
+     ],
+     "bowl": [
+      {
+       "bowler_name": "Opp Bowler",
+       "overs": "6.0",
+       "maidens": "0",
+       "runs": "30",
+       "wickets": "2",
+       "wides": "0",
+       "no_balls": "0"
+      }
+     ]
+    }
+   ],
+   "points": [],
+   "home_club_name": "Verwood CC",
+   "home_club_id": "8472",
+   "home_team_name": "1st XI",
+   "home_team_id": "5101",
+   "away_club_name": "Example Town CC",
+   "away_club_id": "1999",
+   "away_team_name": "1st XI",
+   "away_team_id": "9101"
+  }
+ ]
+}

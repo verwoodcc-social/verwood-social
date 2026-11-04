@@ -1,0 +1,53 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>{{ css|safe }}</style></head>
+<body>
+<div class="card {{ 'dense' if rows|length > 5 }}">
+  <div class="head">
+    <img class="badge" src="{{ badge }}">
+    <div>
+      <div class="club">{{ club.name }}</div>
+      <div class="title">{{ title }}</div>
+      <div class="sub">{{ date_range }}</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="rows">
+  {% if kind == 'results' %}
+    {% for m in rows %}
+    <div class="row res">
+      <div class="pill {{ m.outcome }}">{{ {'P':'TBC','A':'AB','C':'CAN','N':'NR'}.get(m.outcome, m.outcome) }}</div>
+      <div>
+        <div class="meta">{{ m.date }} · {{ 'Home' if m.home else 'Away' }}</div>
+        <div class="team">{{ m.team }}</div>
+        <div class="opp">v {{ m.opponent }}</div>
+      </div>
+      <div class="scores">
+        {% if m.us_score != '–' or m.opp_score != '–' %}
+        <div class="us">{{ m.us_score }}</div>
+        <div class="them">{{ m.opp_score }}</div>
+        {% endif %}
+        <div class="sum">{{ m.summary }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    {% for m in rows %}
+    <div class="row fix">
+      <div class="when"><div class="d">{{ m.date }}</div><div class="t">{{ m.time }}</div></div>
+      <div>
+        <div class="team">{{ m.team }}</div>
+        <div class="opp">v {{ m.opponent }}</div>
+      </div>
+      <div class="ha {{ 'home' if m.home }}">{{ 'HOME' if m.home else 'AWAY' }}</div>
+    </div>
+    {% endfor %}
+  {% endif %}
+  </div>
+
+  <div class="foot">
+    <div>{% if club.handle %}<b>{{ club.handle }}</b>{% endif %}{% if club.handle and club.website %} · {% endif %}{{ club.website }}</div>
+    {% if pages > 1 %}<div class="page">{{ page }} / {{ pages }}</div>{% endif %}
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,68 @@
+name: Make posts
+
+# Runs every morning. Makes the match posts every day, the fixtures post on your
+# fixtures day and the results round-up on your round-up day (set in club.yml).
+on:
+  schedule:
+    - cron: "17 6 * * *"   # 06:17 UTC (06:17 in UK winter, 07:17 in summer). GitHub can start it a little late.
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Which posts to make now"
+        type: choice
+        options: [all-due, fixtures, roundup, matches]
+        default: all-due
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: cricket-social-kit
+  cancel-in-progress: false
+
+jobs:
+  make:
+    # Only runs in clubs' own copies, not in the template itself.
+    if: github.repository != 'verwoodcc-social/cricket-social-kit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Read Play-Cricket and make the graphics
+        env:
+          PLAYCRICKET_API_TOKEN: ${{ secrets.PLAYCRICKET_API_TOKEN }}
+          KIT_ONLY: ${{ inputs.only }}
+        run: python -m kit make
+
+      - name: Save the images to the repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          date -u +%FT%TZ > state/last_run.txt   # keeps the schedule active out of season
+          git add posts state
+          git diff --cached --quiet || git commit -m "Post images $(date -u +%F)"
+          git pull --rebase --quiet && git push --quiet
+
+      - name: Open approval issues (or post, if approval is automatic)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+        run: python -m kit announce --sha "$(git rev-parse HEAD)"
+
+      - name: Remember what's been posted
+        if: always()
+        run: |
+          git add state
+          git diff --cached --quiet || (git commit -m "Update posted list" && git pull --rebase --quiet && git push --quiet)

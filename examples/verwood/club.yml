@@ -1,0 +1,25 @@
+# Example: Verwood Cricket Club (the club the kit was first built for).
+club:
+  name: "Verwood Cricket Club"
+  short_name: "Verwood"
+  play_cricket_site_id: 8472
+  play_cricket_name: "Verwood CC"
+  website: "verwood.play-cricket.com"
+  handle: "@verwoodcc"
+  hashtags: "#VerwoodCC #CricketDorset #ClubCricket"
+  timezone: "Europe/London"
+
+branding:
+  badge: "badge.svg"
+  primary_colour: "#1A4192"
+  accent_colour: "#DBE2EA"
+
+posts:
+  fixtures: {enabled: true, day: friday}
+  results_roundup: {enabled: true, day: monday}
+  match_results: {enabled: true, lookback_days: 1}
+  approval: review
+  networks: [facebook, instagram]
+
+juniors:
+  names: initial

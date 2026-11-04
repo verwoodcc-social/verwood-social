@@ -1,0 +1,37 @@
+name: Publish approved post
+
+# Runs when someone adds the "approved" label to a post issue.
+# Only people with write or triage access to this repository can add labels.
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: publish-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event.label.name == 'approved' && contains(github.event.issue.labels.*.name, 'social-post')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Post to Facebook and Instagram
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+        run: python -m kit publish --issue ${{ github.event.issue.number }}

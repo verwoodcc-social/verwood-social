@@ -1,0 +1,267 @@
+{
+ "match_details": [
+  {
+   "id": 7758947,
+   "status": "New",
+   "published": "Yes",
+   "match_date": "25/10/2026",
+   "match_time": "18:45",
+   "ground_name": "Dorset Cricket Centre",
+   "no_of_innings": "1",
+   "toss": "Verwood CC - Indoor C won the toss and elected to field",
+   "batted_first": "9008",
+   "result": "W",
+   "result_applied_to": "5003",
+   "result_description": "",
+   "innings": [
+    {
+     "team_batting_id": "9008",
+     "innings_number": 1,
+     "runs": "140",
+     "wickets": "4",
+     "overs": "12.0",
+     "balls": "",
+     "total_extras": "0",
+     "declared": false,
+     "forfeited_innings": false,
+     "revised_target_runs": "",
+     "revised_target_overs": "",
+     "team_batting_name": "Harbour Town CC - Indoor D",
+     "bat": [
+      {
+       "batsman_name": "Pat Reed",
+       "how_out": "b",
+       "runs": "1",
+       "balls": "4",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Lou King",
+       "how_out": "run out",
+       "runs": "13",
+       "balls": "6",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Pete Marsh",
+       "how_out": "retired not out",
+       "runs": "39",
+       "balls": "25",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Harry Able",
+       "how_out": "run out",
+       "runs": "9",
+       "balls": "4",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Kam Hill",
+       "how_out": "run out",
+       "runs": "1",
+       "balls": "5",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Matt Keen",
+       "how_out": "not out",
+       "runs": "31",
+       "balls": "28",
+       "fours": "0",
+       "sixes": "0"
+      }
+     ],
+     "bowl": [
+      {
+       "bowler_name": "Alex Archer",
+       "overs": "2.0",
+       "maidens": "0",
+       "runs": "18",
+       "wickets": "0",
+       "wides": "0",
+       "no_balls": "0"
+      },
+      {
+       "bowler_name": "Max Cross",
+       "overs": "3.0",
+       "maidens": "0",
+       "runs": "42",
+       "wickets": "0",
+       "wides": "0",
+       "no_balls": "0"
+      },
+      {
+       "bowler_name": "Jo Cross",
+       "overs": "3.0",
+       "maidens": "0",
+       "runs": "30",
+       "wickets": "1",
+       "wides": "0",
+       "no_balls": "0"
+      },
+      {
+       "bowler_name": "Theo Lane",
+       "overs": "3.0",
+       "maidens": "0",
+       "runs": "31",
+       "wickets": "0",
+       "wides": "0",
+       "no_balls": "0"
+      },
+      {
+       "bowler_name": "Sam Butler",
+       "overs": "1.0",
+       "maidens": "0",
+       "runs": "14",
+       "wickets": "0",
+       "wides": "0",
+       "no_balls": "0"
+      }
+     ]
+    },
+    {
+     "team_batting_id": "5003",
+     "innings_number": 2,
+     "runs": "141",
+     "wickets": "2",
+     "overs": "11.3",
+     "balls": "",
+     "total_extras": "0",
+     "declared": false,
+     "forfeited_innings": false,
+     "revised_target_runs": "",
+     "revised_target_overs": "",
+     "team_batting_name": "Verwood CC - Indoor C",
+     "bat": [
+      {
+       "batsman_name": "Max Cross",
+       "how_out": "b",
+       "runs": "8",
+       "balls": "21",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Alex Archer",
+       "how_out": "not out",
+       "runs": "29",
+       "balls": "19",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Jo Cross",
+       "how_out": "retired not out",
+       "runs": "26",
+       "balls": "11",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Sam Butler",
+       "how_out": "retired not out",
+       "runs": "27",
+       "balls": "16",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Seb Long",
+       "how_out": "run out",
+       "runs": "0",
+       "balls": "0",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Theo Lane",
+       "how_out": "not out",
+       "runs": "6",
+       "balls": "2",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "",
+       "how_out": "did not bat",
+       "runs": "",
+       "balls": "",
+       "fours": "0",
+       "sixes": "0"
+      },
+      {
+       "batsman_name": "Unsure",
+       "how_out": "did not bat",
+       "runs": "",
+       "balls": "",
+       "fours": "0",
+       "sixes": "0"
+      }
+     ],
+     "bowl": [
+      {
+       "bowler_name": "Harry Able",
+       "overs": "3.0",
+       "maidens": "0",
+       "runs": "17",
+       "wickets": "0",
+       "wides": "0",
+       "no_balls": "0"
+      },
+      {
+       "bowler_name": "Kam Hill",
+       "overs": "2.3",
+       "maidens": "0",
+       "runs": "30",
+       "wickets": "0",
+       "wides": "0",
+       "no_balls": "0"
+      },
+      {
+       "bowler_name": "Lou King",
+       "overs": "2.0",
+       "maidens": "0",
+       "runs": "25",
+       "wickets": "0",
+       "wides": "0",
+       "no_balls": "0"
+      },
+      {
+       "bowler_name": "Pat Reed",
+       "overs": "2.0",
+       "maidens": "0",
+       "runs": "29",
+       "wickets": "0",
+       "wides": "0",
+       "no_balls": "0"
+      },
+      {
+       "bowler_name": "Pete Marsh",
+       "overs": "2.0",
+       "maidens": "0",
+       "runs": "26",
+       "wickets": "1",
+       "wides": "0",
+       "no_balls": "0"
+      }
+     ]
+    }
+   ],
+   "points": [],
+   "home_club_name": "Verwood CC",
+   "home_club_id": "8472",
+   "home_team_name": "Indoor C",
+   "home_team_id": "5003",
+   "away_club_name": "Harbour Town CC",
+   "away_club_id": "1605",
+   "away_team_name": "Indoor D",
+   "away_team_id": "9008"
+  }
+ ]
+}

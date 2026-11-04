@@ -1,0 +1,82 @@
+/* Cricket Social Kit graphics: 1080x1350, club colours injected from club.yml */
+:root {
+  /* --navy, --navy-deep, --navy-ink, --silver, --silver-dim are set from club.yml */
+  --white: #FFFFFF;
+  --win: #3DD68C;
+  --loss: #F26B6B;
+  --draw: #F2C94C;
+  --pending: #A9B8D2;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1350px; }
+body {
+  font-family: "KitFont", "Inter Display", "Inter", sans-serif;
+  color: var(--white);
+  background: var(--navy-deep);
+  overflow: hidden;
+}
+.card {
+  position: relative; width: 1080px; height: 1350px; padding: 64px 64px 56px;
+  display: flex; flex-direction: column;
+  background:
+    radial-gradient(1200px 700px at 85% -10%, rgba(219,226,234,.16), transparent 60%),
+    linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 55%, var(--navy-ink) 100%);
+}
+/* faint mown-stripe texture */
+.card::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 90px, transparent 90px 180px);
+}
+.card > * { position: relative; }
+
+/* Header */
+.head { display: flex; align-items: center; gap: 28px; }
+.badge { width: 118px; height: 136px; object-fit: contain; filter: drop-shadow(0 6px 18px rgba(0,0,0,.35)); }
+.club { font-weight: 800; font-size: 30px; letter-spacing: .14em; line-height: 1.15; color: var(--silver); text-transform: uppercase; }
+.title { font-weight: 900; font-size: 84px; line-height: .95; letter-spacing: -.02em; text-transform: uppercase; margin-top: 6px; }
+.sub { margin-top: 14px; font-weight: 600; font-size: 28px; color: var(--silver-dim); letter-spacing: .02em; }
+.rule { height: 6px; width: 120px; background: var(--silver); margin: 34px 0 30px; border-radius: 3px; }
+
+/* Footer */
+.foot { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end;
+  font-size: 24px; font-weight: 600; color: var(--silver-dim); letter-spacing: .04em; }
+.foot b { color: var(--white); font-weight: 800; }
+.page { font-weight: 700; color: var(--silver); }
+
+/* Result / fixture rows */
+.rows { display: flex; flex-direction: column; gap: 18px; }
+.row { display: grid; align-items: center; gap: 24px; padding: 22px 28px;
+  background: rgba(255,255,255,.07); border: 1.5px solid rgba(219,226,234,.16); border-radius: 22px; }
+.row .team { font-weight: 800; font-size: 34px; line-height: 1.1; }
+.row .opp { font-weight: 500; font-size: 24px; color: var(--silver); margin-top: 6px; }
+.row .meta { font-weight: 700; font-size: 20px; color: var(--silver-dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+
+.res { grid-template-columns: 92px 1fr auto; }
+.pill { width: 92px; height: 92px; border-radius: 20px; display: grid; place-items: center;
+  font-weight: 900; font-size: 50px; color: var(--navy-ink); }
+.pill.W { background: var(--win); } .pill.L { background: var(--loss); }
+.pill.D, .pill.T { background: var(--draw); } .pill.P, .pill.A, .pill.C, .pill.N { background: var(--pending); font-size: 34px; }
+.scores { text-align: right; }
+.scores .us { font-weight: 900; font-size: 36px; }
+.scores .them { font-weight: 600; font-size: 24px; color: var(--silver); margin-top: 4px; }
+.scores .sum { font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: .08em; color: var(--silver-dim); margin-top: 8px; }
+
+.fix { grid-template-columns: 196px 1fr auto; }
+.when { text-align: left; border-right: 2px solid rgba(219,226,234,.2); padding-right: 20px; }
+.when .d { font-weight: 800; font-size: 24px; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.rows { flex: 1; min-height: 0; }
+.when .t { font-weight: 900; font-size: 40px; margin-top: 2px; }
+.ha { font-weight: 800; font-size: 20px; letter-spacing: .12em; padding: 10px 16px; border-radius: 999px;
+  border: 2px solid var(--silver); color: var(--silver); }
+.ha.home { background: var(--silver); color: var(--navy-ink); }
+
+/* Compact mode when a page has 6+ rows */
+.dense .title { font-size: 72px; }
+.dense .rule { margin: 26px 0 24px; }
+.dense .rows { gap: 14px; }
+.dense .row { padding: 14px 24px; }
+.dense .row .team { font-size: 30px; }
+.dense .row .opp { font-size: 22px; margin-top: 4px; }
+.dense .when .t { font-size: 34px; }
+.dense .pill { width: 80px; height: 80px; font-size: 44px; }
+.dense .res { grid-template-columns: 80px 1fr auto; }
