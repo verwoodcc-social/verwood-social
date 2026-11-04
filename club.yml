@@ -1,79 +1,25 @@
-# ---------------------------------------------------------------------------
-#  Cricket Social Kit — your club's settings
-#  Edit the values below, then commit. Lines starting with # are notes.
-#  Anything in CAPITALS_LIKE_THIS must be changed before the kit will run.
-# ---------------------------------------------------------------------------
-
+# Verwood Cricket Club settings. Edit and commit to change how posts look or when they go out.
 club:
-  # Shown at the top of every graphic.
-  name: "YOUR CLUB NAME Cricket Club"
-
-  # A short name used in captions, e.g. "Verwood won by 4 wickets".
-  short_name: "YOUR_SHORT_NAME"
-
-  # Your Play-Cricket Site ID. It's at the bottom of every page of your club's
-  # Play-Cricket site: "©2026 Play-Cricket. All rights reserved. | Site ID 1234".
-  play_cricket_site_id: 0
-
-  # Your club's name exactly as Play-Cricket writes it in fixtures, e.g. "Verwood CC".
-  play_cricket_name: "YOUR CLUB CC"
-
-  # Printed at the bottom of each graphic.
-  website: "yourclub.play-cricket.com"
-  handle: "@yourclub"
-
-  # Added to the end of every caption. Leave as "" for none.
-  hashtags: "#ClubCricket"
-
-  # Your time zone (decides what "yesterday" and "Friday" mean).
+  name: "Verwood Cricket Club"
+  short_name: "Verwood"
+  play_cricket_site_id: 8472
+  play_cricket_name: "Verwood CC"
+  website: "verwood.play-cricket.com"
+  handle: "@verwoodcc"
+  hashtags: "#VerwoodCC #CricketDorset #ClubCricket"
   timezone: "Europe/London"
 
 branding:
-  # Upload your badge into the assets folder (SVG or PNG with a transparent
-  # background works best) and put its file name here.
-  badge: "assets/badge.svg"
-
-  # Your main club colour and a light second colour, as hex codes.
-  # Dark main colours look best. Very light ones are darkened automatically
-  # so the text stays readable.
+  badge: "assets/verwood-badge.svg"
   primary_colour: "#1A4192"
   accent_colour: "#DBE2EA"
 
 posts:
-  # Which posts to make, and on which day of the week.
-  fixtures:
-    enabled: true
-    day: friday            # lists the next 7 days' fixtures
-  results_roundup:
-    enabled: true
-    day: monday            # lists the previous 7 days' results
-  match_results:
-    enabled: true
-    lookback_days: 1       # 1 = matches played yesterday. Use 2 or 3 to also catch
-                           #     scorecards that were entered late (no post is made twice).
-
-  # review    = each post waits for someone to approve it (recommended)
-  # automatic = posts go straight out with no check
+  fixtures: {enabled: true, day: friday}
+  results_roundup: {enabled: true, day: monday}
+  match_results: {enabled: true, lookback_days: 1}
   approval: review
-
-  # Where to post: facebook, instagram, or both.
   networks: [facebook, instagram]
 
 juniors:
-  # Teams whose names match this pattern are treated as junior teams.
-  team_pattern: '\b(U\s?\d{1,2}[A-Z]?|Under\s?\d{1,2}|Girls|Boys|Juniors?|All Stars|Dynamos|Colts)\b'
-  # How junior players' names appear on graphics and captions:
-  #   initial = "Ben T."   first = "Ben"   full = "Ben Tipping"   none = no names
   names: initial
-
-scoring:
-  # Used to say "won by 4 wickets" when a team wins batting second.
-  wickets_per_innings: 10
-  # Teams that don't play 11-a-side (indoor, softball, pairs, most junior formats).
-  # For these, a win batting second is described as "won chasing 141" instead.
-  no_wicket_margin_teams: '\b(Indoor|Softball|Pairs|U\s?\d{1,2}|Under\s?\d{1,2}|All Stars|Dynamos)\b'
-
-facebook:
-  # Only needed if your Meta token can manage more than one Facebook Page.
-  # Find it on your Page: About > Page transparency > Page ID.
-  page_id: ""
