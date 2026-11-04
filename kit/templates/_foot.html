@@ -1,0 +1,12 @@
+  <div class="foot">
+    <div class="left">
+      {% if show.handle_and_website %}<div>{% if club.handle %}<b>{{ club.handle }}</b>{% endif %}{% if club.handle and club.website %} · {% endif %}{{ club.website }}</div>{% endif %}
+    </div>
+    {% if sponsor.logo or sponsor.text %}
+    <div class="sponsor">
+      {% if sponsor.logo %}<span class="lbl">{{ sponsor.label }}</span><img src="{{ sponsor.logo }}" alt="{{ sponsor.text }}">
+      {% else %}<span class="lbl">{{ sponsor.label }}</span><span class="name">{{ sponsor.text }}</span>{% endif %}
+    </div>
+    {% endif %}
+    {% if pages and pages > 1 %}<div class="page">{{ page }} / {{ pages }}</div>{% endif %}
+  </div>

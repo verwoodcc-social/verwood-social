@@ -7,13 +7,13 @@ from . import posts as P
 def sample_posts(cfg, today):
     s = cfg.short_name
     d = lambda n: today + timedelta(days=n)
-    fixtures = {"kind": "fixtures", "title": "This Week's Fixtures", "date_range": P.date_range([today, d(6)]),
+    fixtures = {"kind": "fixtures", "title": cfg["wording"]["fixtures_title"], "date_range": P.date_range([today, d(6)]),
                 "matches": [
                     {"date": P.short_date(d(1)), "time": "13:00", "team": "1st XI", "opponent": "Example Town CC 1st XI", "home": True},
                     {"date": P.short_date(d(1)), "time": "13:30", "team": "2nd XI", "opponent": "Sample Park CC 2nd XI", "home": False},
                     {"date": P.short_date(d(2)), "time": "10:00", "team": "Under 13", "opponent": "Demo Vale CC Under 13", "home": True},
                 ]}
-    results = {"kind": "results", "title": "Last Week's Results", "date_range": P.date_range([d(-2), d(-1)]),
+    results = {"kind": "results", "title": cfg["wording"]["results_title"], "date_range": P.date_range([d(-2), d(-1)]),
                "matches": [
                    {"date": P.short_date(d(-2)), "team": "1st XI", "opponent": "Example Town CC 1st XI", "home": True,
                     "us_score": "212/7 (45.0)", "opp_score": "168 all out (38.2)", "outcome": "W", "summary": "Won by 44 runs"},

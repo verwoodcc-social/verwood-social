@@ -6,7 +6,7 @@ name: Check setup
 on:
   workflow_dispatch:
   push:
-    paths: [club.yml, "assets/**"]
+    paths: [club.yml, "assets/**", "my-templates/**"]
 
 permissions:
   contents: write

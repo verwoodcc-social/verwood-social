@@ -61,27 +61,38 @@ Secrets are hidden. Nobody, including you, can read them back, and they never ap
 You'll make a **token** that lets the kit post to your Page and Instagram. Meta sometimes
 renames these menus, so if something isn't exactly where described, look for the nearest match.
 
-**4a. Put your Page and Instagram in a Meta business portfolio**
-1. Go to [business.facebook.com](https://business.facebook.com) and create a business
-   portfolio for the club if you don't have one.
-2. In **Settings → Accounts → Pages**, add your club's Facebook Page.
-3. In **Settings → Accounts → Instagram accounts**, add your club's Instagram account.
+**4a. Check your Page and Instagram are in a Meta business portfolio**
+1. Go to [business.facebook.com](https://business.facebook.com) → **Settings**. If you've used Meta
+   Business Suite or run ads, the club probably has a business portfolio already. If not, create one.
+2. In **Accounts → Pages**, check your club's Facebook Page is listed. Add it if not.
+3. Click the Page, then the **Connected assets** tab. Your club's Instagram account should be listed.
+   If it isn't, link it in Instagram (*Settings → Account type and tools*) or Meta Business Suite.
 
-**4b. Create a Meta app**
-1. Go to [developers.facebook.com](https://developers.facebook.com), log in, and click **My Apps → Create app**.
-2. Name it e.g. "Our Club Social Kit" and use your club email.
-3. When asked what the app does, choose the option for **managing everything on your Page**
-   and/or **managing messaging & content on Instagram** (or *Other → Business* if offered).
-4. Connect it to your club's business portfolio when asked, then finish creating the app.
+**4b. Register as a Meta developer and create an app**
+1. Go to [developers.facebook.com/apps](https://developers.facebook.com/apps). If you see a welcome page
+   instead of "My Apps", click **Get Started** and follow the steps: accept Meta's terms, confirm your
+   email or phone, and pick any occupation.
+2. Click **Create app**. Name it e.g. "Our Club Social Kit" and use your club email.
+3. Choose the use case **Manage everything on your Page**, and also add
+   **Manage messaging & content on Instagram**.
+4. When asked, connect it to your club's business portfolio, then finish creating the app.
+5. Switch on the permissions the kit needs. In the app, open **Use cases**:
+   - next to *Manage messaging & content on Instagram*, click **Customize** and click **Add** next to
+     `instagram_basic`, `instagram_content_publish` and `pages_read_engagement`
+   - switch to *Manage Pages* (the use case switcher at the top) and click **Add** next to `pages_manage_posts`
 
 **4c. Make a system user and its token**
 1. Back in [business.facebook.com](https://business.facebook.com) → **Settings → Users → System users**,
-   click **Add**. Name it e.g. "Social Kit", and give it the **Admin** role.
-2. With the system user selected, click **Assign assets**:
-   - **Apps:** your new app, with full control
-   - **Pages:** your club's Page, with full control, or at least *content* access
-   - **Instagram accounts:** your club's account, with full control, or at least *content* access
-3. Click **Generate new token**, choose your app, and set **Token expiration** to **Never**.
+   click **Add**. If **Add** is greyed out, the app from 4b isn't in your business portfolio yet.
+   Name it e.g. "Social Kit", give it the **Admin** role, and create it.
+2. With the system user selected, click **Assign assets** and give it **full control** of:
+   - **Apps:** your new app
+   - **Facebook Pages:** your club's Page
+
+   You don't need to add the Instagram account. If it says "*(your Page)* shares these permissions",
+   it gets access through the Page. If it asks you to log in to Instagram, you can skip that.
+   If several people have full control of your portfolio, Meta may ask one of them to approve this.
+3. Click **Generate token**, choose your app, and set **Token expiration** to **Never**.
 4. Tick these permissions:
    `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`,
    `instagram_basic`, `instagram_content_publish`, `business_management`
@@ -90,6 +101,8 @@ renames these menus, so if something isn't exactly where described, look for the
 **4d. Save it**
 - In your GitHub repository, go to **Settings → Secrets and variables → Actions → New repository secret**.
   Name it `META_TOKEN`, paste the token, and click **Add secret**.
+- Don't paste this token anywhere else, such as an email or chat. Anyone who has it can post to
+  your club's Facebook and Instagram.
 
 ## Step 5 · Check everything works (5 minutes)
 
@@ -117,9 +130,33 @@ When everything is ✅, the kit starts on its own the next morning.
 **Letting others approve:** go to **Settings → Collaborators → Add people** and invite other
 volunteers. Only people you add can approve posts.
 
+## Step 7 · Make it your own (optional)
+
+Everything below is optional, and all of it is done the same way: upload a picture and/or change
+a line in `club.yml`. Each change opens a fresh **Preview** issue so you can see the result.
+
+| You want to… | Do this |
+|---|---|
+| Use a photo of your ground as the background | Upload it to `assets`, then set `background_image: "assets/ground.jpg"` |
+| Use a different photo for match results | Set `match_background:` (or `fixtures_background:` / `results_background:`) |
+| Make the words easier to read on a busy photo | Set `background_darkness: strong` |
+| Show a sponsor | Upload their logo and set `sponsor_logo:`, or just set `sponsor_text: "Their Name"` |
+| Thank the sponsor in captions too | Set `sponsor_in_captions: true` |
+| Change "Victory", "This Week's Fixtures" and so on | Edit the lines under `wording:` |
+| Hide top performers or the toss | Set them to `false` under `show:` |
+| Show the ground on fixtures | Set `ground_on_fixtures: true` under `show:` |
+
+There's a step-by-step guide to uploading pictures in **`assets/HOW-TO-UPLOAD.md`**. Anyone
+comfortable with HTML and CSS can go further with **`docs/OWN-DESIGNS.md`**.
+
 ---
 
 ## Good to know
+
+**Getting the latest version.** When the kit is improved, go to **Actions → Update kit →
+Run workflow**. It updates the kit's code and guides, and never changes your `club.yml`, pictures,
+designs or posts. `docs/CHANGES.md` lists what's new. If the update says some workflow files
+changed, it tells you which ones to copy across.
 
 **What gets posted and when.** Every morning: one post per match played *yesterday* that has a
 result and a scorecard. On your fixtures day: the next 7 days' fixtures. On your round-up day:

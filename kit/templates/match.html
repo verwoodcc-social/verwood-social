@@ -21,7 +21,8 @@
 .notes { margin-top: 30px; font-size: 22px; color: var(--silver-dim); font-weight: 600; }
 </style></head>
 <body>
-<div class="card">
+<div class="card {{ 'has-photo' if photo }}">
+  {% include "_photo.html" %}
   <div class="head">
     <img class="badge" src="{{ badge }}">
     <div>
@@ -31,7 +32,7 @@
   </div>
   <div class="rule"></div>
 
-  <div class="verdict {{ m.outcome }}">{{ {'W':'Victory','L':'Defeat','D':'Draw','T':'Tied','A':'Abandoned','C':'Cancelled','N':'No result','P':'Match report'}.get(m.outcome) }}</div>
+  <div class="verdict {{ m.outcome }}">{{ words.get(m.outcome, 'Match report') }}</div>
   <div class="sumline">{{ m.summary }}</div>
 
   <div class="vs">
@@ -45,7 +46,7 @@
     </div>
   </div>
 
-  {% if m.top_batting or m.top_bowling %}
+  {% if show.top_performers and (m.top_batting or m.top_bowling) %}
   <div class="perf">
     <div>{% if m.top_batting %}<h3>Top batting</h3>
       {% for p in m.top_batting[:3] %}<div class="p"><div><div class="n">{{ p.name }}</div><div class="x">{{ p.detail }}</div></div><div class="f">{{ p.figures }}</div></div>{% endfor %}{% endif %}
@@ -55,8 +56,8 @@
     </div>
   </div>
   {% endif %}
-  {% if m.toss %}<div class="notes">{{ m.toss }}</div>{% endif %}
+  {% if show.toss and m.toss %}<div class="notes">{{ m.toss }}</div>{% endif %}
 
-  <div class="foot"><div>{% if club.handle %}<b>{{ club.handle }}</b>{% endif %}{% if club.handle and club.website %} · {% endif %}{{ club.website }}</div></div>
+{% include "_foot.html" %}
 </div>
 </body></html>

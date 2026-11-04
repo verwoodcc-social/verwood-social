@@ -1,4 +1,5 @@
 # Verwood Cricket Club settings. Edit and commit to change how posts look or when they go out.
+# After saving, a Preview issue appears in the Issues tab showing how the graphics look.
 club:
   name: "Verwood Cricket Club"
   short_name: "Verwood"
@@ -13,6 +14,40 @@ branding:
   badge: "assets/verwood-badge.svg"
   primary_colour: "#1A4192"
   accent_colour: "#DBE2EA"
+
+  # ---- Optional pictures (see assets/HOW-TO-UPLOAD.md) -----------------------
+  # Upload the picture to the assets folder first, then put "assets/" and its
+  # exact file name in the quotes. Leave as "" for none.
+  background_image: ""             # e.g. "assets/potterne-park.jpg"
+  fixtures_background: ""          # optional: a different photo per post type
+  results_background: ""
+  match_background: ""
+  background_darkness: medium      # light, medium or strong (strong for busy photos)
+
+  sponsor_logo: ""                 # e.g. "assets/sponsor.png"
+  sponsor_text: ""                 # e.g. the sponsor's name
+  sponsor_label: "Supported by"
+  sponsor_in_captions: false       # true = also add "Supported by …" to captions
+
+# ---- Words on the graphics and captions ----------------------------------------
+wording:
+  fixtures_title: "This Week's Fixtures"
+  results_title: "Last Week's Results"
+  win: "Victory"
+  loss: "Defeat"
+  draw: "Draw"
+  tie: "Tied"
+  abandoned: "Abandoned"
+  cancelled: "Cancelled"
+  no_result: "No result"
+  fixtures_sign_off: "Come down and support! 🏏"
+
+# ---- Show or hide (true = show, false = hide) ----------------------------------
+show:
+  top_performers: true
+  toss: true
+  ground_on_fixtures: false
+  handle_and_website: true
 
 posts:
   fixtures: {enabled: true, day: friday}

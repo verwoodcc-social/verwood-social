@@ -11,31 +11,75 @@ ROWS_PER_PAGE = 6
 FONT_WEIGHTS = {"Medium": 500, "SemiBold": 600, "Bold": 700, "ExtraBold": 800, "Black": 900}
 
 
-def _data_uri(path):
+def _data_uri(path, max_px=None):
+    """Embed a file in the page. Big photos are shrunk first so rendering stays quick."""
+    path = Path(path)
+    if max_px and path.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"):
+        try:
+            import io
+            from PIL import Image, ImageOps
+            with Image.open(path) as im:
+                im = ImageOps.exif_transpose(im)  # respect phone photo rotation
+                im.thumbnail((max_px, max_px))
+                buf = io.BytesIO()
+                if im.mode in ("RGBA", "LA", "P"):
+                    im.save(buf, "PNG")
+                    mime = "image/png"
+                else:
+                    im.convert("RGB").save(buf, "JPEG", quality=88)
+                    mime = "image/jpeg"
+            return f"data:{mime};base64," + base64.b64encode(buf.getvalue()).decode()
+        except Exception:
+            pass
     mime = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
     if path.suffix.lower() == ".svg":
         mime = "image/svg+xml"
     return f"data:{mime};base64," + base64.b64encode(path.read_bytes()).decode()
 
 
+def _template_dirs(cfg):
+    """A club's own designs in my-templates/ take priority over the kit's."""
+    own = cfg.root / "my-templates"
+    return ([own] if own.is_dir() else []) + [HERE / "templates"]
+
+
 def _css(cfg):
+    from .config import overlay
     fonts = []
     for name, weight in FONT_WEIGHTS.items():
         f = HERE / f"fonts/InterDisplay-{name}.otf"
         if f.exists():
             fonts.append(f'@font-face{{font-family:"KitFont";font-weight:{weight};'
                          f'src:url({_data_uri(f)}) format("opentype");}}')
-    pal = ":root{" + "".join(f"--{k}:{v};" for k, v in cfg.palette().items()) + "}"
-    return "\n".join(fonts) + "\n" + pal + "\n" + (HERE / "templates/base.css").read_text()
+    pal = cfg.palette()
+    vars_ = {**pal, **overlay(pal, cfg["branding"].get("background_darkness", "medium"))}
+    root = ":root{" + "".join(f"--{k}:{v};" for k, v in vars_.items()) + "}"
+    own = cfg.root / "my-templates"
+    base = (own / "base.css") if (own / "base.css").exists() else (HERE / "templates/base.css")
+    extra = (own / "extra.css").read_text() if (own / "extra.css").exists() else ""
+    return "\n".join(fonts) + "\n" + root + "\n" + base.read_text() + "\n" + extra
+
+
+def _common(cfg, kind):
+    b = cfg["branding"]
+    photo = cfg.background_for(kind)
+    sponsor_logo = cfg.image("sponsor_logo")
+    return {
+        "css": _css(cfg), "badge": _data_uri(cfg.badge_path(), max_px=400),
+        "photo": _data_uri(photo, max_px=1600) if photo else "",
+        "club": {"name": cfg["club"]["name"], "short_name": cfg.short_name,
+                 "handle": cfg["club"].get("handle", ""), "website": cfg["club"].get("website", "")},
+        "sponsor": {"logo": _data_uri(sponsor_logo, max_px=600) if sponsor_logo else "",
+                    "text": (b.get("sponsor_text") or "").strip(), "label": (b.get("sponsor_label") or "").strip()},
+        "words": cfg.words(), "show": cfg["show"], "wording": cfg["wording"],
+    }
 
 
 def pages_html(cfg, data):
-    env = Environment(loader=FileSystemLoader(HERE / "templates"), autoescape=True)
-    common = {"css": _css(cfg), "badge": _data_uri(cfg.badge_path()),
-              "club": {"name": cfg["club"]["name"], "short_name": cfg.short_name,
-                       "handle": cfg["club"].get("handle", ""), "website": cfg["club"].get("website", "")}}
+    env = Environment(loader=FileSystemLoader(_template_dirs(cfg)), autoescape=True)
     if data["kind"] == "match":
-        return [env.get_template("match.html").render(m=data, **common)]
+        return [env.get_template("match.html").render(m=data, pages=1, page=1, **_common(cfg, "match"))]
+    common = _common(cfg, data["kind"])
     rows = data["matches"]
     if not rows:
         return []

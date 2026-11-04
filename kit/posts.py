@@ -266,8 +266,15 @@ ICON = {"W": "✅", "L": "❌", "D": "🤝", "T": "🤝", "A": "🌧️", "C": "
 
 
 def _tags(cfg):
+    """Sponsor line (if switched on) and hashtags, added to the end of every caption."""
+    b = cfg["branding"]
+    extra = []
+    if b.get("sponsor_in_captions") and (b.get("sponsor_text") or "").strip():
+        extra.append(f"{(b.get('sponsor_label') or 'Supported by').strip()} {b['sponsor_text'].strip()}")
     t = (cfg["club"].get("hashtags") or "").strip()
-    return f"\n\n{t}" if t else ""
+    if t:
+        extra.append(t)
+    return ("\n\n" + "\n".join(extra)) if extra else ""
 
 
 def caption_fixtures(cfg, data):
@@ -275,7 +282,7 @@ def caption_fixtures(cfg, data):
     for m in data["matches"]:
         lines.append(f"{m['date']} {m['time']} · {m['team']} v {m['opponent']} ({'H' if m['home'] else 'A'})")
     site = cfg["club"].get("website")
-    lines += ["", "Come down and support! 🏏"] + ([f"Full fixtures: {site}"] if site else [])
+    lines += ["", cfg["wording"]["fixtures_sign_off"]] + ([f"Full fixtures: {site}"] if site else [])
     return "\n".join(lines) + _tags(cfg)
 
 
@@ -322,7 +329,7 @@ def fixtures_post(cfg, pc, today):
     rows = fixture_rows(cfg, pc.fixtures(start, end))
     if not rows:
         return None
-    data = {"kind": "fixtures", "title": "This Week's Fixtures", "date_range": date_range([start, end]), "matches": rows}
+    data = {"kind": "fixtures", "title": cfg["wording"]["fixtures_title"], "date_range": date_range([start, end]), "matches": rows}
     return {"key": f"fixtures-{today.isoformat()}", "kind": "fixtures", "title": f"Fixtures {data['date_range']}",
             "data": data, "caption": caption_fixtures(cfg, data),
             "alt": f"{cfg['club']['name']} fixtures for {data['date_range']}: {len(rows)} matches."}
@@ -333,7 +340,7 @@ def roundup_post(cfg, pc, today):
     rows = result_rows(cfg, pc.results(start, end))
     if not rows:
         return None
-    data = {"kind": "results", "title": "Last Week's Results", "date_range": date_range([r["date_obj"] for r in rows]), "matches": rows}
+    data = {"kind": "results", "title": cfg["wording"]["results_title"], "date_range": date_range([r["date_obj"] for r in rows]), "matches": rows}
     wins = sum(r["outcome"] == "W" for r in rows)
     return {"key": f"roundup-{today.isoformat()}", "kind": "roundup", "title": f"Results round-up {data['date_range']}",
             "data": data, "caption": caption_roundup(cfg, data),

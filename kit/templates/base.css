@@ -80,3 +80,24 @@ body {
 .dense .when .t { font-size: 34px; }
 .dense .pill { width: 80px; height: 80px; font-size: 44px; }
 .dense .res { grid-template-columns: 80px 1fr auto; }
+
+/* ---- Uploaded background photo (branding → background_image) ---- */
+.photo { position: absolute !important; inset: 0; z-index: 0; background-size: cover; background-position: center; }
+.photo::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(160deg, var(--overlay-top) 0%, var(--overlay-mid) 50%, var(--overlay-bottom) 100%); }
+.card.has-photo { background: var(--navy-ink); }
+.card.has-photo::before { display: none; }
+.card > :not(.photo) { z-index: 1; }
+.has-photo .row { background: rgba(0,0,0,.34); border-color: rgba(255,255,255,.18); backdrop-filter: blur(6px); }
+.has-photo .side:not(.us) { background: rgba(0,0,0,.34); backdrop-filter: blur(6px); }
+.has-photo .title, .has-photo .verdict { text-shadow: 0 3px 18px rgba(0,0,0,.35); }
+
+/* ---- Sponsor (branding → sponsor_logo / sponsor_text) ---- */
+.sponsor { display: flex; align-items: center; gap: 16px; }
+.sponsor .lbl { font-size: 18px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--silver-dim); }
+.sponsor .name { font-size: 24px; font-weight: 800; color: var(--white); }
+.sponsor img { height: 72px; max-width: 260px; object-fit: contain; background: #FFFFFF; border-radius: 12px; padding: 8px 12px; }
+.foot .left { display: flex; flex-direction: column; gap: 6px; }
+
+/* ---- Ground under fixtures (show → ground_on_fixtures) ---- */
+.row .ground { font-weight: 500; font-size: 20px; color: var(--silver-dim); margin-top: 4px; }

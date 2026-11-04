@@ -12,7 +12,16 @@ DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sun
 
 DEFAULTS = {
     "club": {"hashtags": "", "timezone": "Europe/London", "website": "", "handle": ""},
-    "branding": {"badge": "assets/badge.svg", "primary_colour": "#1A4192", "accent_colour": "#DBE2EA"},
+    "branding": {"badge": "assets/badge.svg", "primary_colour": "#1A4192", "accent_colour": "#DBE2EA",
+                 "background_image": "", "fixtures_background": "", "results_background": "",
+                 "match_background": "", "background_darkness": "medium",
+                 "sponsor_logo": "", "sponsor_text": "", "sponsor_label": "Supported by",
+                 "sponsor_in_captions": False},
+    "wording": {"fixtures_title": "This Week's Fixtures", "results_title": "Last Week's Results",
+                "win": "Victory", "loss": "Defeat", "draw": "Draw", "tie": "Tied",
+                "abandoned": "Abandoned", "cancelled": "Cancelled", "no_result": "No result",
+                "fixtures_sign_off": "Come down and support! 🏏"},
+    "show": {"top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},
     "posts": {
         "fixtures": {"enabled": True, "day": "friday"},
         "results_roundup": {"enabled": True, "day": "monday"},
@@ -69,6 +78,20 @@ class Config(dict):
 
     def palette(self):
         return make_palette(self["branding"]["primary_colour"], self["branding"]["accent_colour"])
+
+    def image(self, key):
+        """Path to an uploaded image named in branding → key, or None if not set."""
+        name = str(self["branding"].get(key) or "").strip()
+        return (self.root / name).resolve() if name else None
+
+    def background_for(self, kind):
+        """Uploaded background for a post kind (fixtures / results / match), falling back to the general one."""
+        return self.image(f"{kind}_background") or self.image("background_image")
+
+    def words(self):
+        w = self["wording"]
+        return {"W": w["win"], "L": w["loss"], "D": w["draw"], "T": w["tie"], "A": w["abandoned"],
+                "C": w["cancelled"], "N": w["no_result"], "P": "Match report"}
 
 
 def load(path=None):
@@ -134,8 +157,81 @@ def validate(cfg):
             re.compile(cfg[sect][key])
         except re.error:
             problems.append(f"{sect} → {key}: this pattern isn't valid. Put it back to the original if unsure.")
+    cfg.warnings = []
+    for key, what in IMAGE_SETTINGS.items():
+        check_image(cfg, key, what, problems, cfg.warnings)
+    if str(b.get("background_darkness", "medium")).lower() not in OVERLAY:
+        problems.append("branding → background_darkness: use light, medium or strong.")
+    for sect in ("wording", "show"):
+        if not isinstance(cfg.get(sect), dict):
+            problems.append(f"{sect}: this section should be a list of settings, like the example. Put it back if unsure.")
+    for key, val in (cfg.get("show") or {}).items():
+        if not isinstance(val, bool):
+            problems.append(f"show → {key}: use true or false.")
+    for key, val in (cfg.get("wording") or {}).items():
+        if not isinstance(val, str) or not val.strip():
+            problems.append(f"wording → {key}: this can't be empty. Put the words in quotes, like \"Victory\".")
     if problems:
         raise ConfigError("Please fix these in club.yml:\n- " + "\n- ".join(problems))
+
+
+# --- uploaded images -----------------------------------------------------------
+
+IMAGE_SETTINGS = {
+    "background_image": "background photo",
+    "fixtures_background": "fixtures background photo",
+    "results_background": "results background photo",
+    "match_background": "match result background photo",
+    "sponsor_logo": "sponsor logo",
+}
+IMAGE_TYPES = (".png", ".jpg", ".jpeg", ".webp", ".svg")
+MAX_MB = 15
+OVERLAY = {"light": (0.45, 0.55, 0.70), "medium": (0.62, 0.72, 0.84), "strong": (0.78, 0.86, 0.92)}
+
+
+def check_image(cfg, key, what, problems, warnings):
+    name = str(cfg["branding"].get(key) or "").strip()
+    if not name:
+        return
+    path = cfg.root / name
+    if not path.exists():
+        near = sorted(p.name for p in (cfg.root / "assets").glob("*")) if (cfg.root / "assets").exists() else []
+        hint = f" Files in your assets folder: {', '.join(near)}." if near else ""
+        problems.append(f"branding → {key}: I can't find '{name}'. Upload your {what} to the assets folder and check "
+                        f"the name matches exactly, including capitals and the ending (.jpg, .png).{hint}")
+        return
+    if path.suffix.lower() not in IMAGE_TYPES:
+        problems.append(f"branding → {key}: '{name}' isn't a picture I can use. Use a JPG or PNG.")
+        return
+    mb = path.stat().st_size / 1_000_000
+    if mb > MAX_MB:
+        problems.append(f"branding → {key}: '{name}' is {mb:.0f} MB. Please use a picture under {MAX_MB} MB.")
+        return
+    if path.suffix.lower() == ".svg":
+        return
+    try:
+        from PIL import Image
+        with Image.open(path) as im:
+            w, h = im.size
+    except Exception:
+        problems.append(f"branding → {key}: '{name}' couldn't be opened as a picture. Try saving it again as a JPG or PNG.")
+        return
+    if key.endswith("background") or key == "background_image":
+        if w < 1080 or h < 1080:
+            warnings.append(f"Your {what} is only {w}×{h} pixels, so it may look blurry. "
+                            f"A photo at least 1080 pixels on each side works best.")
+    elif w < 200:
+        warnings.append(f"Your {what} is only {w} pixels wide, so it may look blurry. A larger version would be sharper.")
+
+
+def overlay(palette, darkness):
+    """Club-colour layer laid over a photo so white text stays readable."""
+    a1, a2, a3 = OVERLAY.get(str(darkness).lower(), OVERLAY["medium"])
+    def rgba(h, a):
+        r, g, b = (int(h[i:i + 2], 16) for i in (1, 3, 5))
+        return f"rgba({r},{g},{b},{a})"
+    return {"overlay-top": rgba(palette["navy"], a1), "overlay-mid": rgba(palette["navy-deep"], a2),
+            "overlay-bottom": rgba(palette["navy-ink"], a3)}
 
 
 # --- colours ---------------------------------------------------------------

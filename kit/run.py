@@ -284,12 +284,43 @@ def already_done(gh, number):
 
 # --- check setup -------------------------------------------------------------
 
+def customisations(cfg):
+    """Plain-English list of the uploads and changes a club has made, for the setup check."""
+    b, out = cfg["branding"], []
+    general = b.get("background_image")
+    per = {k: b.get(f"{k}_background") for k in ("fixtures", "results", "match")}
+    if general:
+        out.append(f"Background photo: {general}" + (" (some post types use their own, below)" if any(per.values()) else ""))
+    for k, v in per.items():
+        if v:
+            out.append(f"{k.capitalize()} background photo: {v}")
+    if general or any(per.values()):
+        out.append(f"Colour over photos: {b.get('background_darkness', 'medium')}")
+    if b.get("sponsor_logo") or b.get("sponsor_text"):
+        what = b.get("sponsor_logo") or b.get("sponsor_text")
+        out.append(f"Sponsor: {what}" + (" (also named in captions)" if b.get("sponsor_in_captions") else ""))
+    changed = [k for k, v in cfg["wording"].items() if v != C.DEFAULTS["wording"][k]]
+    if changed:
+        out.append("Your own wording for: " + ", ".join(k.replace("_", " ") for k in changed))
+    hidden = [k.replace("_", " ") for k, v in cfg["show"].items() if v != C.DEFAULTS["show"][k]]
+    if hidden:
+        out.append("Changed show settings: " + ", ".join(hidden))
+    own = cfg.root / "my-templates"
+    if own.is_dir() and any(own.iterdir()):
+        out.append("Your own designs from my-templates: " + ", ".join(sorted(p.name for p in own.iterdir())))
+    return out
+
+
 def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
     rep = Report("Setup check")
     ok = True
     try:
         cfg = C.load(root / "club.yml")
         rep.add(f"✅ **club.yml** looks good: {cfg['club']['name']} (Play-Cricket site {cfg.site_id})")
+        for line in customisations(cfg):
+            rep.add(f"   🎨 {line}")
+        for w in cfg.warnings:
+            rep.add(f"   ⚠️ {w}")
     except C.ConfigError as e:
         rep.add("❌ **club.yml** needs fixing:")
         rep.add("")

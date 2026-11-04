@@ -1,0 +1,79 @@
+name: Update kit
+
+# Run this from the Actions tab to get the latest version of the kit.
+# It replaces the kit's own code and guides only. Your club.yml, your uploads
+# (assets folder), your own designs (my-templates), and your posts are never touched.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cricket-social-kit
+  cancel-in-progress: false
+
+env:
+  KIT_SOURCE: verwoodcc-social/cricket-social-kit
+
+jobs:
+  update:
+    # Only runs in clubs' own copies, not in the template itself.
+    if: github.repository != 'verwoodcc-social/cricket-social-kit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download the latest kit
+        run: |
+          mkdir -p "$RUNNER_TEMP/latest"
+          curl -fsSL "https://github.com/$KIT_SOURCE/archive/refs/heads/main.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP/latest" --strip-components=1
+
+      - name: Replace the kit's own files (not your settings, uploads or designs)
+        run: |
+          OLD=$(python -c "import re;print(re.search(r'\"(.+?)\"', open('kit/__init__.py').read().split('__version__')[1]).group(1))" 2>/dev/null || echo "unknown")
+          NEW_DIR="$RUNNER_TEMP/latest"
+          rm -rf kit docs tests examples
+          cp -r "$NEW_DIR/kit" "$NEW_DIR/docs" "$NEW_DIR/tests" "$NEW_DIR/examples" .
+          cp "$NEW_DIR/requirements.txt" "$NEW_DIR/README.md" "$NEW_DIR/LICENSE" .
+          NEW=$(python -c "import re;print(re.search(r'\"(.+?)\"', open('kit/__init__.py').read().split('__version__')[1]).group(1))")
+          echo "OLD=$OLD" >> "$GITHUB_ENV"; echo "NEW=$NEW" >> "$GITHUB_ENV"
+          # GitHub doesn't let this job change workflow files, so just report if they differ.
+          CHANGED=""
+          for f in "$NEW_DIR"/.github/workflows/*.yml; do
+            n=$(basename "$f")
+            cmp -s "$f" ".github/workflows/$n" || CHANGED="$CHANGED $n"
+          done
+          echo "WORKFLOWS_CHANGED=$CHANGED" >> "$GITHUB_ENV"
+
+      - name: Check your settings still work with the new version
+        run: |
+          pip install -q -r requirements.txt
+          python -c "from kit import config; c = config.load(); print('club.yml OK:', c['club']['name'])"
+
+      - name: Save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A kit docs tests examples requirements.txt README.md LICENSE
+          if git diff --cached --quiet; then
+            echo "### Already up to date (version $NEW)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            git commit -m "Update Cricket Social Kit $OLD → $NEW"
+            git pull --rebase --quiet && git push --quiet
+            echo "### ✅ Updated the kit from version $OLD to $NEW" >> "$GITHUB_STEP_SUMMARY"
+            echo "Your settings, uploads and designs weren't changed. See what's new in docs/CHANGES.md." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -n "$WORKFLOWS_CHANGED" ]; then
+            {
+              echo ""
+              echo "⚠️ The new version also changes these workflow files, which GitHub only lets a person update:$WORKFLOWS_CHANGED"
+              echo "Copy each one from https://github.com/$KIT_SOURCE/tree/main/.github/workflows into your .github/workflows folder."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
