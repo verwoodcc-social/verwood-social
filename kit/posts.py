@@ -209,7 +209,7 @@ def match_card(cfg, detail):
     if row["outcome"] == "P":
         return None
     us, them = str(detail.get(f"{side}_team_id")), str(detail.get(f"{_other(side)}_team_id"))
-    junior = cfg.is_junior(row["team"])
+    junior = cfg.shorten_names(row["team"])
     rule = cfg["juniors"]["names"]
     by = _innings_by_team(detail)
     batting, bowling = [], []
@@ -248,7 +248,7 @@ def match_card(cfg, detail):
         "toss": tidy_toss(detail.get("toss"), cfg, side, detail),
         "top_batting": [p for p in batting if p["runs"] > 0][:3] if show_names else [],
         "top_bowling": [p for p in bowling if p["w"] > 0][:3] if show_names else [],
-        "junior": junior,
+        "junior": cfg.is_junior(row["team"]), "names_shortened": junior,
     }
 
 

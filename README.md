@@ -18,7 +18,8 @@ It's free to run and needs no coding to set up.
 - **You approve every post.** Each one arrives on your phone (through the free GitHub app) with
   its graphic and caption. Edit the words if you like, tap to approve, and it's posted. You can
   switch to fully automatic posting later.
-- **Junior-safe.** Junior teams show first name and surname initial only, or no names if you prefer.
+- **Safe for juniors.** Every player is shown as first name and initial ("Ben T.") in every team,
+  because juniors often play in adult sides. Clubs can choose no names, or full names for adult teams.
 - **Your branding.** Your badge, your two club colours, your name, handle and hashtags.
 - **Free.** It runs on GitHub Actions' free allowance and posts directly through Meta. No paid
   scheduling tool is needed.

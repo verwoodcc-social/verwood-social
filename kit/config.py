@@ -32,6 +32,7 @@ DEFAULTS = {
     "juniors": {
         "team_pattern": r"\b(U\s?\d{1,2}[A-Z]?|Under\s?\d{1,2}|Girls|Boys|Juniors?|All Stars|Dynamos|Colts)\b",
         "names": "initial",
+        "apply_to_all_teams": True,
     },
     "scoring": {
         "wickets_per_innings": 10,
@@ -72,6 +73,11 @@ class Config(dict):
 
     def is_junior(self, team):
         return bool(re.search(self["juniors"]["team_pattern"], team or "", re.I))
+
+    def shorten_names(self, team):
+        """Whether this team's player names follow the juniors → names rule.
+        With apply_to_all_teams (the default) every team does, because juniors often play in adult sides."""
+        return bool(self["juniors"].get("apply_to_all_teams", True)) or self.is_junior(team)
 
     def no_wicket_margin(self, team):
         return bool(re.search(self["scoring"]["no_wicket_margin_teams"], team or "", re.I))
@@ -152,6 +158,8 @@ def validate(cfg):
         problems.append("posts → networks: list facebook, instagram, or both, like [facebook, instagram].")
     if cfg["juniors"].get("names") not in ("initial", "first", "full", "none"):
         problems.append("juniors → names: use initial, first, full or none.")
+    if not isinstance(cfg["juniors"].get("apply_to_all_teams", True), bool):
+        problems.append("juniors → apply_to_all_teams: use true or false.")
     for sect, key in (("juniors", "team_pattern"), ("scoring", "no_wicket_margin_teams")):
         try:
             re.compile(cfg[sect][key])

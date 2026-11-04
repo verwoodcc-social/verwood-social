@@ -67,10 +67,29 @@ def test_outdoor_margins(verwood, pc):
 def test_match_card_from_scorecard(verwood, pc):
     card = P.match_card(verwood, pc.match_detail(7758947))
     assert card["summary"] == "Verwood won" and card["us_score"] == "141/2" and card["us_overs"] == "11.3 overs"
+    # Indoor C is an adult side, but names are shortened for every team by default
     assert [(p["name"], p["figures"]) for p in card["top_batting"]] == [
-        ("Alex Archer", "29*"), ("Sam Butler", "27*"), ("Jo Cross", "26*")]
-    assert [(p["name"], p["figures"]) for p in card["top_bowling"]] == [("Jo Cross", "1-30")]
+        ("Alex A.", "29*"), ("Sam B.", "27*"), ("Jo C.", "26*")]
+    assert [(p["name"], p["figures"]) for p in card["top_bowling"]] == [("Jo C.", "1-30")]
     assert card["toss"] == "Verwood won the toss and elected to field"
+    assert "Alex Archer" not in P.caption_match(verwood, card)
+
+
+def test_full_names_for_adult_teams_only_if_club_switches_it_off(verwood, pc):
+    verwood["juniors"]["apply_to_all_teams"] = False
+    card = P.match_card(verwood, pc.match_detail(7758947))  # Indoor C: adult team
+    assert card["top_batting"][0]["name"] == "Alex Archer"
+    verwood["juniors"]["team_pattern"] = r"Indoor C"  # but junior teams are still shortened
+    assert P.match_card(verwood, pc.match_detail(7758947))["top_batting"][0]["name"] == "Alex A."
+
+
+def test_new_setting_defaults_to_shortening_everyone(tmp_path):
+    from conftest import ROOT
+    import shutil
+    shutil.copy(ROOT / "examples/verwood/badge.svg", tmp_path / "badge.svg")
+    text = (ROOT / "examples/verwood/club.yml").read_text().replace("  apply_to_all_teams: true\n", "")
+    (tmp_path / "club.yml").write_text(text)  # an older club.yml without the setting
+    assert C.load(tmp_path / "club.yml").shorten_names("1st XI") is True
 
 
 def test_no_scorecard_means_no_match_post(verwood, pc):

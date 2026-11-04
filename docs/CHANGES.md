@@ -1,5 +1,11 @@
 # What's new
 
+## 1.2.0
+- **Shortened names for every team by default** (`juniors → apply_to_all_teams: true`). Juniors
+  often play in adult, women's and family sides, so a team's name doesn't tell you a player's
+  age. Every player is now shown as first name and initial ("Ben T."), or whatever
+  `juniors → names` says. Set `apply_to_all_teams: false` to show full names for adult teams again.
+
 ## 1.1.1
 - Copes with Play-Cricket briefly blocking requests: the kit waits and retries for a few minutes,
   only blames the API token when Play-Cricket really says it's wrong, and runs a second time

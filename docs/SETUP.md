@@ -166,9 +166,12 @@ Set `lookback_days: 2` or `3` in `club.yml` to also give them their own post.
 **Run it now.** On the **Actions** tab, click **Make posts → Run workflow**, choose which posts
 to make, and click **Run workflow**.
 
-**Junior players.** For junior teams, graphics and captions show first name and surname
-initial only ("Ben T."). You can change this in `club.yml`. Junior teams are recognised by
-names like *U11*, *Under 13*, *Girls*. Adjust `team_pattern` if yours are named differently.
+**Players' names.** Graphics and captions show every player as first name and surname initial
+("Ben T."), in every team. That's because juniors often play in adult, women's and family sides,
+so a team's name doesn't tell you a player's age. You can change this in `club.yml` under
+`juniors`: `names` can be `initial`, `first`, `full` or `none`. Setting `apply_to_all_teams: false`
+gives full names in adult teams and keeps the rule only for junior teams (names like *U11*,
+*Under 13* or *Girls*).
 
 **Privacy.** The repository is public, so the graphics in the `posts` folder can be seen by
 anyone who finds them, including ones you haven't approved yet. They only contain what's
