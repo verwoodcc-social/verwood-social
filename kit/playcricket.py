@@ -28,35 +28,57 @@ def fmt_date(d):
     return d.strftime("%d/%m/%Y")
 
 
+USER_AGENT = "CricketSocialKit/{v} (club results to social media; +https://github.com/verwoodcc-social/cricket-social-kit)"
+WAITS = (5, 15, 30, 60, 90)  # seconds between tries when Play-Cricket is busy or briefly blocking us
+
+
+def _looks_like_token_problem(r):
+    """A real 'bad token' reply is short JSON/text about the token, not Play-Cricket's HTML bot-check page."""
+    ctype = (r.headers.get("content-type") or "").lower() if hasattr(r, "headers") else ""
+    text = (getattr(r, "text", "") or "")[:500].lower()
+    if "html" in ctype or "<html" in text or "checking your browser" in text or "ecb error page" in text:
+        return False
+    return r.status_code == 401 or any(w in text for w in ("token", "unauthori", "not authori", "invalid"))
+
+
 class PlayCricket:
-    def __init__(self, token, site_id, session=None, base=BASE):
+    def __init__(self, token, site_id, session=None, base=BASE, sleep=time.sleep):
         if not token:
             raise PlayCricketError("No Play-Cricket API token found. Add it as a repository secret called "
                                    "PLAYCRICKET_API_TOKEN (see the setup guide, step 3).")
         self.token, self.site_id, self.base = token, int(site_id), base
         self.http = session or requests.Session()
+        if hasattr(self.http, "headers"):
+            from . import __version__
+            self.http.headers["User-Agent"] = USER_AGENT.format(v=__version__)
+        self.sleep = sleep
 
     def _get(self, path, **params):
         params["api_token"] = self.token
         last = None
-        for attempt in range(3):
+        for attempt in range(len(WAITS) + 1):
             try:
                 r = self.http.get(f"{self.base}/{path}", params=params, timeout=30)
             except requests.RequestException as e:
                 last = f"couldn't reach Play-Cricket ({e.__class__.__name__})"
             else:
-                if r.status_code in (401, 403):
+                if r.status_code in (401, 403) and _looks_like_token_problem(r):
                     raise PlayCricketError("Play-Cricket refused the API token. Check the PLAYCRICKET_API_TOKEN "
                                            "secret is copied exactly, and that the token is for this club's site.")
                 if r.status_code == 200:
                     try:
                         return r.json()
                     except ValueError:
-                        last = "Play-Cricket sent back something that wasn't data (it may be down)"
+                        last = "Play-Cricket sent back a web page instead of data (usually a temporary block)"
+                elif r.status_code in (403, 429):
+                    last = f"Play-Cricket temporarily blocked the request (error {r.status_code})"
                 else:
                     last = f"Play-Cricket replied with error {r.status_code}"
-            time.sleep(2 * (attempt + 1))
-        raise PlayCricketError(f"Gave up after 3 tries: {last}.")
+            if attempt < len(WAITS):
+                self.sleep(WAITS[attempt])
+        raise PlayCricketError(f"Couldn't get data from Play-Cricket after {len(WAITS) + 1} tries over about "
+                               f"{sum(WAITS) // 60} minutes: {last}. This is usually temporary, and the next "
+                               f"scheduled run will try again. Nothing is posted twice.")
 
     @staticmethod
     def _seasons(start, end):

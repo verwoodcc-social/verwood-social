@@ -1,5 +1,11 @@
 # What's new
 
+## 1.1.1
+- Copes with Play-Cricket briefly blocking requests: the kit waits and retries for a few minutes,
+  only blames the API token when Play-Cricket really says it's wrong, and runs a second time
+  each morning in case the first try couldn't get through. Nothing is ever posted twice.
+- *Workflow change:* `make-posts.yml` has a second morning run. Copy it across if *Update kit* asks you to.
+
 ## 1.1.0
 - **Your own pictures:** a background photo for all graphics or one per post type, with your club
   colour laid over it so text stays readable (`background_darkness`).
