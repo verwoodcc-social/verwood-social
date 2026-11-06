@@ -1,0 +1,21 @@
+name: Fetch sponsor logo (one-off)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Struan's logo from Verwood's Play-Cricket sponsor list
+        run: |
+          curl -fsSL -o assets/struan-logo.jpg "https://s3-eu-west-1.amazonaws.com/p-c2gallery.ecb.co.uk/uploads/sponsor/image/52847/Struan.JPG"
+          file assets/struan-logo.jpg | tee /dev/stderr | grep -q "JPEG image"
+      - name: Save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/struan-logo.jpg
+          git commit -m "Add Struan sponsor logo"
+          git pull --rebase --quiet && git push --quiet
