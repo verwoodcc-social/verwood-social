@@ -441,7 +441,7 @@ def watch_post(cfg, careers, fixtures, today, date_range):
     lines = ["👀 Milestone watch: who's close to a career milestone in this week's games?", ""]
     for w in items:
         f = w["fixture"]
-        lines.append(f"• {w['name']} ({w['team']} v {f['opponent']}, {f['date']}) {need_text(w)}")
+        lines.append(f"• {w['name']} ({w['team']}) {need_text(w)}")
     lines += ["", "Come along and see if they get there! 🏏"]
     return {"key": f"watch-{today.isoformat()}", "kind": "watch", "title": f"Milestone watch {date_range}",
             "data": data, "caption": "\n".join(lines) + _tags(cfg),

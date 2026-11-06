@@ -147,6 +147,6 @@ def test_milestone_watch(club_root):
     assert [(x["name"], x["stat"], x["needs"], x["target"]) for x in w] == [
         ("Charlie Gajic", "runs", 20, 9500), ("Charlie Gajic", "catches", 1, 50)]
     post = K.watch_post(cfg, car, fixtures, date(2027, 5, 7), "8 – 14 May")
-    assert "Charlie Gajic (1st XI v Opp CC 1st XI, Sat 8 May) needs 20 runs for 9,500 career runs" in post["caption"]
+    assert "Charlie Gajic (1st XI) needs 20 runs for 9,500 career runs" in post["caption"]
     assert K.watch_list(cfg, car, fixtures, date(2027, 6, 30)) == []  # not played for weeks: left out
     assert K.need_text({"stat": "matches", "needs": 1, "target": 100, "pool": "club"}) == "next game is their 100th appearance"
