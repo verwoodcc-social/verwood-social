@@ -528,6 +528,19 @@ def cmd_report_issue(args, root=C.ROOT, gh=None):
     pending.unlink()
     rep = Report("Sponsor report ready")
     rep.add(f"📄 {issue['html_url']}")
+    from . import mailer
+    try:
+        m = mailer.settings()
+        if m:
+            text = (f"Hello,\n\nAttached is the {r['month']} social media report for {sponsor}, ready to "
+                    f"forward.\n\n{r['summary']}\n\nThe report is also here: {issue['html_url']}\n\n"
+                    f"(Sent automatically by the Verwood social media kit.)")
+            sent = mailer.send(m, f"{sponsor} social media report: {r['month']}", text, [root / r["pdf"]])
+            gh.comment(issue["number"], f"📧 Emailed to {len(sent)} committee member{'s' if len(sent) != 1 else ''}.")
+            rep.add(f"📧 Emailed to {len(sent)} people.")
+    except mailer.MailError as e:
+        gh.comment(issue["number"], f"⚠️ The email wasn't sent: {e}")
+        rep.add(f"⚠️ Email not sent: {e}")
     rep.write()
     return issue["number"]
 

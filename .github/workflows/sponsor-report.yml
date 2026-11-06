@@ -53,7 +53,12 @@ jobs:
           git diff --cached --quiet || git commit -m "Sponsor report"
           git pull --rebase --quiet && git push --quiet
 
-      - name: Open the report issue
+      - name: Open the report issue and email it
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
+          M365_CLIENT_ID: ${{ secrets.M365_CLIENT_ID }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
         run: python -m kit report-issue --sha "$(git rev-parse HEAD)"

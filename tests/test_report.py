@@ -82,3 +82,38 @@ def test_report_command_and_issue(club_root, monkeypatch):
     n = R.cmd_report_issue(Namespace(sha="abc"), root=club_root, gh=gh)
     assert gh.labels[n] == {"report"} and "social-post" not in gh.labels[n]  # can never be published
     assert "Download the PDF" in gh.issues[n]["body"] and "/raw/abc/posts/reports/" in gh.issues[n]["body"]
+
+
+def test_email_settings_and_send(tmp_path):
+    import pytest
+    from kit import mailer
+    assert mailer.settings({}) is None
+    with pytest.raises(mailer.MailError, match="Missing"):
+        mailer.settings({"M365_TENANT_ID": "t"})
+    env = {"M365_TENANT_ID": "t", "M365_CLIENT_ID": "c", "M365_CLIENT_SECRET": "s",
+           "REPORT_EMAIL_FROM": "a@club.co.uk", "REPORT_EMAIL_TO": "a@club.co.uk, b@club.co.uk;c@club.co.uk"}
+    s = mailer.settings(env)
+    assert s["to"] == ["a@club.co.uk", "b@club.co.uk", "c@club.co.uk"]
+
+    class R:
+        def __init__(self, code, body):
+            self.status_code, self._b, self.content, self.text = code, body, b"x" if body else b"", ""
+
+        def json(self):
+            return self._b
+
+    class HTTP:
+        calls = []
+
+        def post(self, url, **kw):
+            self.calls.append((url, kw))
+            return R(200, {"access_token": "tok"}) if "login" in url else R(202, None)
+
+    pdf = tmp_path / "r.pdf"
+    pdf.write_bytes(b"%PDF")
+    h = HTTP()
+    assert mailer.send(s, "Subj", "Body", [pdf], http=h) == s["to"]
+    url, kw = h.calls[1]
+    assert url.endswith("/users/a@club.co.uk/sendMail")
+    msg = kw["json"]["message"]
+    assert len(msg["toRecipients"]) == 3 and msg["attachments"][0]["name"] == "r.pdf"
