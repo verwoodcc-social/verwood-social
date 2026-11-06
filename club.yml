@@ -114,7 +114,7 @@ captain_reports:
   wait: true
   wait_until: "09:15"
   max_length: 700           # characters of report used in the caption
-  teams: '^(1st|2nd|3rd|4th|5th) XI$|^Wednesday 1st XI$|^Friendly XI$|^Women''s Softball( B)?$'
+  teams: '.'                # which teams' results wait for a report: all teams (senior and youth)
 
 # Season fixture lists: 1–7 April, one post per team (senior and youth) with all its outdoor summer
 # fixtures, spread across the week so a few go out each morning.

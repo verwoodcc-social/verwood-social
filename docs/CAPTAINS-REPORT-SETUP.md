@@ -20,7 +20,7 @@ Title: *Verwood CC – Captain's match report*. Add these questions, in this ord
 
 | # | Question (exact wording) | Type | Required |
 |---|---|---|---|
-| 1 | Team | Choice: 1st XI, 2nd XI, 3rd XI, 4th XI, 5th XI, Wednesday 1st XI, Friendly XI, Women's Softball, Women's Softball B | Yes |
+| 1 | Team | Choice, shown as a **drop-down**: every senior and youth team, named exactly as on Play-Cricket | Yes |
 | 2 | Match date | Date | Yes |
 | 3 | Captain | Text | Yes |
 | 4 | Report | Text, **Long answer** | Yes |
@@ -30,8 +30,11 @@ Title: *Verwood CC – Captain's match report*. Add these questions, in this ord
 Under question 4, add the subtitle: *3–6 sentences about the game. For anyone under 18, please use their
 first name only.*
 
-**Settings** (⋯ → Settings): *Anyone can respond*; untick *Record name*. Click **Collect responses**
-and copy the link to share with captains.
+**Settings** (⋯ → Settings): *Anyone can respond*.
+
+**Share the pre-filled link** so captains never type the code: ⋯ → *Get pre-filled URL*, switch on
+*Enable pre-filled answers*, type the club code in question 6, click *Get Prefilled Link* and *Copy link*.
+Send that link (not the plain one) to captains. Anyone with it can submit, so keep it to captains.
 
 ## 2 · Make the flow (15 minutes)
 
@@ -86,6 +89,6 @@ Don't put the club code in the issue body: the GitHub repository is public.
   the same title is ignored.
 - Links are removed from reports, and long reports are trimmed to about 700 characters.
 - A report that doesn't match a result (wrong team or date), or arrives after the result was posted,
-  is closed after 3 days with a note. Junior results don't wait for reports.
+  is closed after 3 days with a note. Results for every team (senior and youth) wait for a report until 9:15am.
 - Change the waiting time with `captain_reports → wait_until` in `club.yml`, or switch waiting off with
   `wait: false`.
