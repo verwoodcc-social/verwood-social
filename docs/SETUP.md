@@ -153,10 +153,7 @@ comfortable with HTML and CSS can go further with **`docs/OWN-DESIGNS.md`**.
 
 ## Good to know
 
-**Getting the latest version.** When the kit is improved, go to **Actions → Update kit →
-Run workflow**. It updates the kit's code and guides, and never changes your `club.yml`, pictures,
-designs or posts. `docs/CHANGES.md` lists what's new. If the update says some workflow files
-changed, it tells you which ones to copy across.
+**Changes and improvements** are made directly in this repository (it's Verwood's own copy; there's no separate template any more).
 
 **What gets posted and when.** Every morning: one post per match played *yesterday* that has a
 result and a scorecard. On your fixtures day: the next 7 days' fixtures. On your round-up day:
