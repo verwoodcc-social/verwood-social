@@ -24,6 +24,9 @@ DEFAULTS = {
                 "story_cta": "Full details on our page"},
     "milestones": {"enabled": True, "batting": [50, 100], "bowling_wickets": 5,
                    "junior_photos": "name_no_photo", "stories": True},
+    "matchday": {"enabled": False, "include": "all", "juniors": False, "default_home_ground": "",
+                 "no_default_ground_teams": r"\bIndoor\b", "title": "Matchday",
+                 "cta": "Come and support!"},
     "show": {"top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},
     "posts": {
         "fixtures": {"enabled": True, "day": "friday"},
@@ -177,6 +180,12 @@ def validate(cfg):
         problems.append("milestones → batting / bowling_wickets: use numbers, like batting: [50, 100] and bowling_wickets: 5.")
     if mi.get("junior_photos") not in ("name_no_photo", "photo_no_name"):
         problems.append("milestones → junior_photos: use name_no_photo or photo_no_name (ECB guidance: never both).")
+    md = cfg.get("matchday") or {}
+    if md.get("include", "all") not in ("all", "home"):
+        problems.append("matchday → include: use all or home.")
+    for k in ("enabled", "juniors"):
+        if not isinstance(md.get(k, False), bool):
+            problems.append(f"matchday → {k}: use true or false.")
     if p.get("approval") not in ("review", "automatic"):
         problems.append("posts → approval: use review or automatic.")
     nets = p.get("networks") or []

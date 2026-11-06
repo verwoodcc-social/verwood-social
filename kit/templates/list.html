@@ -1,5 +1,9 @@
 <!doctype html>
-<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}</style></head>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
+.row.md .when .d { font-size: 46px; font-weight: 900; letter-spacing: -.02em; color: inherit; }
+.story .row.md { padding-top: 34px; padding-bottom: 34px; }
+.story .row.md .team { font-size: 44px; }
+</style></head>
 <body>
 <div class="card {{ 'dense' if rows|length > (6 if story else 5) }} {{ 'has-photo' if photo }}">
   {% include "_photo.html" %}
@@ -32,6 +36,18 @@
       </div>
     </div>
     {% endfor %}
+  {% elif kind == 'matchday' %}
+    {% for m in rows %}
+    <div class="row fix md">
+      <div class="when"><div class="d">{{ m.time }}</div></div>
+      <div>
+        <div class="team">{{ m.team }}</div>
+        <div class="opp">v {{ m.opponent }}</div>
+        {% if m.venue %}<div class="ground">at {{ m.venue }}</div>{% endif %}
+      </div>
+      <div class="ha {{ 'home' if m.home }}">{{ 'HOME' if m.home else 'AWAY' }}</div>
+    </div>
+    {% endfor %}
   {% else %}
     {% for m in rows %}
     <div class="row fix">
@@ -47,7 +63,7 @@
   {% endif %}
   </div>
 
-{% if story and wording.story_cta %}<div class="cta">{{ wording.story_cta }}</div>{% endif %}
+{% if story and (cta or wording.story_cta) %}<div class="cta">{{ cta or wording.story_cta }}</div>{% endif %}
 {% include "_foot.html" %}
 </div>
 </body></html>

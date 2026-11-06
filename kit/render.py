@@ -94,7 +94,8 @@ def pages_html(cfg, data, story=False):
     per = math.ceil(len(rows) / pages)  # spread rows evenly
     tpl = env.get_template("list.html")
     return [tpl.render(kind=data["kind"], title=data["title"], date_range=data["date_range"],
-                       rows=rows[i * per:(i + 1) * per], page=i + 1, pages=pages, story=story, **common)
+                       rows=rows[i * per:(i + 1) * per], page=i + 1, pages=pages, story=story,
+                       cta=data.get("cta", ""), **common)
             for i in range(pages)]
 
 

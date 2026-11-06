@@ -76,3 +76,15 @@ juniors:
   names: initial
   # true = use that for every team (juniors often play in adult and women's sides)
   apply_to_all_teams: true
+  # Which teams count as junior (kept out of matchday stories). Verwood's Daughters and Sons sides are junior.
+  team_pattern: '\b(U\s?\d{1,2}[A-Z]?|Under\s?\d{1,2}|Girls|Boys|Juniors?|All Stars|Dynamos|Colts|Daughters|Sons)\b'
+
+# Matchday: a "Today" story each morning listing that day's senior games, home and away
+matchday:
+  enabled: true
+  include: all            # all = home and away, home = home games only
+  juniors: false          # false = senior teams only
+  # Shown for home games when Play-Cricket has no ground recorded (not for indoor games)
+  default_home_ground: "Potterne Park"
+  title: "Matchday"
+  cta: "Come and support!"

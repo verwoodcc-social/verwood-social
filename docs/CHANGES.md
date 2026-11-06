@@ -1,5 +1,12 @@
 # What's new
 
+## 1.5.0 (Verwood)
+- **Matchday stories:** each morning there's a games day, one "Matchday" story goes to Instagram and
+  Facebook Stories listing that day's senior games, home and away, with kick-off time, opponent and
+  venue. No feed post. Home games with no ground on Play-Cricket show Potterne Park (indoor games
+  don't get a guessed venue). Settings under `matchday:`.
+- Daughters and Sons teams now count as junior teams.
+
 ## 1.4.0 (Verwood)
 - **Milestone posts:** 50s, 100s and five-wicket hauls get a post (and story) of their own, made
   alongside the daily match post. Never repeated.

@@ -381,3 +381,40 @@ def match_posts(cfg, pc, today, already_posted, photos=None):
         from .milestones import milestone_posts
         out += [mp for mp in milestone_posts(cfg, card, photos) if mp["key"] not in already_posted]
     return out, skipped
+
+
+# --- matchday: today's games, as a story ------------------------------------
+
+def matchday_venue(cfg, row):
+    ground = row.get("ground", "")
+    if ground:
+        return ground
+    md = cfg["matchday"]
+    if row["home"] and md.get("default_home_ground") and not re.search(md.get("no_default_ground_teams") or "$^", row["team"], re.I):
+        return md["default_home_ground"]
+    return ""
+
+
+def matchday_post(cfg, pc, today):
+    """One 'Today' story listing all of today's chosen games, or None."""
+    md = cfg["matchday"]
+    rows = []
+    for r in fixture_rows(cfg, pc.fixtures(today, today)):
+        if not md.get("juniors") and cfg.is_junior(r["team"]):
+            continue
+        if md.get("include") == "home" and not r["home"]:
+            continue
+        rows.append({**r, "venue": matchday_venue(cfg, r)})
+    if not rows:
+        return None
+    rows.sort(key=lambda r: r["time"])
+    data = {"kind": "matchday", "title": md["title"], "date_range": long_date(today), "matches": rows,
+            "cta": md["cta"]}
+    lines = [f"🏏 {md['title']} · {long_date(today)}", ""]
+    for r in rows:
+        where = f" at {r['venue']}" if r["venue"] else ""
+        lines.append(f"{r['time']} · {r['team']} v {r['opponent']} ({'H' if r['home'] else 'A'}){where}")
+    return {"key": f"matchday-{today.isoformat()}", "kind": "matchday", "title": f"{md['title']} {short_date(today)}",
+            "data": data, "caption": "\n".join(lines + ["", md["cta"]]) + _tags(cfg),
+            "alt": f"{cfg['club']['name']} games today: " + "; ".join(f"{r['time']} {r['team']} v {r['opponent']}" for r in rows),
+            "stories_only": True}

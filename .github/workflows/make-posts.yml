@@ -11,7 +11,7 @@ on:
       only:
         description: "Which posts to make now"
         type: choice
-        options: [all-due, fixtures, roundup, matches]
+        options: [all-due, fixtures, roundup, matches, matchday]
         default: all-due
 
 permissions:

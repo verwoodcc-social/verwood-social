@@ -73,6 +73,8 @@ def due_jobs(cfg, today, only=None):
         jobs.append("roundup")
     if p["match_results"]["enabled"] and only in (None, "matches"):
         jobs.append("matches")
+    if cfg["matchday"]["enabled"] and only in (None, "matchday"):
+        jobs.append("matchday")
     return jobs
 
 
@@ -128,6 +130,9 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
         notes += [f"Not posted: {s}" for s in skipped]
         if not ms and not skipped:
             notes.append("No new match results.")
+    if "matchday" in jobs:
+        p = P.matchday_post(cfg, pc, today)
+        (made.append(p) if p else notes.append("No senior games today, so no matchday story."))
     made = [p for p in made if p["key"] not in state["posted"]]
 
     out_dir = Path("posts") / today.isoformat()
@@ -136,8 +141,10 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
         from .render import Renderer
         with (renderer or Renderer()) as r:
             for p in made:
-                files = r.render(cfg, p["data"], root / out_dir, p["key"])
-                story = r.render(cfg, p["data"], root / out_dir, p["key"], story=True) if cfg.stories_for(p["kind"]) else []
+                stories_only = p.get("stories_only")
+                files = [] if stories_only else r.render(cfg, p["data"], root / out_dir, p["key"])
+                story = (r.render(cfg, p["data"], root / out_dir, p["key"], story=True)
+                         if stories_only or cfg.stories_for(p["kind"]) else [])
                 pending.append({**strip_private({k: v for k, v in p.items() if k != "data"}),
                                 "files": [str(f.relative_to(root)) for f in files],
                                 "story_files": [str(f.relative_to(root)) for f in story]})
@@ -145,7 +152,8 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
     rep.add("")
     for p in pending:
         extra = f" + {len(p['story_files'])} story" if p.get("story_files") else ""
-        rep.add(f"- 🖼️ **{p['title']}** ({len(p['files'])} image{'s' if len(p['files']) > 1 else ''}{extra})")
+        n = len(p["files"])
+        rep.add(f"- 🖼️ **{p['title']}** ({n} image{'s' if n != 1 else ''}{extra})")
     for n in notes:
         rep.add(f"- {n}")
     rep.write()
@@ -270,7 +278,7 @@ def cmd_publish(args, root=C.ROOT, gh=None, meta=None):
     prefix = f"https://raw.githubusercontent.com/{gh.repo}/"
     urls = meta_info.get("images", [])
     story_urls = meta_info.get("stories", [])
-    if not urls or any(not u.startswith(prefix) for u in urls + story_urls):
+    if not (urls or story_urls) or any(not u.startswith(prefix) for u in urls + story_urls):
         gh.comment(args.issue, "⚠️ The images in this issue don't come from this repository, so I won't post them.")
         gh.remove_label(args.issue, "approved")
         return None
@@ -456,7 +464,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make")
     m.add_argument("--today")
-    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "all-due"])
+    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "all-due"])
     a = sub.add_parser("announce")
     a.add_argument("--sha", required=True)
     pub = sub.add_parser("publish")
