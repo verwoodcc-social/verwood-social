@@ -82,6 +82,15 @@ def pages_html(cfg, data, story=False):
     env = Environment(loader=FileSystemLoader(_template_dirs(cfg)), autoescape=True)
     if data["kind"] == "match":
         return [env.get_template("match.html").render(m=data, pages=1, page=1, story=story, **_common(cfg, "match", data))]
+    if data["kind"] == "season_fixtures":
+        from .season_fixtures import ROWS_PER_PAGE as SF_ROWS
+        tpl = env.get_template("season_fixtures.html")
+        common = _common(cfg, "season_fixtures", data)
+        rows = data["matches"]
+        pages = max(1, math.ceil(len(rows) / SF_ROWS))
+        per = math.ceil(len(rows) / pages)
+        return [tpl.render(d=data, rows=rows[i * per:(i + 1) * per], page=i + 1, pages=pages, story=story, **common)
+                for i in range(pages)]
     if data["kind"] == "season":
         tpl = env.get_template("season.html")
         common = _common(cfg, "season", data)

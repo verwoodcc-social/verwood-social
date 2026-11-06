@@ -78,6 +78,9 @@ def due_jobs(cfg, today, only=None):
         jobs.append("matches")
     if cfg["matchday"]["enabled"] and only in (None, "matchday"):
         jobs.append("matchday")
+    from .season_fixtures import due as sf_due
+    if only == "season-fixtures" or (not only and sf_due(cfg, today)):
+        jobs.append("season-fixtures")
     from .review_season import due as sr_due
     if only == "season" or (not only and sr_due(cfg, today)):
         jobs.append("season")
@@ -163,6 +166,13 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
     if "matchday" in jobs:
         p = P.matchday_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
+    if "season-fixtures" in jobs:
+        from .season_fixtures import season_fixture_posts
+        sfp = season_fixture_posts(cfg, pc, today, state)
+        save_state(root, state)
+        made += sfp
+        if not sfp:
+            notes.append("No season fixture lists due today.")
     if "season" in jobs:
         from .review_season import season_post
         p = season_post(cfg, pc, today, root)
@@ -800,6 +810,27 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
                                 "files": [str(f.relative_to(root)) for f in files]})
                 rep.add(f"✅ **Leaderboards**: previewed from the {y} season ({lp['data']['boards'][0]['matches']} "
                         f"adult matches, {len(lp['data']['boards']) - 1} team boards).")
+        if cfg["season_fixtures"]["enabled"] and pc_ok:
+            from .season_fixtures import season_fixture_posts, team_fixtures
+            y = today.year if today.month >= 4 else today.year - 1
+            try:
+                teams = team_fixtures(cfg, pc, y)
+                tmp = {}
+                plan_all = season_fixture_posts(cfg, pc, date(y, 4, 1), tmp)
+                for dd in range(2, 8):
+                    plan_all += season_fixture_posts(cfg, pc, date(y, 4, dd), tmp)
+                for sp in [x for x in plan_all if x["data"]["title"] in ("1st XI", "Under 13 A")]:
+                    files = r.render(cfg, sp["data"], root / "posts/samples", sp["key"].replace("season-fixtures", "sample-sfix"))
+                    pending.append({**{k: v for k, v in sp.items() if k != "data"}, "key": "sample-" + sp["key"],
+                                    "title": f"{sp['title']} (last summer, real data)",
+                                    "files": [str(f.relative_to(root)) for f in files]})
+                per_day = {}
+                for t, d in tmp["season_fixtures_plan"][str(y)].items():
+                    per_day[d] = per_day.get(d, 0) + 1
+                rep.add(f"✅ **Season fixture lists**: {len(teams)} teams had summer fixtures in {y}; they'd be posted "
+                        f"over 1–7 April ({', '.join(str(per_day[k]) for k in sorted(per_day))} a day).")
+            except PlayCricketError as e:
+                rep.add(f"ℹ️ **Season fixture lists** preview skipped: {e}")
         if cfg["season_review"]["enabled"] and pc_ok:
             from .review_season import season_post
             try:
@@ -863,7 +894,8 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make")
     m.add_argument("--today")
-    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "leaderboards", "tables", "season", "all-due"])
+    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "leaderboards", "tables", "season",
+                                         "season-fixtures", "all-due"])
     a = sub.add_parser("announce")
     a.add_argument("--sha", required=True)
     pub = sub.add_parser("publish")

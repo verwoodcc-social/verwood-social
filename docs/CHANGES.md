@@ -1,5 +1,10 @@
 # What's new
 
+## 1.15.0 (Verwood)
+- **Season fixture lists:** 1–7 April, one post per team (senior and youth) with all its outdoor summer
+  fixtures (date, opponent, time, home/away), spread across the week so a few go out each morning:
+  seniors first, then the juniors from oldest down. Settings under `season_fixtures:`.
+
 ## 1.14.0 (Verwood)
 - **Season review:** first Monday of October, one carousel for the outdoor season: every adult team's
   record and league position, a slide per team (record, league finish, top 3 run scorers, wicket

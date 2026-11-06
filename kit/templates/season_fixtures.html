@@ -1,0 +1,33 @@
+<!doctype html>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
+.sf-title { font-weight: 900; font-size: 66px; line-height: .98; letter-spacing: -.02em; text-transform: uppercase; margin-top: 6px; }
+.sf-title.long { font-size: 50px; }
+.sf { display: flex; flex-direction: column; gap: 6px; }
+.sf-row { display: grid; grid-template-columns: 170px 1fr 92px 96px; align-items: center; gap: 14px;
+  padding: 10px 18px; border-radius: 14px; background: rgba(255,255,255,.06); }
+.sf-row .d { font-weight: 800; font-size: 25px; letter-spacing: .02em; }
+.sf-row .o { font-weight: 700; font-size: 26px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sf-row .t { font-weight: 600; font-size: 23px; color: var(--silver-dim); text-align: right; }
+.sf-row .ha { justify-self: end; font-size: 18px; padding: 6px 12px; }
+</style></head>
+<body>
+<div class="card {{ 'has-photo' if photo }}">
+  {% include "_photo.html" %}
+  <div class="head">
+    <img class="badge" src="{{ badge }}">
+    <div>
+      <div class="club">{{ club.name }}</div>
+      <div class="sf-title {{ 'long' if d.title|length > 16 }}">{{ d.title }}</div>
+      <div class="sub">{{ d.sub }}</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <div class="sf">
+    {% for m in rows %}
+    <div class="sf-row"><div class="d">{{ m.date }}</div><div class="o">v {{ m.opponent }}</div>
+      <div class="t">{{ m.time }}</div><div class="ha {{ 'home' if m.home }}">{{ 'HOME' if m.home else 'AWAY' }}</div></div>
+    {% endfor %}
+  </div>
+{% include "_foot.html" %}
+</div>
+</body></html>

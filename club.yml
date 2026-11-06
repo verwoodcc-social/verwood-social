@@ -107,6 +107,15 @@ career_milestones:
     active_days: 21
     max: 8
 
+# Season fixture lists: 1–7 April, one post per team (senior and youth) with all its outdoor summer
+# fixtures, spread across the week so a few go out each morning.
+season_fixtures:
+  enabled: true
+  month: 4
+  first_day: 1
+  days: 7
+  exclude: '\bIndoor\b'
+
 # Season review: first Monday of October. One carousel: the club's season, a slide per adult team
 # (record, league position, top 3 batters, bowlers and catchers), career milestones reached that
 # season and the all-time career leaders.

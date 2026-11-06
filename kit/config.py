@@ -31,6 +31,8 @@ DEFAULTS = {
                           "every": {"runs": 500, "wickets": 50, "matches": 50, "catches": 50, "keeper_catches": 50},
                           "watch": {"enabled": True, "runs": 50, "wickets": 3, "matches": 1, "catches": 2,
                                     "keeper_catches": 2, "active_days": 21, "max": 8}},
+    "season_fixtures": {"enabled": False, "month": 4, "first_day": 1, "days": 7, "season_start_month": 4,
+                        "season_end_month": 9, "exclude": r"\bIndoor\b"},
     "season_review": {"enabled": False, "month": 10, "day": "monday", "top": 3, "min_matches": 3,
                       "title": "Season review"},
     "league_tables": {"enabled": False, "months": [4, 5, 6, 7, 8, 9], "exclude": r"\bIndoor\b",
