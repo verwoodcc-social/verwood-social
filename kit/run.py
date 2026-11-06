@@ -75,6 +75,9 @@ def due_jobs(cfg, today, only=None):
         jobs.append("matches")
     if cfg["matchday"]["enabled"] and only in (None, "matchday"):
         jobs.append("matchday")
+    from .leaderboards import due as lb_due
+    if only == "leaderboards" or (not only and lb_due(cfg, today)):
+        jobs.append("leaderboards")
     return jobs
 
 
@@ -133,6 +136,10 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
     if "matchday" in jobs:
         p = P.matchday_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
+    if "leaderboards" in jobs:
+        from .leaderboards import leaderboards_post
+        p = leaderboards_post(cfg, pc, today, root)
+        (made.append(p) if p else notes.append("No adult scorecards this season yet, so no leaderboards."))
     made = [p for p in made if p["key"] not in state["posted"]]
     if made:
         from .matchphotos import MatchPhotos, add_backgrounds
@@ -606,6 +613,7 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
     today = today_for(cfg, getattr(args, "today", None))
 
     # Play-Cricket
+    pc_ok = False
     try:
         pc = pc or PlayCricket(os.environ.get("PLAYCRICKET_API_TOKEN"), cfg.site_id)
         from datetime import timedelta
@@ -614,6 +622,7 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
         ours_f, ours_r = P.fixture_rows(cfg, fx), P.result_rows(cfg, rs)
         rep.add(f"✅ **Play-Cricket** connected: {len(ours_f)} fixtures in the next 30 days, "
                 f"{len(ours_r)} results in the last 60 days.")
+        pc_ok = True
         if (fx or rs) and not (ours_f or ours_r):
             ok = False
             rep.add(f"   ⚠️ Matches were found but none look like yours. Check club → play_cricket_name is exactly "
@@ -694,6 +703,24 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
                 files += r.render(cfg, p["data"], root / "posts/samples", p["key"], story=True)
             pending.append({**{k: v for k, v in p.items() if k != "data"},
                             "files": [str(f.relative_to(root)) for f in files]})
+        if cfg["leaderboards"]["enabled"] and pc_ok:
+            # Real leaderboards from the latest outdoor season, as a preview (can't be posted from here)
+            from .leaderboards import leaderboards_post
+            lb = cfg["leaderboards"]
+            y = today.year if today.month > int(lb["season_end_month"]) else today.year - 1
+            as_of = date(y + (int(lb["season_end_month"]) == 12), int(lb["season_end_month"]) % 12 + 1, 1)
+            try:
+                lp = leaderboards_post(cfg, pc, as_of, root)
+            except PlayCricketError as e:
+                lp = None
+                rep.add(f"ℹ️ **Leaderboards** preview skipped: {e}")
+            if lp:
+                files = r.render(cfg, lp["data"], root / "posts/samples", "sample-leaderboards")
+                pending.append({**{k: v for k, v in lp.items() if k != "data"}, "key": "sample-leaderboards",
+                                "title": f"Leaderboards ({y} season, real data)",
+                                "files": [str(f.relative_to(root)) for f in files]})
+                rep.add(f"✅ **Leaderboards**: previewed from the {y} season ({lp['data']['boards'][0]['matches']} "
+                        f"adult matches, {len(lp['data']['boards']) - 1} team boards).")
     (root / PENDING).write_text(json.dumps(pending, indent=2))
     rep.add("✅ **Sample graphics** made in your colours; a preview issue will open in the Issues tab.")
     rep.add("")
@@ -732,7 +759,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make")
     m.add_argument("--today")
-    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "all-due"])
+    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "leaderboards", "all-due"])
     a = sub.add_parser("announce")
     a.add_argument("--sha", required=True)
     pub = sub.add_parser("publish")

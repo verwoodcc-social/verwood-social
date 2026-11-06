@@ -82,6 +82,12 @@ def pages_html(cfg, data, story=False):
     env = Environment(loader=FileSystemLoader(_template_dirs(cfg)), autoescape=True)
     if data["kind"] == "match":
         return [env.get_template("match.html").render(m=data, pages=1, page=1, story=story, **_common(cfg, "match", data))]
+    if data["kind"] == "leaderboards":
+        tpl = env.get_template("leaderboards.html")
+        common = _common(cfg, "leaderboards", data)
+        n = len(data["boards"])
+        return [tpl.render(d=data, b=b, page=i, pages=n, story=story, **common)
+                for i, b in enumerate(data["boards"], 1)]
     if data["kind"] == "news":
         return [env.get_template("news.html").render(m=data, pages=1, page=1, story=story,
                                                     **_common(cfg, "news", data))]

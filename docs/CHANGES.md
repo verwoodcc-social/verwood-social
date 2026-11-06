@@ -1,5 +1,13 @@
 # What's new
 
+## 1.9.0 (Verwood)
+- **Season leaderboards:** first Monday of each month, May to October, one carousel post: a club-wide
+  board for all adult teams, then one per adult team (3+ games). Top 5 run scorers (innings, highest
+  score), wicket takers (best figures) and catches & stumpings, season to date. Junior and indoor
+  teams are left out. Scorecards are read once and cached. Settings under `leaderboards:`.
+- The setup check previews the leaderboards from the latest outdoor season's real scorecards.
+- Sponsor report email: subject set in club.yml (`report → email_subject`).
+
 ## 1.8.0 (Verwood)
 - **Monthly sponsor report:** on the 1st of each month, a one-page PDF for the sponsor with last month's
   views, accounts reached, likes/comments/shares, followers (and change), the top three posts and how

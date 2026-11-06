@@ -79,6 +79,19 @@ juniors:
   # Which teams count as junior (kept out of matchday stories). Verwood's Daughters and Sons sides are junior.
   team_pattern: '\b(U\s?\d{1,2}[A-Z]?|Under\s?\d{1,2}|Girls|Boys|Juniors?|All Stars|Dynamos|Colts|Daughters|Sons)\b'
 
+# Season leaderboards: first Monday of each month, May to October (season to date).
+# A club-wide board for all adult teams, then one per adult team. Junior and indoor teams are left out.
+leaderboards:
+  enabled: true
+  day: monday
+  months: [5, 6, 7, 8, 9, 10]
+  season_start_month: 4     # April
+  season_end_month: 9       # September
+  exclude_teams: '\bIndoor\b'
+  min_matches: 3            # a team needs this many games before it gets its own board
+  top: 5
+  title: "Season leaderboards"
+
 # Club news and events, from the "Club news or event" form (Issues → New issue). Always previewed first.
 news:
   enabled: true

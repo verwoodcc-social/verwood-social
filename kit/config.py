@@ -24,6 +24,9 @@ DEFAULTS = {
                 "story_cta": "Full details on our page"},
     "milestones": {"enabled": True, "batting": [50, 100], "bowling_wickets": 5,
                    "junior_photos": "name_no_photo", "stories": True},
+    "leaderboards": {"enabled": False, "day": "monday", "months": [5, 6, 7, 8, 9, 10],
+                     "season_start_month": 4, "season_end_month": 9, "exclude_teams": r"\bIndoor\b",
+                     "min_matches": 3, "top": 5, "title": "Season leaderboards"},
     "news": {"enabled": True, "reminder": True, "reminder_title": "Today"},
     "match_photos": {"enabled": True, "use_for": ["match", "milestone", "roundup"]},
     "matchday": {"enabled": False, "include": "all", "juniors": False, "default_home_ground": "",
@@ -171,7 +174,7 @@ def validate(cfg):
     st = p.get("stories") or {}
     if not isinstance(st.get("enabled", False), bool):
         problems.append("posts → stories → enabled: use true or false.")
-    if any(k not in ("match", "fixtures", "roundup", "news") for k in (st.get("for") or [])):
+    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards") for k in (st.get("for") or [])):
         problems.append("posts → stories → for: list any of match, fixtures, roundup, news, like [match, fixtures, roundup].")
     mi = cfg.get("milestones") or {}
     if not isinstance(mi.get("enabled", True), bool):
@@ -183,12 +186,23 @@ def validate(cfg):
         problems.append("milestones → batting / bowling_wickets: use numbers, like batting: [50, 100] and bowling_wickets: 5.")
     if mi.get("junior_photos") not in ("name_no_photo", "photo_no_name"):
         problems.append("milestones → junior_photos: use name_no_photo or photo_no_name (ECB guidance: never both).")
+    lbd = cfg.get("leaderboards") or {}
+    if str(lbd.get("day", "monday")).lower() not in DAYS:
+        problems.append("leaderboards → day: use a day of the week, e.g. monday.")
+    if not all(isinstance(m, int) and 1 <= m <= 12 for m in (lbd.get("months") or [])):
+        problems.append("leaderboards → months: list month numbers 1 to 12.")
+    for k in ("season_start_month", "season_end_month"):
+        if not (isinstance(lbd.get(k, 4), int) and 1 <= lbd.get(k, 4) <= 12):
+            problems.append(f"leaderboards → {k}: use a month number 1 to 12.")
+    for k in ("min_matches", "top"):
+        if not (isinstance(lbd.get(k, 1), int) and lbd.get(k, 1) >= 1):
+            problems.append(f"leaderboards → {k}: use a whole number of 1 or more.")
     nw = cfg.get("news") or {}
     for k in ("enabled", "reminder"):
         if not isinstance(nw.get(k, True), bool):
             problems.append(f"news → {k}: use true or false.")
     mp = cfg.get("match_photos") or {}
-    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday", "news")]
+    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday", "news", "leaderboards")]
     if bad:
         problems.append(f"match_photos → use_for: {', '.join(map(str, bad))} isn't a post type. "
                         "Use match, milestone, roundup, fixtures or matchday.")
