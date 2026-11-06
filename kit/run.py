@@ -394,6 +394,8 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
     with (renderer or Renderer()) as r:
         for p in sample_posts(cfg, today):
             files = r.render(cfg, p["data"], root / "posts/samples", p["key"])
+            if cfg.stories_for(p["kind"]):
+                files += r.render(cfg, p["data"], root / "posts/samples", p["key"], story=True)
             pending.append({**{k: v for k, v in p.items() if k != "data"},
                             "files": [str(f.relative_to(root)) for f in files]})
     (root / PENDING).write_text(json.dumps(pending, indent=2))
