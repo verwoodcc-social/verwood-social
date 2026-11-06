@@ -113,6 +113,17 @@ class PlayCricket:
                 out[str(m["id"])] = m
         return sorted(out.values(), key=lambda m: (parse_date(m["match_date"]), m.get("match_time") or ""))
 
+    def season_matches(self, season):
+        return self._get("matches.json", site_id=self.site_id, season=season).get("matches", [])
+
+    def league_table(self, division_id):
+        """The table for one league division: {name, headings, values, key}."""
+        data = self._get("league_table.json", division_id=division_id)
+        tables = data.get("league_table") or []
+        if not tables:
+            raise PlayCricketError(f"Play-Cricket has no league table for division {division_id}.")
+        return tables[0]
+
     def match_detail(self, match_id):
         data = self._get("match_detail.json", match_id=match_id)
         details = data.get("match_details") or []

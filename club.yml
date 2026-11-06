@@ -107,6 +107,14 @@ career_milestones:
     active_days: 21
     max: 8
 
+# League tables: last day of each month, April to September. One carousel with each adult team's league
+# table from Play-Cricket (Verwood highlighted). Junior teams and indoor leagues are left out.
+league_tables:
+  enabled: true
+  months: [4, 5, 6, 7, 8, 9]
+  exclude: '\bIndoor\b'
+  title: "League tables"
+
 # Season leaderboards: first Monday of each month, May to October (season to date).
 # A club-wide board for all adult teams, then one per adult team. Junior and indoor teams are left out.
 leaderboards:

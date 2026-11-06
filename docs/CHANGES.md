@@ -1,5 +1,11 @@
 # What's new
 
+## 1.13.0 (Verwood)
+- **League tables:** on the last day of each month, April to September, one carousel with the league
+  table for each adult team (from Play-Cricket), Verwood's row highlighted, and a caption listing each
+  team's position. Cups, junior and indoor leagues are left out; a team only appears once it has played.
+  Settings under `league_tables:`. The setup check previews last season's final tables.
+
 ## 1.12.0 (Verwood)
 - **Milestone watch:** with Friday's fixtures, a post (and Story) listing players close to a career
   milestone whose team plays that week, e.g. "Charlie Gajic needs 20 runs for 10,000 career runs".

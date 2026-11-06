@@ -78,6 +78,9 @@ def due_jobs(cfg, today, only=None):
         jobs.append("matches")
     if cfg["matchday"]["enabled"] and only in (None, "matchday"):
         jobs.append("matchday")
+    from .tables import due as tb_due
+    if only == "tables" or (not only and tb_due(cfg, today)):
+        jobs.append("tables")
     from .leaderboards import due as lb_due
     if only == "leaderboards" or (not only and lb_due(cfg, today)):
         jobs.append("leaderboards")
@@ -157,6 +160,10 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
     if "matchday" in jobs:
         p = P.matchday_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
+    if "tables" in jobs:
+        from .tables import tables_post
+        p = tables_post(cfg, pc, today)
+        (made.append(p) if p else notes.append("No league tables with games played yet, so no tables post."))
     if "leaderboards" in jobs:
         from .leaderboards import leaderboards_post
         p = leaderboards_post(cfg, pc, today, root)
@@ -786,6 +793,18 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
                                 "files": [str(f.relative_to(root)) for f in files]})
                 rep.add(f"✅ **Leaderboards**: previewed from the {y} season ({lp['data']['boards'][0]['matches']} "
                         f"adult matches, {len(lp['data']['boards']) - 1} team boards).")
+        if cfg["league_tables"]["enabled"] and pc_ok:
+            from .tables import tables_post
+            y = today.year if today.month > 9 else today.year - 1
+            tp = tables_post(cfg, pc, date(y, 9, 30))
+            if tp:
+                files = r.render(cfg, tp["data"], root / "posts/samples", "sample-tables")
+                pending.append({**{k: v for k, v in tp.items() if k != "data"}, "key": "sample-tables",
+                                "title": f"League tables ({y} final, real data)",
+                                "files": [str(f.relative_to(root)) for f in files]})
+                rep.add(f"✅ **League tables**: previewed from {y} ({len(tp['data']['boards'])} tables).")
+            else:
+                rep.add("ℹ️ **League tables**: no league tables found for last season.")
     (root / PENDING).write_text(json.dumps(pending, indent=2))
     rep.add("✅ **Sample graphics** made in your colours; a preview issue will open in the Issues tab.")
     rep.add("")
@@ -824,7 +843,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make")
     m.add_argument("--today")
-    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "leaderboards", "all-due"])
+    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "leaderboards", "tables", "all-due"])
     a = sub.add_parser("announce")
     a.add_argument("--sha", required=True)
     pub = sub.add_parser("publish")

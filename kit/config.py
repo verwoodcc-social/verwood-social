@@ -31,6 +31,9 @@ DEFAULTS = {
                           "every": {"runs": 500, "wickets": 50, "matches": 50, "catches": 50, "keeper_catches": 50},
                           "watch": {"enabled": True, "runs": 50, "wickets": 3, "matches": 1, "catches": 2,
                                     "keeper_catches": 2, "active_days": 21, "max": 8}},
+    "league_tables": {"enabled": False, "months": [4, 5, 6, 7, 8, 9], "exclude": r"\bIndoor\b",
+                      "order": ["1st XI", "2nd XI", "3rd XI", "4th XI", "5th XI", "Wednesday 1st XI",
+                                "Women's Softball", "Women's Softball B"], "title": "League tables"},
     "leaderboards": {"enabled": False, "day": "monday", "months": [5, 6, 7, 8, 9, 10],
                      "season_start_month": 4, "season_end_month": 9, "exclude_teams": r"\bIndoor\b",
                      "min_matches": 3, "top": 5, "title": "Season leaderboards"},
@@ -187,7 +190,7 @@ def validate(cfg):
     st = p.get("stories") or {}
     if not isinstance(st.get("enabled", False), bool):
         problems.append("posts → stories → enabled: use true or false.")
-    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch") for k in (st.get("for") or [])):
+    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch", "tables") for k in (st.get("for") or [])):
         problems.append("posts → stories → for: list any of match, fixtures, roundup, news, like [match, fixtures, roundup].")
     mi = cfg.get("milestones") or {}
     if not isinstance(mi.get("enabled", True), bool):

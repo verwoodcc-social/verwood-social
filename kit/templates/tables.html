@@ -1,0 +1,38 @@
+<!doctype html>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
+.tb-title { font-weight: 900; font-size: 66px; line-height: .98; letter-spacing: -.02em; text-transform: uppercase; margin-top: 6px; }
+.tb-title.long { font-size: 52px; }
+.tb { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-variant-numeric: tabular-nums; }
+.tb th { font-size: 20px; font-weight: 800; letter-spacing: .16em; color: var(--silver-dim); text-align: right; padding: 0 14px 6px; }
+.tb th.tm { text-align: left; }
+.tb td { font-size: {{ 30 if b.rows|length <= 10 else 25 }}px; font-weight: 600; text-align: right;
+  padding: {{ 13 if b.rows|length <= 10 else 9 }}px 14px; background: rgba(255,255,255,.06); }
+.tb td.ps { text-align: left; width: 52px; font-weight: 900; color: var(--silver-dim); border-radius: 14px 0 0 14px; }
+.tb td.tm { text-align: left; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 520px; }
+.tb td:last-child { font-weight: 900; border-radius: 0 14px 14px 0; }
+.tb tr.us td { background: var(--silver); color: var(--navy-ink); font-weight: 900; }
+.tb tr.us td.ps { color: var(--navy-ink); }
+.story .tb td { padding-top: 18px; padding-bottom: 18px; }
+</style></head>
+<body>
+<div class="card {{ 'has-photo' if photo }}">
+  {% include "_photo.html" %}
+  <div class="head">
+    <img class="badge" src="{{ badge }}">
+    <div>
+      <div class="club">{{ club.name }}</div>
+      <div class="tb-title {{ 'long' if b.title|length > 16 }}">{{ b.title }}</div>
+      <div class="sub">{{ b.league }} · {{ d.sub }}</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+  <table class="tb">
+    <tr><th></th><th class="tm">TEAM</th>{% for c in b.columns %}<th>{{ c }}</th>{% endfor %}</tr>
+    {% for r in b.rows %}
+    <tr class="{{ 'us' if r.ours }}"><td class="ps">{{ r.pos }}</td><td class="tm">{{ r.team }}</td>
+      {% for c in r.cells %}<td>{{ c }}</td>{% endfor %}</tr>
+    {% endfor %}
+  </table>
+{% include "_foot.html" %}
+</div>
+</body></html>
