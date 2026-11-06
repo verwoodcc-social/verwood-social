@@ -13,28 +13,25 @@ arrives earlier, the result goes out within a few minutes.
 **Choose a club code** first: a short word or number for captains only (e.g. `Potterne27`). It's checked
 inside Power Automate, so it never appears on GitHub. Change it whenever you like.
 
-## 1 · Make the form (10 minutes)
+## 1 · The form
 
-At [forms.office.com](https://forms.office.com), signed in with your club account, click **New Form**.
-Title: *Verwood CC – Captain's match report*. Add these questions, in this order:
+Verwood's form (*Verwood CC – Captain's match report*) is already made. Its layout:
 
-| # | Question (exact wording) | Type | Required |
-|---|---|---|---|
-| 1 | Team | Choice, shown as a **drop-down**: every senior and youth team, named exactly as on Play-Cricket | Yes |
-| 2 | Match date | Date | Yes |
-| 3 | Captain | Text | Yes |
-| 4 | Report | Text, **Long answer** | Yes |
-| 5 | Player of the match | Text | No |
-| 6 | Club code | Text | Yes |
+| Page | Question | Notes |
+|---|---|---|
+| 1 | Which section is the team in? | Adult Hardball, Women & Girls, Youth, Indoor. Branches to the matching page |
+| 2 | Team (Adult Hardball) | Drop-down: 1st–5th XI, Wednesday 1st XI, Friendly XI |
+| 3 | Team (Women & Girls) | Drop-down: Women's Softball, Women's Softball B, Girls U13, Girls U11 A/B |
+| 4 | Team (Youth) | Drop-down: Under 19 down to Under 8 |
+| 5 | Team (Indoor) | Drop-down: Indoor A–E, indoor softball and youth indoor sides |
+| 6 | Match date, Captain, Report, Player of the match, Club code | Every branch ends here |
 
-Under question 4, add the subtitle: *3–6 sentences about the game. For anyone under 18, please use their
-first name only.*
+Team names must match Play-Cricket exactly. To add a team, add it to the right drop-down.
 
-**Settings** (⋯ → Settings): *Anyone can respond*.
-
-**Share the pre-filled link** so captains never type the code: ⋯ → *Get pre-filled URL*, switch on
-*Enable pre-filled answers*, type the club code in question 6, click *Get Prefilled Link* and *Copy link*.
-Send that link (not the plain one) to captains. Anyone with it can submit, so keep it to captains.
+**Share the pre-filled link** so captains never type the code: ⋯ → *Get pre-filled URL*, click *Next*
+through to the last page, type the club code, click *Get Prefilled Link* and *Copy link*. Anyone with
+that link can submit, so keep it to captains. If it gets passed around, change the code in the form
+and the flow, and make a new link.
 
 ## 2 · Make the flow (15 minutes)
 
@@ -50,14 +47,16 @@ At [make.powerautomate.com](https://make.powerautomate.com), signed in with the 
    GitHub account (verwoodcc-social) when asked, and allow access. Then fill in:
    - **Repository owner:** `verwoodcc-social`
    - **Repository name:** `verwood-social`
-   - **Title:** type `Captain's report: ` then pick **Team**, type a space, pick **Match date**
+   - **Title:** type `Captain's report: ` then pick **Match date**
+   - The team is in one of four questions (one per section). In the body, put all four next to each
+     other under `### Team` (only the one the captain answered has anything in it).
    - **Body:** type exactly the lines below, replacing each *[ … ]* with that answer from the dynamic
      content (leave the blank lines in):
 
 ```
 ### Team
 
-[Team]
+[Team (Adult Hardball)][Team (Women & Girls)][Team (Youth)][Team (Indoor)]
 
 ### Match date
 
