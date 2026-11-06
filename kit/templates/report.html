@@ -56,7 +56,7 @@ td:first-child { font-weight: 800; }
 
   <div class="body">
     <p class="intro">Thank you for supporting {{ club.short_name }}. Here's how our posts did on Facebook and Instagram in {{ r.month }}.
-      Every post and Story we published carried the {{ r.sponsor }} logo.</p>
+      {% if r.kit.feed + r.kit.stories %}All {{ r.kit.feed }} posts and {{ r.kit.stories }} Stories made by our automatic system carried the {{ r.sponsor }} logo.{% endif %}</p>
 
     <div class="tiles">
       <div class="tile"><div class="n">{{ fmt(r.totals.views) }}</div><div class="l">views of our posts</div></div>
