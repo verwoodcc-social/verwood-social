@@ -24,10 +24,10 @@ branding:
   match_background: ""
   background_darkness: medium      # light, medium or strong (strong for busy photos)
 
-  sponsor_logo: ""                 # e.g. "assets/sponsor.png"
-  sponsor_text: ""                 # e.g. the sponsor's name
+  sponsor_logo: "assets/struan-logo.jpg"
+  sponsor_text: "Struan"
   sponsor_label: "Supported by"
-  sponsor_in_captions: false       # true = also add "Supported by …" to captions
+  sponsor_in_captions: true        # true = also add "Supported by …" to captions
 
 # ---- Words on the graphics and captions ----------------------------------------
 wording:
