@@ -24,7 +24,7 @@ DEFAULTS = {
                 "story_cta": "Full details on our page"},
     "milestones": {"enabled": True, "batting": [50, 100], "bowling_wickets": 5,
                    "junior_photos": "name_no_photo", "stories": True},
-    "career_milestones": {"enabled": False, "baseline_until": 2026,
+    "career_milestones": {"enabled": False, "baseline_until": 2026, "names": "full",
                           "club_teams": r"^(1st|2nd|3rd|4th|5th) XI$|^Wednesday 1st XI$|^Friendly XI$",
                           "softball_teams": r"^Women's Softball( B)?$", "softball_history_from": 2015,
                           "announce_within_days": 7,

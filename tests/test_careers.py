@@ -66,7 +66,9 @@ def test_club_milestones_from_starting_totals(club_root):
     assert car.add_match(g) == []  # never counted twice
     posts = K.career_posts(cfg, events)
     runs = next(p for p in posts if p["data"]["type"] == "runs")
-    assert runs["data"]["figures"] == "9,500" and "Charlie G." in runs["caption"] and "9,500 career runs" in runs["caption"]
+    assert runs["data"]["figures"] == "9,500" and "Charlie Gajic" in runs["caption"] and "9,500 career runs" in runs["caption"]
+    cfg["career_milestones"]["names"] = "initial"
+    assert "Charlie G." in K.career_posts(cfg, events)[0]["caption"]
 
 
 def test_shared_names_wait_for_a_link(club_root):
@@ -110,3 +112,14 @@ def test_new_games_only_counts_summer_after_baseline(club_root):
     ev = K.new_games(cfg, PC(), date(2027, 5, 21), car)
     assert sorted((e["stat"], e["value"]) for e in ev) == [("matches", 350), ("runs", 9500)]
     assert "11" not in car.state["counted"]  # November: not an outdoor summer game
+
+
+def test_juniors_photo_folder_keeps_short_name(club_root, tmp_path):
+    from kit.milestones import PhotoStore
+    cfg = setup(club_root)
+    (tmp_path / "juniors").mkdir()
+    (tmp_path / "juniors" / "Charlie Gajic.jpg").write_bytes(b"x")
+    car = K.Careers(cfg, club_root)
+    ev = car.add_match(game(5, "1st XI", [bat("Charlie Gajic", "47", 25)], [], []))
+    post = K.career_posts(cfg, ev, photos=PhotoStore(tmp_path))[0]
+    assert "Charlie G." in post["caption"] and "Gajic" not in post["caption"] and not post["data"]["photo_path"]
