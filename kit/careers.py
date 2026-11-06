@@ -256,6 +256,10 @@ class Careers:
             rec = self.state["players"].setdefault(pkey, {"key": pc_key(f["name"]), "short": short, "pid": f["pid"],
                                                           **{s: 0 for s in STATS}})
             rec["key"], rec["short"] = pc_key(f["name"]), short
+            rec["name"] = f["name"]  # career stats use full names
+            when = parse_date(detail.get("match_date"))
+            if when and when.isoformat() >= rec.get("last_date", ""):
+                rec["last_date"], rec["last_team"] = when.isoformat(), team
             before, ok = self.career(pool, rec)
             for s in STATS:
                 rec[s] += f[s]
@@ -366,3 +370,79 @@ def new_games(cfg, pc, today, careers):
             continue
         events += careers.add_match(detail, announce=d.toordinal() >= look_from)
     return events
+
+
+# --- milestone watch: who's close to a milestone in this week's games -------------------------
+
+def next_milestone(total, every):
+    return (total // every + 1) * every
+
+
+def watch_list(cfg, careers, fixtures, today):
+    """[(player name, team, stat, needs, target, fixture row)] for players close to a milestone whose
+    team plays this week. A player counts if they played for that team in the last few weeks."""
+    cm = cfg["career_milestones"]
+    near, every = cm["watch"], cm["every"]
+    by_team = {}
+    for f in fixtures:
+        if pool_for(cfg, f["team"]) and not re.search(r"\bIndoor\b", f["team"], re.I):
+            by_team.setdefault(f["team"], f)
+    out = []
+    since = date.fromordinal(today.toordinal() - int(near.get("active_days", 21))).isoformat()
+    for pkey, rec in careers.state["players"].items():
+        team = rec.get("last_team")
+        if not team or team not in by_team or rec.get("last_date", "") < since or not rec.get("name"):
+            continue
+        pool = pkey.split("|", 1)[0]
+        totals, ok = careers.career(pool, rec)
+        if not ok:
+            continue
+        for stat in STATS:
+            step, gap_limit = int(every.get(stat) or 0), int(near.get(stat) or 0)
+            if not step or not gap_limit:
+                continue
+            target = next_milestone(totals[stat], step)
+            gap = target - totals[stat]
+            if gap <= gap_limit:
+                out.append({"name": rec["name"], "team": team, "stat": stat, "needs": gap, "target": target,
+                            "pool": pool, "fixture": by_team[team]})
+    order = {s: i for i, s in enumerate(("runs", "wickets", "matches", "catches", "keeper_catches"))}
+    out.sort(key=lambda w: (w["fixture"]["date_obj"], w["team"], order[w["stat"]], w["needs"], w["name"]))
+    return out
+
+
+def need_text(w):
+    n, t = w["needs"], f"{w['target']:,}"
+    soft = " softball" if w["pool"] == "softball" else ""
+    if w["stat"] == "runs":
+        return f"needs {n} run{'s' if n != 1 else ''} for {t} career{soft} runs"
+    if w["stat"] == "wickets":
+        return f"needs {n} wicket{'s' if n != 1 else ''} for {t} career{soft} wickets"
+    if w["stat"] == "matches":
+        return f"{'next game is' if n == 1 else f'{n} games from'} their {t}{_ordinal(w['target'])} appearance"
+    if w["stat"] == "catches":
+        return f"needs {n} catch{'es' if n != 1 else ''} for {t} career{soft} catches"
+    return f"needs {n} catch{'es' if n != 1 else ''} behind the stumps for {t}"
+
+
+def _ordinal(n):
+    return "th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+
+
+def watch_post(cfg, careers, fixtures, today, date_range):
+    """'Milestone watch' post for this week's games, or None if nobody is close."""
+    items = watch_list(cfg, careers, fixtures, today)
+    if not items:
+        return None
+    items = items[:int(cfg["career_milestones"]["watch"].get("max", 8))]
+    rows = [{"date": w["fixture"]["date"], "time": w["fixture"]["time"], "team": w["name"],
+             "opponent": f"{w['team']} · {need_text(w)}", "home": w["fixture"]["home"], "ground": ""} for w in items]
+    data = {"kind": "watch", "title": "Milestone watch", "date_range": date_range, "matches": rows}
+    lines = ["👀 Milestone watch: who's close to a career milestone in this week's games?", ""]
+    for w in items:
+        f = w["fixture"]
+        lines.append(f"• {w['name']} ({w['team']} v {f['opponent']}, {f['date']}) {need_text(w)}")
+    lines += ["", "Come along and see if they get there! 🏏"]
+    return {"key": f"watch-{today.isoformat()}", "kind": "watch", "title": f"Milestone watch {date_range}",
+            "data": data, "caption": "\n".join(lines) + _tags(cfg),
+            "alt": f"{cfg['club']['name']} milestone watch: " + "; ".join(f"{w['name']} {need_text(w)}" for w in items)}

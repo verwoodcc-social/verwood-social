@@ -3,6 +3,8 @@
 .row.md .when .d { font-size: 46px; font-weight: 900; letter-spacing: -.02em; color: inherit; }
 .story .row.md { padding-top: 34px; padding-bottom: 34px; }
 .story .row.md .team { font-size: 44px; }
+.row.wt { grid-template-columns: 170px 1fr 0; }
+.row.wt .opp { white-space: normal; line-height: 1.25; }
 </style></head>
 <body>
 <div class="card {{ 'dense' if rows|length > (6 if story else 5) }} {{ 'has-photo' if photo }}">
@@ -34,6 +36,17 @@
         {% endif %}
         <div class="sum">{{ m.summary }}</div>
       </div>
+    </div>
+    {% endfor %}
+  {% elif kind == 'watch' %}
+    {% for m in rows %}
+    <div class="row fix wt">
+      <div class="when"><div class="d">{{ m.date }}</div><div class="t">{{ m.time }}</div></div>
+      <div>
+        <div class="team">{{ m.team }}</div>
+        <div class="opp">{{ m.opponent }}</div>
+      </div>
+      <div></div>
     </div>
     {% endfor %}
   {% elif kind == 'matchday' %}

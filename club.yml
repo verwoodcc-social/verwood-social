@@ -68,7 +68,7 @@ posts:
   # Also post a tall version to Instagram and Facebook Stories (after the normal post).
   stories:
     enabled: true
-    for: [match, fixtures, roundup, news]   # any of: match, fixtures, roundup, news
+    for: [match, fixtures, roundup, news, watch]   # any of: match, fixtures, roundup, news, watch, leaderboards
   networks: [facebook, instagram]
 
 juniors:
@@ -95,6 +95,17 @@ career_milestones:
     matches: 50
     catches: 50
     keeper_catches: 50
+  # Milestone watch: posted with Friday's fixtures, for players whose team plays that week and who
+  # are this close to their next milestone (and have played in the last 3 weeks)
+  watch:
+    enabled: true
+    runs: 50
+    wickets: 3
+    matches: 1
+    catches: 2
+    keeper_catches: 2
+    active_days: 21
+    max: 8
 
 # Season leaderboards: first Monday of each month, May to October (season to date).
 # A club-wide board for all adult teams, then one per adult team. Junior and indoor teams are left out.

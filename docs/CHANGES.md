@@ -1,5 +1,13 @@
 # What's new
 
+## 1.12.0 (Verwood)
+- **Milestone watch:** with Friday's fixtures, a post (and Story) listing players close to a career
+  milestone whose team plays that week, e.g. "Charlie Gajic needs 20 runs for 10,000 career runs".
+  Players count if they've played for that team in the last 3 weeks. Settings under
+  `career_milestones → watch`.
+- Career milestones always use full names; a junior's photo is never shown with their name.
+- `careers/links.csv` can add two CricketStatz records together for one player (`#1+#2`).
+
 ## 1.11.0 (Verwood)
 - **Career milestones:** a post when a player reaches 500 career runs (then every 500), or 50 wickets,
   appearances, catches or catches as wicketkeeper (then every 50). Saturday, midweek and Sunday sides

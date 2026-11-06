@@ -125,6 +125,13 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
     if "fixtures" in jobs:
         p = P.fixtures_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No fixtures in the next 7 days."))
+        cm = cfg["career_milestones"]
+        if p and cm["enabled"] and cm["watch"].get("enabled", True):
+            from . import careers as K
+            start, end = P.week_window(today, "fixtures")
+            w = K.watch_post(cfg, K.Careers(cfg, root), P.fixture_rows(cfg, pc.fixtures(start, end)), today,
+                             p["data"]["date_range"])
+            (made.append(w) if w else notes.append("Nobody is close to a career milestone this week."))
     if "roundup" in jobs:
         p = P.roundup_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No results in the last 7 days."))

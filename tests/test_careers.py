@@ -131,3 +131,22 @@ def test_one_player_split_across_two_records(club_root):
     rec = {"pid": "67", "key": "driscoll|j", **{s: 0 for s in K.STATS}}
     totals, ok = car.career("club", rec)
     assert ok and totals["runs"] == 3354 + 4170 and totals["matches"] == 287 + 241
+
+
+def test_milestone_watch(club_root):
+    cfg = setup(club_root)
+    car = K.Careers(cfg, club_root)
+    car.add_match(game(20, "1st XI", [bat("Charlie Gajic", "47", 0)], [], [], players=[("Charlie Gajic", "47", False)],
+                       day="01/05/2027"))
+    # Charlie: 9480 runs, 350 matches (349 + 1), 49 catches -> 20 runs and 1 catch away
+    fixtures = [{"team": "1st XI", "opponent": "Opp CC 1st XI", "date": "Sat 8 May", "time": "13:00", "home": True,
+                 "date_obj": date(2027, 5, 8)},
+                {"team": "Indoor A", "opponent": "X", "date": "Sun 9 May", "time": "18:00", "home": False,
+                 "date_obj": date(2027, 5, 9)}]
+    w = K.watch_list(cfg, car, fixtures, date(2027, 5, 7))
+    assert [(x["name"], x["stat"], x["needs"], x["target"]) for x in w] == [
+        ("Charlie Gajic", "runs", 20, 9500), ("Charlie Gajic", "catches", 1, 50)]
+    post = K.watch_post(cfg, car, fixtures, date(2027, 5, 7), "8 – 14 May")
+    assert "Charlie Gajic (1st XI v Opp CC 1st XI, Sat 8 May) needs 20 runs for 9,500 career runs" in post["caption"]
+    assert K.watch_list(cfg, car, fixtures, date(2027, 6, 30)) == []  # not played for weeks: left out
+    assert K.need_text({"stat": "matches", "needs": 1, "target": 100, "pool": "club"}) == "next game is their 100th appearance"
