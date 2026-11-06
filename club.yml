@@ -68,7 +68,7 @@ posts:
   # Also post a tall version to Instagram and Facebook Stories (after the normal post).
   stories:
     enabled: true
-    for: [match, fixtures, roundup]   # any of: match, fixtures, roundup
+    for: [match, fixtures, roundup, news]   # any of: match, fixtures, roundup, news
   networks: [facebook, instagram]
 
 juniors:
@@ -79,10 +79,16 @@ juniors:
   # Which teams count as junior (kept out of matchday stories). Verwood's Daughters and Sons sides are junior.
   team_pattern: '\b(U\s?\d{1,2}[A-Z]?|Under\s?\d{1,2}|Girls|Boys|Juniors?|All Stars|Dynamos|Colts|Daughters|Sons)\b'
 
+# Club news and events, from the "Club news or event" form (Issues → New issue). Always previewed first.
+news:
+  enabled: true
+  reminder: true          # a "Today" Story on the morning of an event
+  reminder_title: "Today"
+
 # Match photos as backgrounds, from the match-photos folders in the private photo store
 match_photos:
   enabled: true
-  use_for: [match, milestone, roundup]
+  use_for: [match, milestone, roundup, news]   # news only when the form has no photo attached
 
 # Matchday: a "Today" story each morning listing that day's senior games, home and away
 matchday:

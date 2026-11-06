@@ -24,6 +24,7 @@ DEFAULTS = {
                 "story_cta": "Full details on our page"},
     "milestones": {"enabled": True, "batting": [50, 100], "bowling_wickets": 5,
                    "junior_photos": "name_no_photo", "stories": True},
+    "news": {"enabled": True, "reminder": True, "reminder_title": "Today"},
     "match_photos": {"enabled": True, "use_for": ["match", "milestone", "roundup"]},
     "matchday": {"enabled": False, "include": "all", "juniors": False, "default_home_ground": "",
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
@@ -170,8 +171,8 @@ def validate(cfg):
     st = p.get("stories") or {}
     if not isinstance(st.get("enabled", False), bool):
         problems.append("posts → stories → enabled: use true or false.")
-    if any(k not in ("match", "fixtures", "roundup") for k in (st.get("for") or [])):
-        problems.append("posts → stories → for: list any of match, fixtures, roundup, like [match, fixtures, roundup].")
+    if any(k not in ("match", "fixtures", "roundup", "news") for k in (st.get("for") or [])):
+        problems.append("posts → stories → for: list any of match, fixtures, roundup, news, like [match, fixtures, roundup].")
     mi = cfg.get("milestones") or {}
     if not isinstance(mi.get("enabled", True), bool):
         problems.append("milestones → enabled: use true or false.")
@@ -182,8 +183,12 @@ def validate(cfg):
         problems.append("milestones → batting / bowling_wickets: use numbers, like batting: [50, 100] and bowling_wickets: 5.")
     if mi.get("junior_photos") not in ("name_no_photo", "photo_no_name"):
         problems.append("milestones → junior_photos: use name_no_photo or photo_no_name (ECB guidance: never both).")
+    nw = cfg.get("news") or {}
+    for k in ("enabled", "reminder"):
+        if not isinstance(nw.get(k, True), bool):
+            problems.append(f"news → {k}: use true or false.")
     mp = cfg.get("match_photos") or {}
-    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday")]
+    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday", "news")]
     if bad:
         problems.append(f"match_photos → use_for: {', '.join(map(str, bad))} isn't a post type. "
                         "Use match, milestone, roundup, fixtures or matchday.")

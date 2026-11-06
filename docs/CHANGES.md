@@ -1,5 +1,13 @@
 # What's new
 
+## 1.7.0 (Verwood)
+- **Club news and events:** Issues → New issue → *Club news or event*. Fill in a headline, details and
+  (optionally) a date, time, venue, link, photo and a "post on" date. The kit makes a branded post and
+  Story and opens it for approval. News is always previewed first, even with automatic posting.
+- Approved news with a "post on" date waits (label *scheduled*) and goes out with that morning's run.
+- Events get a "Today" reminder Story on the morning of the event.
+- Only people with access to the repository can use the form; anyone else's is ignored.
+
 ## 1.6.0 (Verwood)
 - **Match photos as backgrounds:** match result, milestone and results summary posts use a photo from
   the private photo store's `match-photos` folders, darkened under the club blue. Each team has its own

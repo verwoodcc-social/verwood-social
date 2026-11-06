@@ -82,6 +82,9 @@ def pages_html(cfg, data, story=False):
     env = Environment(loader=FileSystemLoader(_template_dirs(cfg)), autoescape=True)
     if data["kind"] == "match":
         return [env.get_template("match.html").render(m=data, pages=1, page=1, story=story, **_common(cfg, "match", data))]
+    if data["kind"] == "news":
+        return [env.get_template("news.html").render(m=data, pages=1, page=1, story=story,
+                                                    **_common(cfg, "news", data))]
     if data["kind"] == "milestone":
         pp = data.get("photo_path")
         player_photo = _data_uri(pp, max_px=1400) if pp and Path(pp).exists() else ""

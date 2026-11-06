@@ -186,9 +186,12 @@ def cmd_announce(args, root=C.ROOT, gh=None, meta=None):
     for p in pending:
         urls = [raw_url(gh.repo, args.sha, f) for f in p["files"]]
         story_urls = [raw_url(gh.repo, args.sha, f) for f in p.get("story_files", [])]
-        body = issue_body(p, urls, nets, story_urls=story_urls)
+        reminder_url = raw_url(gh.repo, args.sha, p["reminder_file"]) if p.get("reminder_file") else ""
+        body = issue_body(p, urls, nets, story_urls=story_urls, reminder_url=reminder_url)
         issue = gh.create_issue(p["title"], body)
-        if auto:
+        if p.get("source_issue"):
+            news_link_back(gh, state, p["source_issue"], issue)
+        if auto and not p.get("review"):
             links, error = post_all(cfg, gh, issue["number"], meta, targets(nets, urls, story_urls), p["caption"], set())
             if error:
                 rep.add(f"- ❌ **{p['title']}**: {error} · {issue['html_url']}")
@@ -289,10 +292,149 @@ def cmd_publish(args, root=C.ROOT, gh=None, meta=None):
         gh.comment(args.issue, "⚠️ The images in this issue don't come from this repository, so I won't post them.")
         gh.remove_label(args.issue, "approved")
         return None
+    post_on = meta_info.get("post_on")
+    if post_on and date.fromisoformat(post_on) > today_for(cfg, getattr(args, "today", None)):
+        if "scheduled" not in labels:
+            gh.add_labels(args.issue, ["scheduled"])
+            gh.comment(args.issue, f"✅ Approved. This will be posted on **{P.long_date(date.fromisoformat(post_on))}** "
+                                   f"with the morning run (about 6:20am). To stop it, remove the **approved** label "
+                                   f"or close this issue.")
+        return None
     nets = [n for n in meta_info.get("networks", []) if n in cfg["posts"]["networks"]]
+    if "scheduled" in labels:
+        gh.remove_label(args.issue, "scheduled")
     links, error = post_all(cfg, gh, args.issue, meta, targets(nets, urls, story_urls), caption,
                             already_done(gh, args.issue))
     return False if error else links
+
+
+# --- club news: the form, scheduled posts and event reminders ----------------
+
+def news_link_back(gh, state, source, issue):
+    """Point the form at its preview, and close any earlier preview it replaces."""
+    news = state.setdefault("news", {})
+    old = news.get(str(source))
+    if old and old != issue["number"]:
+        try:
+            prev = gh.get_issue(old)
+            names = {l["name"] for l in prev.get("labels", [])}
+            if prev.get("state") == "open" and "published" not in names:
+                gh.comment(old, f"Replaced by #{issue['number']} because the form was edited.")
+                gh.close(old)
+        except GitHubError:
+            pass
+    news[str(source)] = issue["number"]
+    gh.comment(source, f"👀 Here's the preview: #{issue['number']}\n\nCheck the graphic and caption there, then add "
+                       f"the **approved** label to post it. To change anything, edit this form and a new preview "
+                       f"will replace that one.")
+
+
+def cmd_news(args, root=C.ROOT, gh=None, renderer=None, session=None):
+    """Turn a filled-in 'Club news or event' form into a post waiting for approval."""
+    from . import news as N
+    from .matchphotos import MatchPhotos
+    import requests
+
+    cfg = C.load(root / "club.yml")
+    gh = gh or GitHub()
+    rep = Report("Club news")
+    issue = gh.get_issue(args.issue)
+    names = {l["name"] for l in issue.get("labels", [])}
+    if "club-news" not in names:
+        print("Not a club news form; nothing to do.")
+        return None
+    if issue.get("author_association") not in N.TRUSTED:
+        print("Form opened by someone without access to this repository; ignored.")
+        return None
+    if not cfg["news"]["enabled"]:
+        gh.comment(args.issue, "Club news posts are switched off in club.yml (news → enabled).")
+        return None
+    today = today_for(cfg, getattr(args, "today", None))
+    form = N.parse_form(issue.get("body", ""))
+    photo = None
+    url = N.photo_url(N.field(form, "photo"))
+    tmp = root / "player-photos" / ".news"
+    if url:
+        try:
+            photo = N.download_photo(url, session or requests.Session(), tmp)
+        except Exception:
+            photo = None
+        if not photo:
+            gh.comment(args.issue, "⚠️ I couldn't open the attached photo, so the graphic uses a club photo instead.")
+    if not photo and "news" in cfg["match_photos"]["use_for"]:
+        state = load_state(root)
+        photo = MatchPhotos(root / "player-photos", state.setdefault("match_photos_used", {})).pick(
+            cfg, "", f"news-{args.issue}", today, any_folder=True)
+        save_state(root, state)
+    try:
+        post = N.build(cfg, form, args.issue, today, photo)
+    except N.FormError as e:
+        gh.comment(args.issue, f"⚠️ {e}\n\nEdit the form to fix it and I'll try again.")
+        rep.add(f"❌ {e}")
+        rep.write()
+        return None
+    out_dir = Path("posts") / "news"
+    from .render import Renderer
+    with (renderer or Renderer()) as r:
+        files = r.render(cfg, post["data"], root / out_dir, post["key"])
+        story = r.render(cfg, post["data"], root / out_dir, post["key"], story=True) if cfg.stories_for("news") else []
+        rem = []
+        if post.get("reminder_data"):
+            rem = r.render(cfg, post["reminder_data"], root / out_dir, post["key"] + "-reminder", story=True)
+    pending = [{**strip_private({k: v for k, v in post.items() if k not in ("data", "reminder_data")}),
+                "files": [str(f.relative_to(root)) for f in files],
+                "story_files": [str(f.relative_to(root)) for f in story],
+                "reminder_file": str(rem[0].relative_to(root)) if rem else ""}]
+    (root / PENDING).write_text(json.dumps(pending, indent=2))
+    rep.add(f"- 🖼️ **{post['title']}** ready for approval")
+    rep.write()
+    return pending
+
+
+def cmd_due(args, root=C.ROOT, gh=None, meta=None):
+    """Morning run: post approved news whose date has come, and today's event reminder Stories."""
+    cfg = C.load(root / "club.yml")
+    gh = gh or GitHub()
+    rep = Report("Scheduled posts and reminders")
+    today = today_for(cfg, getattr(args, "today", None))
+    for issue in gh.open_issues("scheduled"):
+        names = {l["name"] for l in issue.get("labels", [])}
+        if {"social-post", "approved"} <= names:
+            result = cmd_publish(argparse.Namespace(issue=issue["number"], today=getattr(args, "today", None)),
+                                 root=root, gh=gh, meta=meta)
+            if result:
+                rep.add(f"- ✅ Posted scheduled **{issue['title']}**")
+    nets = cfg["posts"]["networks"]
+    recent = gh._req("GET", "issues", params={"state": "closed", "labels": "social-post,published",
+                                              "sort": "updated", "per_page": 100})
+    for issue in recent:
+        try:
+            info, _ = parse_issue(issue.get("body", ""))
+        except GitHubError:
+            continue
+        r = info.get("reminder") or {}
+        if r.get("date") != today.isoformat() or not r.get("story", "").startswith(
+                f"https://raw.githubusercontent.com/{gh.repo}/"):
+            continue
+        if (issue.get("closed_at") or "")[:10] == today.isoformat():
+            continue  # posted today anyway: no need to remind
+        done = already_done(gh, issue["number"])
+        if meta is None:
+            meta = _META.setdefault("m", Meta(os.environ.get("META_TOKEN"), cfg["facebook"].get("page_id")))
+        for n in nets:
+            key = f"{n}_story:reminder"
+            if key in done:
+                continue
+            try:
+                link = post_one(meta, f"{n}_story", [r["story"]], "")
+            except MetaError as e:
+                gh.comment(issue["number"], f"❌ Couldn't post the reminder to {LABEL[n + '_story']}: {e}")
+                rep.add(f"- ❌ Reminder for **{issue['title']}**: {e}")
+                continue
+            gh.comment(issue["number"], f"⏰ Reminder posted to {LABEL[n + '_story']}: {link['url']}\n"
+                                        f"{DONE_MARK}{json.dumps({'network': key})} -->")
+            rep.add(f"- ⏰ Reminder Story for **{issue['title']}** on {LABEL[n + '_story']}")
+    rep.write()
 
 
 def already_done(gh, number):
@@ -485,6 +627,11 @@ def main(argv=None):
     a.add_argument("--sha", required=True)
     pub = sub.add_parser("publish")
     pub.add_argument("--issue", type=int, required=True)
+    nw = sub.add_parser("news")
+    nw.add_argument("--issue", type=int, required=True)
+    nw.add_argument("--today")
+    du = sub.add_parser("due")
+    du.add_argument("--today")
     ch = sub.add_parser("check")
     ch.add_argument("--today")
     pv = sub.add_parser("preview")
@@ -492,7 +639,8 @@ def main(argv=None):
     args = ap.parse_args(argv)
     try:
         result = {"make": cmd_make, "announce": cmd_announce, "publish": cmd_publish,
-                  "check": cmd_check, "preview": cmd_preview}[args.cmd](args)
+                  "check": cmd_check, "preview": cmd_preview,
+                  "news": cmd_news, "due": cmd_due}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")

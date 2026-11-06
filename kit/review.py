@@ -11,6 +11,8 @@ LABELS = {
     "approved": ("2DA44E", "Add this label to publish the post"),
     "published": ("8250DF", "Posted to Facebook / Instagram"),
     "failed": ("CF222E", "Posting failed: see the comment"),
+    "scheduled": ("FBCA04", "Approved: will be posted on its 'post on' date"),
+    "club-news": ("0E8A16", "Club news or event form"),
 }
 MARK = re.compile(r"<!--\s*csk-post\s+(\{.*?\})\s*-->", re.S)
 CAPTION = re.compile(r"<!--\s*caption:start\s*-->\s*```[a-z]*\n(.*?)\n```\s*<!--\s*caption:end\s*-->", re.S)
@@ -73,7 +75,7 @@ def raw_url(repo, sha, path):
     return f"https://raw.githubusercontent.com/{repo}/{sha}/{path}"
 
 
-def issue_body(post, image_urls, networks, sample=False, story_urls=()):
+def issue_body(post, image_urls, networks, sample=False, story_urls=(), reminder_url=""):
     nets = " and ".join(n.capitalize() for n in networks)
     imgs = "\n\n".join(f"![{post['title']} – image {i}]({u})" for i, u in enumerate(image_urls, 1))
     if story_urls:
@@ -81,12 +83,21 @@ def issue_body(post, image_urls, networks, sample=False, story_urls=()):
             f'<img src="{u}" width="240" alt="Story frame {i}">' for i, u in enumerate(story_urls, 1))
     meta = {"key": post["key"], "kind": post["kind"], "images": image_urls, "networks": list(networks),
             "sample": sample, "stories": list(story_urls)}
+    if post.get("post_on"):
+        meta["post_on"] = post["post_on"]
+    if reminder_url and post.get("reminder_date"):
+        meta["reminder"] = {"date": post["reminder_date"], "story": reminder_url}
+        imgs += (f"\n\n**Reminder Story** (posted on the morning of the event):\n\n"
+                 f'<img src="{reminder_url}" width="240" alt="Reminder story">')
     how = ("**This is a preview of your graphics.** It can't be published. Close it when you've had a look."
            if sample else
            f"**To post this to {nets}:** add the **approved** label (in the GitHub app: tap *Labels*).\n"
            f"**To change the words first:** edit this issue and change the text in the caption box, then approve.\n"
            f"**To skip it:** close the issue.")
     checks = ""
+    if post.get("post_on") or meta.get("reminder"):
+        from .news import schedule_note
+        how += "\n\n" + schedule_note({**post, **({"reminder": meta["reminder"]} if meta.get("reminder") else {})})
     if post.get("match_id"):
         checks = f"\n\nScorecard: https://play-cricket.com/website/results/{post['match_id']}"
     return (f"{how}\n\n{imgs}\n\n### Caption\n\n<!-- caption:start -->\n```text\n{post['caption']}\n```\n"

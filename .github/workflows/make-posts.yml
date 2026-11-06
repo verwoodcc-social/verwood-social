@@ -73,6 +73,14 @@ jobs:
           META_TOKEN: ${{ secrets.META_TOKEN }}
         run: python -m kit announce --sha "$(git rev-parse HEAD)"
 
+      - name: Post scheduled club news and today's event reminders
+        if: always()
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+        run: python -m kit due
+
       - name: Remember what's been posted
         if: always()
         run: |

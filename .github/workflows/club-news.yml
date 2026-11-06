@@ -1,0 +1,71 @@
+name: Club news
+
+# Runs when someone submits or edits the "Club news or event" form (an issue labelled club-news).
+# Only people with access to this repository count: anyone else's form is ignored.
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: news-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  news:
+    if: >-
+      contains(github.event.issue.labels.*.name, 'club-news') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PHOTOS_KEY: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Get club photos from the private photo store (if connected)
+        if: env.PHOTOS_KEY != ''
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: verwoodcc-social/verwood-player-photos
+          token: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
+          path: player-photos
+
+      - name: Make the graphic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m kit news --issue ${{ github.event.issue.number }}
+
+      - name: Save the images to the repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add posts state
+          git diff --cached --quiet || git commit -m "Club news images (#${{ github.event.issue.number }})"
+          git pull --rebase --quiet && git push --quiet
+
+      - name: Open the preview for approval
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+        run: python -m kit announce --sha "$(git rev-parse HEAD)"
+
+      - name: Remember the preview
+        if: always()
+        run: |
+          git add state
+          git diff --cached --quiet || (git commit -m "Update posted list" && git pull --rebase --quiet && git push --quiet)

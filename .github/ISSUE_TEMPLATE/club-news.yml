@@ -1,0 +1,79 @@
+name: 📣 Club news or event
+description: Make a branded Facebook and Instagram post about club news or an event (AGM, socials, nets, registration…)
+title: "Club news: "
+labels: ["club-news"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill this in and submit it. In a minute or two the kit replies with a link to the finished graphic and caption.
+        **Nothing is posted until someone adds the _approved_ label to that preview.**
+  - type: input
+    id: headline
+    attributes:
+      label: Headline
+      description: Short and punchy, it's the big text on the graphic (70 characters at most).
+      placeholder: e.g. Annual General Meeting
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: What kind of post is it?
+      options:
+        - Event
+        - News
+        - Notice
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: event_date
+    attributes:
+      label: Event date
+      description: For events. Write it like 14/03/2027. A reminder Story goes out on the morning of the event.
+      placeholder: e.g. 14/03/2027
+  - type: input
+    id: time
+    attributes:
+      label: Start time
+      placeholder: e.g. 19:30
+  - type: input
+    id: venue
+    attributes:
+      label: Venue
+      placeholder: e.g. Potterne Park clubhouse
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: The full message for the post's caption.
+    validations:
+      required: true
+  - type: input
+    id: strap
+    attributes:
+      label: One line for the graphic
+      description: Optional. If you leave it empty, the graphic uses the start of the details.
+  - type: input
+    id: link
+    attributes:
+      label: Link
+      description: Optional, e.g. a booking or sign-up page. It goes in the caption.
+  - type: input
+    id: post_on
+    attributes:
+      label: Post on
+      description: Optional. Leave empty to post as soon as it's approved, or give a date (14/03/2027) and it goes out that morning.
+  - type: textarea
+    id: photo
+    attributes:
+      label: Photo
+      description: Optional. Drag a photo into this box (or tap to attach one). Without one, a club photo is used.
+  - type: checkboxes
+    id: ok
+    attributes:
+      label: Before you submit
+      options:
+        - label: This is fine to share publicly, and anyone under 18 in an attached photo has parent or carer consent to appear.
+          required: true

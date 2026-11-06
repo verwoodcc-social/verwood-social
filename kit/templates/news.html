@@ -1,0 +1,45 @@
+<!doctype html>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
+.nw-kicker { display: inline-block; align-self: flex-start; font-weight: 800; font-size: 26px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--navy-ink); background: var(--silver); padding: 12px 22px; border-radius: 999px; }
+.nw-body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+.nw-head { font-weight: 900; line-height: .96; letter-spacing: -.025em; text-transform: uppercase; margin-top: 30px;
+  font-size: 112px; overflow-wrap: anywhere; }
+.nw-head.m { font-size: 92px; }
+.nw-head.l { font-size: 74px; }
+.nw-facts { margin-top: 44px; display: flex; flex-direction: column; gap: 18px; }
+.nw-fact { display: flex; gap: 22px; align-items: baseline; font-size: 36px; font-weight: 700; line-height: 1.2; }
+.nw-fact .k { flex: 0 0 150px; font-size: 22px; font-weight: 800; letter-spacing: .2em; color: var(--silver-dim); }
+.nw-blurb { margin-top: 40px; font-size: 34px; line-height: 1.38; font-weight: 500; color: var(--silver); max-width: 900px; }
+.story .nw-body { flex: 0 0 auto; justify-content: flex-start; margin-top: 90px; }
+.story .nw-head { font-size: 128px; }
+.story .nw-head.m { font-size: 104px; }
+.story .nw-head.l { font-size: 84px; }
+.story .nw-fact { font-size: 42px; }
+.story .nw-blurb { font-size: 38px; }
+.nw-today .nw-head { font-size: 120px; }
+</style></head>
+<body>
+{% set n = m.headline|length %}
+<div class="card {{ 'has-photo' if photo }} {{ 'nw-today' if m.today }}">
+  {% include "_photo.html" %}
+  <div class="head">
+    <img class="badge" src="{{ badge }}">
+    <div><div class="club">{{ club.name }}</div></div>
+  </div>
+  <div class="rule"></div>
+  <div class="nw-body">
+    <div class="nw-kicker">{{ m.kicker }}</div>
+    <div class="nw-head {{ 'l' if n > 38 else ('m' if n > 22 else '') }}">{{ m.headline }}</div>
+    {% if m.when or m.venue %}
+    <div class="nw-facts">
+      {% if m.when %}<div class="nw-fact"><span class="k">WHEN</span><span>{{ m.when }}</span></div>{% endif %}
+      {% if m.venue %}<div class="nw-fact"><span class="k">WHERE</span><span>{{ m.venue }}</span></div>{% endif %}
+    </div>
+    {% endif %}
+    {% if m.blurb and not m.today %}<div class="nw-blurb">{{ m.blurb }}</div>{% endif %}
+  </div>
+{% if story and wording.story_cta %}<div class="cta">{{ wording.story_cta }}</div>{% endif %}
+{% include "_foot.html" %}
+</div>
+</body></html>
