@@ -81,6 +81,12 @@ class Config(dict):
     def short_name(self):
         return self["club"]["short_name"]
 
+    @property
+    def short_name_upper(self):
+        """Short label for email subjects: club → email_label, or initials (Verwood Cricket Club → VCC)."""
+        label = (self["club"].get("email_label") or "").strip()
+        return label or "".join(w[0] for w in self["club"]["name"].split() if w[:1].isalpha()).upper()
+
     def badge_path(self):
         return (self.root / self["branding"]["badge"]).resolve()
 

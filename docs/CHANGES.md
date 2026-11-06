@@ -1,5 +1,12 @@
 # What's new
 
+## 1.10.0 (Verwood)
+- **Problem alerts by email:** if the daily posts, a post, a club news preview or the sponsor report
+  fails, a *problem* issue opens and the committee is emailed (through Microsoft 365, to ALERT_EMAIL_TO
+  or REPORT_EMAIL_TO). Repeats don't send more emails. When it works again the issue closes itself and a
+  short "fixed" email goes out. The daily posts only email if both morning runs fail, so a brief
+  Play-Cricket blip doesn't cause an alert.
+
 ## 1.9.0 (Verwood)
 - **Season leaderboards:** first Monday of each month, May to October, one carousel post: a club-wide
   board for all adult teams, then one per adult team (3+ games). Top 5 run scorers (innings, highest

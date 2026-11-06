@@ -14,6 +14,7 @@ LABELS = {
     "scheduled": ("FBCA04", "Approved: will be posted on its 'post on' date"),
     "club-news": ("0E8A16", "Club news or event form"),
     "report": ("5319E7", "Monthly sponsor report (never posted)"),
+    "problem": ("B60205", "Something went wrong: closes itself when it's working again"),
 }
 MARK = re.compile(r"<!--\s*csk-post\s+(\{.*?\})\s*-->", re.S)
 CAPTION = re.compile(r"<!--\s*caption:start\s*-->\s*```[a-z]*\n(.*?)\n```\s*<!--\s*caption:end\s*-->", re.S)

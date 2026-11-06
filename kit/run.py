@@ -24,6 +24,7 @@ log = logging.getLogger("kit")
 PENDING = ".kit-pending.json"
 STATE = "state/posted.json"
 DONE_MARK = "<!-- csk-done "
+RUN_LOG = ".kit-run-log.md"
 
 
 # --- small utilities ---------------------------------------------------------
@@ -42,6 +43,8 @@ class Report:
         path = os.environ.get("GITHUB_STEP_SUMMARY")
         if path:
             with open(path, "a") as f:
+                f.write("\n".join(self.lines) + "\n")
+            with open(RUN_LOG, "a") as f:  # read back by 'alert' if a later step fails
                 f.write("\n".join(self.lines) + "\n")
 
 
@@ -257,12 +260,22 @@ def post_all(cfg, gh, number, meta, todo, caption, done):
                                f"Anything already posted won't be posted twice.")
             gh.add_labels(number, ["failed"])
             gh.remove_label(number, "approved")
+            from . import alerts
+            title = ""
+            try:
+                title = gh.get_issue(number).get("title", "")
+            except Exception:
+                pass
+            alerts.problem(gh, f"post:{number}", f"A post didn't go out: {title or f'#{number}'}", error,
+                           f"https://github.com/{gh.repo}/issues/{number}", club=cfg.short_name_upper)
             return links, error
         links.append(link)
         gh.comment(number, f"✅ Posted to {LABEL[kind]}{frame}: {link['url']}\n{DONE_MARK}{json.dumps({'network': key})} -->")
     gh.remove_label(number, "failed")
     gh.add_labels(number, ["published"])
     gh.close(number)
+    from . import alerts
+    alerts.resolved(gh, f"post:{number}", club=cfg.short_name_upper)
     return links, None
 
 
@@ -553,6 +566,27 @@ def cmd_report_issue(args, root=C.ROOT, gh=None):
     return issue["number"]
 
 
+# --- problem alerts ------------------------------------------------------------
+
+def cmd_alert(args, root=C.ROOT, gh=None):
+    """A workflow failed: record the problem and email the committee."""
+    from . import alerts
+    cfg = C.load(root / "club.yml")
+    gh = gh or GitHub()
+    log = (root / RUN_LOG).read_text() if (root / RUN_LOG).exists() else ""
+    details = alerts.problem_lines(log) or "The job stopped part-way. The link below shows where."
+    gh.ensure_labels()
+    return alerts.problem(gh, args.key, args.title, details, args.link or "", quiet_first=args.quiet_first,
+                          club=cfg.short_name_upper)
+
+
+def cmd_resolved(args, root=C.ROOT, gh=None):
+    from . import alerts
+    cfg = C.load(root / "club.yml")
+    gh = gh or GitHub()
+    return alerts.resolved(gh, args.key, club=cfg.short_name_upper)
+
+
 def already_done(gh, number):
     done = set()
     for c in gh._req("GET", f"issues/{number}/comments", params={"per_page": 100}):
@@ -769,6 +803,13 @@ def main(argv=None):
     nw.add_argument("--today")
     du = sub.add_parser("due")
     du.add_argument("--today")
+    al = sub.add_parser("alert")
+    al.add_argument("--key", required=True)
+    al.add_argument("--title", required=True)
+    al.add_argument("--link")
+    al.add_argument("--quiet-first", action="store_true")
+    rs = sub.add_parser("resolved")
+    rs.add_argument("--key", required=True)
     rp = sub.add_parser("report")
     rp.add_argument("--month", help="YYYY-MM (default: last month)")
     rp.add_argument("--today")
@@ -783,7 +824,8 @@ def main(argv=None):
         result = {"make": cmd_make, "announce": cmd_announce, "publish": cmd_publish,
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
-                  "report": cmd_report, "report-issue": cmd_report_issue}[args.cmd](args)
+                  "report": cmd_report, "report-issue": cmd_report_issue,
+                  "alert": cmd_alert, "resolved": cmd_resolved}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")
