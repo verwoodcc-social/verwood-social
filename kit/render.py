@@ -62,9 +62,10 @@ def _css(cfg):
     return "\n".join(fonts) + "\n" + root + "\n" + base.read_text() + "\n" + extra
 
 
-def _common(cfg, kind):
+def _common(cfg, kind, data=None):
     b = cfg["branding"]
-    photo = cfg.background_for(kind)
+    bg = (data or {}).get("bg_photo")
+    photo = Path(bg) if bg and Path(bg).exists() else cfg.background_for(kind)
     sponsor_logo = cfg.image("sponsor_logo")
     return {
         "css": _css(cfg), "badge": _data_uri(cfg.badge_path(), max_px=400),
@@ -80,13 +81,13 @@ def _common(cfg, kind):
 def pages_html(cfg, data, story=False):
     env = Environment(loader=FileSystemLoader(_template_dirs(cfg)), autoescape=True)
     if data["kind"] == "match":
-        return [env.get_template("match.html").render(m=data, pages=1, page=1, story=story, **_common(cfg, "match"))]
+        return [env.get_template("match.html").render(m=data, pages=1, page=1, story=story, **_common(cfg, "match", data))]
     if data["kind"] == "milestone":
         pp = data.get("photo_path")
         player_photo = _data_uri(pp, max_px=1400) if pp and Path(pp).exists() else ""
         return [env.get_template("milestone.html").render(m=data, pages=1, page=1, story=story,
-                                                         player_photo=player_photo, **_common(cfg, "match"))]
-    common = _common(cfg, data["kind"])
+                                                         player_photo=player_photo, **_common(cfg, "match", data))]
+    common = _common(cfg, data["kind"], data)
     rows = data["matches"]
     if not rows:
         return []

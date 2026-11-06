@@ -1,5 +1,12 @@
 # What's new
 
+## 1.6.0 (Verwood)
+- **Match photos as backgrounds:** match result, milestone and results summary posts use a photo from
+  the private photo store's `match-photos` folders, darkened under the club blue. Each team has its own
+  folder; `Indoor`, `Juniors` and `Club` cover everything else. Photos rotate (least recently used
+  first), so they don't need to be from the game itself. Milestones with a player photo keep that
+  instead. Without any photos, posts look as before. Settings under `match_photos:`.
+
 ## 1.5.0 (Verwood)
 - **Matchday stories:** each morning there's a games day, one "Matchday" story goes to Instagram and
   Facebook Stories listing that day's senior games, home and away, with kick-off time, opponent and

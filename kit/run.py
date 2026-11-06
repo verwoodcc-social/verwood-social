@@ -134,6 +134,11 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
         p = P.matchday_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
     made = [p for p in made if p["key"] not in state["posted"]]
+    if made:
+        from .matchphotos import MatchPhotos, add_backgrounds
+        used = state.setdefault("match_photos_used", {})
+        add_backgrounds(cfg, made, MatchPhotos(root / "player-photos", used), today)
+        save_state(root, state)
 
     out_dir = Path("posts") / today.isoformat()
     pending = []
@@ -146,12 +151,14 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
                 story = (r.render(cfg, p["data"], root / out_dir, p["key"], story=True)
                          if stories_only or cfg.stories_for(p["kind"]) else [])
                 pending.append({**strip_private({k: v for k, v in p.items() if k != "data"}),
+                                "bg": bool(p["data"].get("bg_photo")),
                                 "files": [str(f.relative_to(root)) for f in files],
                                 "story_files": [str(f.relative_to(root)) for f in story]})
     (root / PENDING).write_text(json.dumps(pending, indent=2))
     rep.add("")
     for p in pending:
         extra = f" + {len(p['story_files'])} story" if p.get("story_files") else ""
+        extra += " · match photo background" if p.get("bg") else ""
         n = len(p["files"])
         rep.add(f"- 🖼️ **{p['title']}** ({n} image{'s' if n != 1 else ''}{extra})")
     for n in notes:
@@ -395,6 +402,15 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
         rule = ("juniors' photos are used without names" if cfg["milestones"]["junior_photos"] == "photo_no_name"
                 else "juniors are named but their photos aren't used")
         rep.add(f"✅ **Player photos** connected: {groups['adults']} adults, {groups['juniors']} juniors ({rule}).")
+        if cfg["match_photos"]["enabled"]:
+            from .matchphotos import MatchPhotos
+            mp = MatchPhotos(store_dir)
+            if len(mp):
+                folders = ", ".join(f"{k} ({v})" for k, v in mp.counts().items())
+                rep.add(f"✅ **Match photos** for backgrounds: {len(mp)} — {folders}.")
+            else:
+                rep.add("ℹ️ **Match photos**: none yet. Posts use the plain club colours until some are added to "
+                        "the match-photos folders in the photo store.")
     elif os.environ.get("PHOTOS_KEY"):
         ok = False
         rep.add("❌ **Player photos**: the photo key is saved but the photo store couldn't be read. The key may have "

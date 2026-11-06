@@ -24,6 +24,7 @@ DEFAULTS = {
                 "story_cta": "Full details on our page"},
     "milestones": {"enabled": True, "batting": [50, 100], "bowling_wickets": 5,
                    "junior_photos": "name_no_photo", "stories": True},
+    "match_photos": {"enabled": True, "use_for": ["match", "milestone", "roundup"]},
     "matchday": {"enabled": False, "include": "all", "juniors": False, "default_home_ground": "",
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
@@ -181,6 +182,11 @@ def validate(cfg):
         problems.append("milestones → batting / bowling_wickets: use numbers, like batting: [50, 100] and bowling_wickets: 5.")
     if mi.get("junior_photos") not in ("name_no_photo", "photo_no_name"):
         problems.append("milestones → junior_photos: use name_no_photo or photo_no_name (ECB guidance: never both).")
+    mp = cfg.get("match_photos") or {}
+    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday")]
+    if bad:
+        problems.append(f"match_photos → use_for: {', '.join(map(str, bad))} isn't a post type. "
+                        "Use match, milestone, roundup, fixtures or matchday.")
     md = cfg.get("matchday") or {}
     if md.get("include", "all") not in ("all", "home"):
         problems.append("matchday → include: use all or home.")
