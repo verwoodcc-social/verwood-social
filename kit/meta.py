@@ -253,7 +253,7 @@ class Insights:
         out = {}
         chunks, start = [], since
         while start < until:
-            end = min(until, start + timedelta(days=30))
+            end = min(until, start + timedelta(days=28))  # Meta allows 30 days; clock changes add an hour
             chunks.append((start, end))
             start = end
         for metric, key in (("views", "views"), ("reach", "reach"), ("total_interactions", "interactions"),
