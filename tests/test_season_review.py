@@ -19,7 +19,7 @@ def test_season_review(club_root):
     kinds = [s["type"] for s in p["data"]["slides"]]
     assert kinds[0] == "summary" and "team" in kinds
     summary = p["data"]["slides"][0]["rows"]
-    assert {r["team"] for r in summary} == {"1st XI", "2nd XI"}  # indoor and junior left out
+    assert {r["team"] for r in summary} == {"1st XI"}  # indoor, junior and one-off (2nd XI: 1 game) left out
     first = next(s for s in p["data"]["slides"] if s["type"] == "team" and s["title"] == "1st XI")
     assert first["bat"][0]["name"] == "Ben T." and first["record"]["P"] == 3
     assert "1st XI: played 3" in p["caption"]
