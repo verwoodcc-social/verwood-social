@@ -1,5 +1,10 @@
 # What's new
 
+## 1.3.0 (Verwood)
+- **Instagram and Facebook Stories:** each post can also go out as a tall 1080×1920 story, after the
+  normal post (`posts → stories`). Busy weeks split across several story frames. A story that fails
+  never affects the normal post, and a retry only re-does what didn't go out.
+
 ## 1.2.0
 - **Shortened names for every team by default** (`juniors → apply_to_all_teams: true`). Juniors
   often play in adult, women's and family sides, so a team's name doesn't tell you a player's

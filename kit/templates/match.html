@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><style>{{ css|safe }}
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
 .verdict { font-weight: 900; font-size: 92px; line-height: .95; text-transform: uppercase; letter-spacing: -.02em; }
 .verdict.W { color: var(--win); } .verdict.L { color: var(--loss); } .verdict.D, .verdict.T { color: var(--draw); }
 .verdict.P, .verdict.A, .verdict.C, .verdict.N { color: var(--silver); }
@@ -58,6 +58,7 @@
   {% endif %}
   {% if show.toss and m.toss %}<div class="notes">{{ m.toss }}</div>{% endif %}
 
+{% if story and wording.story_cta %}<div class="cta">{{ wording.story_cta }}</div>{% endif %}
 {% include "_foot.html" %}
 </div>
 </body></html>

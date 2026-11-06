@@ -73,11 +73,14 @@ def raw_url(repo, sha, path):
     return f"https://raw.githubusercontent.com/{repo}/{sha}/{path}"
 
 
-def issue_body(post, image_urls, networks, sample=False):
+def issue_body(post, image_urls, networks, sample=False, story_urls=()):
     nets = " and ".join(n.capitalize() for n in networks)
     imgs = "\n\n".join(f"![{post['title']} – image {i}]({u})" for i, u in enumerate(image_urls, 1))
+    if story_urls:
+        imgs += "\n\n**Story version** (posted to Stories too):\n\n" + " ".join(
+            f'<img src="{u}" width="240" alt="Story frame {i}">' for i, u in enumerate(story_urls, 1))
     meta = {"key": post["key"], "kind": post["kind"], "images": image_urls, "networks": list(networks),
-            "sample": sample}
+            "sample": sample, "stories": list(story_urls)}
     how = ("**This is a preview of your graphics.** It can't be published. Close it when you've had a look."
            if sample else
            f"**To post this to {nets}:** add the **approved** label (in the GitHub app: tap *Labels*).\n"

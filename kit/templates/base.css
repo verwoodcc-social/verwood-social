@@ -101,3 +101,24 @@ body {
 
 /* ---- Ground under fixtures (show → ground_on_fixtures) ---- */
 .row .ground { font-weight: 500; font-size: 20px; color: var(--silver-dim); margin-top: 4px; }
+
+/* ---- Story format: 1080x1920, keeping clear of Instagram/Facebook's top bar and reply box ---- */
+html.story, .story body { height: 1920px; }
+.story .card { height: 1920px; padding: 220px 64px 250px; }
+.story .title { font-size: 92px; }
+.story .rule { margin: 46px 0 40px; }
+.story .rows { gap: 18px; flex: 0 0 auto; }
+.story .row { padding: 24px 30px; }
+.story .verdict { font-size: 124px; }
+.story .sumline { font-size: 38px; }
+.story .vs { margin-top: 60px; }
+.story .side { padding: 36px 34px; }
+.story .side .sc { font-size: 104px; }
+.story .side .sc.long { font-size: 66px; }
+.story .perf { margin-top: 70px; }
+.story .p { padding: 18px 0; }
+.story .notes { margin-top: 40px; }
+.cta { margin-top: auto; margin-bottom: 34px; align-self: flex-start; font-size: 28px; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--navy-ink); background: var(--silver);
+  padding: 16px 28px; border-radius: 999px; }
+.cta + .foot { margin-top: 0; }

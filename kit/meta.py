@@ -100,6 +100,29 @@ class Meta:
             post_id = self._call("POST", f"{self.page_id}/feed", token=self.page_token, message=caption, **params)["id"]
         return {"network": "facebook", "id": post_id, "url": f"https://www.facebook.com/{post_id}"}
 
+    # -- Stories (one frame per image; stories have no caption) --
+    def post_facebook_story(self, image_url):
+        """Page photo story: upload the photo unpublished, then publish it as a story."""
+        if self.page_token is None:
+            self.resolve()
+        photo_id = self._call("POST", f"{self.page_id}/photos", token=self.page_token,
+                              url=image_url, published="false")["id"]
+        r = self._call("POST", f"{self.page_id}/photo_stories", token=self.page_token, photo_id=photo_id)
+        return {"network": "facebook_story", "id": r.get("post_id") or photo_id,
+                "url": f"https://www.facebook.com/{self.page_id}"}
+
+    def post_instagram_story(self, image_url):
+        if self.page_token is None:
+            self.resolve()
+        if not self.ig_id:
+            raise MetaError("Your Facebook Page has no Instagram professional account linked to it.")
+        container = self._call("POST", f"{self.ig_id}/media", token=self.page_token,
+                               image_url=image_url, media_type="STORIES")["id"]
+        self._wait(container)
+        media_id = self._call("POST", f"{self.ig_id}/media_publish", token=self.page_token, creation_id=container)["id"]
+        return {"network": "instagram_story", "id": media_id,
+                "url": f"https://www.instagram.com/stories/{self.ig_username or ''}/"}
+
     # -- Instagram --
     def _wait(self, container_id, timeout=300, every=10):
         waited = 0

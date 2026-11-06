@@ -1,7 +1,7 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><style>{{ css|safe }}</style></head>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}</style></head>
 <body>
-<div class="card {{ 'dense' if rows|length > 5 }} {{ 'has-photo' if photo }}">
+<div class="card {{ 'dense' if rows|length > (6 if story else 5) }} {{ 'has-photo' if photo }}">
   {% include "_photo.html" %}
   <div class="head">
     <img class="badge" src="{{ badge }}">
@@ -47,6 +47,7 @@
   {% endif %}
   </div>
 
+{% if story and wording.story_cta %}<div class="cta">{{ wording.story_cta }}</div>{% endif %}
 {% include "_foot.html" %}
 </div>
 </body></html>

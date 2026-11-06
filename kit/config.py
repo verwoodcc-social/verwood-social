@@ -20,13 +20,15 @@ DEFAULTS = {
     "wording": {"fixtures_title": "This Week's Fixtures", "results_title": "Last Week's Results",
                 "win": "Victory", "loss": "Defeat", "draw": "Draw", "tie": "Tied",
                 "abandoned": "Abandoned", "cancelled": "Cancelled", "no_result": "No result",
-                "fixtures_sign_off": "Come down and support! 🏏"},
+                "fixtures_sign_off": "Come down and support! 🏏",
+                "story_cta": "Full details on our page"},
     "show": {"top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},
     "posts": {
         "fixtures": {"enabled": True, "day": "friday"},
         "results_roundup": {"enabled": True, "day": "monday"},
         "match_results": {"enabled": True, "lookback_days": 1},
         "approval": "review",
+        "stories": {"enabled": False, "for": ["match", "fixtures", "roundup"]},
         "networks": ["facebook", "instagram"],
     },
     "juniors": {
@@ -94,6 +96,11 @@ class Config(dict):
         """Uploaded background for a post kind (fixtures / results / match), falling back to the general one."""
         return self.image(f"{kind}_background") or self.image("background_image")
 
+    def stories_for(self, kind):
+        """Whether this kind of post (match / fixtures / roundup) also goes out as a story."""
+        st = self["posts"].get("stories") or {}
+        return bool(st.get("enabled")) and kind in (st.get("for") or [])
+
     def words(self):
         w = self["wording"]
         return {"W": w["win"], "L": w["loss"], "D": w["draw"], "T": w["tie"], "A": w["abandoned"],
@@ -151,6 +158,11 @@ def validate(cfg):
             raise ValueError
     except (TypeError, ValueError):
         problems.append("posts → match_results → lookback_days: use a number from 1 to 7.")
+    st = p.get("stories") or {}
+    if not isinstance(st.get("enabled", False), bool):
+        problems.append("posts → stories → enabled: use true or false.")
+    if any(k not in ("match", "fixtures", "roundup") for k in (st.get("for") or [])):
+        problems.append("posts → stories → for: list any of match, fixtures, roundup, like [match, fixtures, roundup].")
     if p.get("approval") not in ("review", "automatic"):
         problems.append("posts → approval: use review or automatic.")
     nets = p.get("networks") or []

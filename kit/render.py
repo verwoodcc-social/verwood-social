@@ -8,6 +8,8 @@ from jinja2 import Environment, FileSystemLoader
 
 HERE = Path(__file__).resolve().parent
 ROWS_PER_PAGE = 6
+STORY_ROWS_PER_PAGE = 7
+SIZES = {False: (1080, 1350), True: (1080, 1920)}  # feed post, story
 FONT_WEIGHTS = {"Medium": 500, "SemiBold": 600, "Bold": 700, "ExtraBold": 800, "Black": 900}
 
 
@@ -75,19 +77,19 @@ def _common(cfg, kind):
     }
 
 
-def pages_html(cfg, data):
+def pages_html(cfg, data, story=False):
     env = Environment(loader=FileSystemLoader(_template_dirs(cfg)), autoescape=True)
     if data["kind"] == "match":
-        return [env.get_template("match.html").render(m=data, pages=1, page=1, **_common(cfg, "match"))]
+        return [env.get_template("match.html").render(m=data, pages=1, page=1, story=story, **_common(cfg, "match"))]
     common = _common(cfg, data["kind"])
     rows = data["matches"]
     if not rows:
         return []
-    pages = math.ceil(len(rows) / ROWS_PER_PAGE)
+    pages = math.ceil(len(rows) / (STORY_ROWS_PER_PAGE if story else ROWS_PER_PAGE))
     per = math.ceil(len(rows) / pages)  # spread rows evenly
     tpl = env.get_template("list.html")
     return [tpl.render(kind=data["kind"], title=data["title"], date_range=data["date_range"],
-                       rows=rows[i * per:(i + 1) * per], page=i + 1, pages=pages, **common)
+                       rows=rows[i * per:(i + 1) * per], page=i + 1, pages=pages, story=story, **common)
             for i in range(pages)]
 
 
@@ -105,17 +107,20 @@ class Renderer:
         self._browser.close()
         self._pw.stop()
 
-    def render(self, cfg, data, out_dir, stem):
+    def render(self, cfg, data, out_dir, stem, story=False):
+        """Feed graphics (1080x1350), or story graphics (1080x1920) when story=True."""
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
+        w, h = SIZES[bool(story)]
+        self._page.set_viewport_size({"width": w, "height": h})
+        stem = f"{stem}-story" if story else stem
         files = []
-        htmls = pages_html(cfg, data)
+        htmls = pages_html(cfg, data, story=story)
         for i, html in enumerate(htmls, 1):
             self._page.set_content(html, wait_until="load")
             self._page.evaluate("document.fonts.ready")
             name = f"{stem}.jpg" if len(htmls) == 1 else f"{stem}_{i}.jpg"
             f = out_dir / name
-            self._page.screenshot(path=str(f), type="jpeg", quality=92,
-                                  clip={"x": 0, "y": 0, "width": 1080, "height": 1350})
+            self._page.screenshot(path=str(f), type="jpeg", quality=92, clip={"x": 0, "y": 0, "width": w, "height": h})
             files.append(f)
         return files

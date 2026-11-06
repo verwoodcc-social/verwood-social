@@ -41,6 +41,7 @@ wording:
   cancelled: "Cancelled"
   no_result: "No result"
   fixtures_sign_off: "Come down and support! 🏏"
+  story_cta: "Full details on our page"   # the button-style line at the bottom of each story
 
 # ---- Show or hide (true = show, false = hide) ----------------------------------
 show:
@@ -54,6 +55,10 @@ posts:
   results_roundup: {enabled: true, day: monday}
   match_results: {enabled: true, lookback_days: 1}
   approval: automatic   # review = wait for the approved label; automatic = post straight away
+  # Also post a tall version to Instagram and Facebook Stories (after the normal post).
+  stories:
+    enabled: true
+    for: [match, fixtures, roundup]   # any of: match, fixtures, roundup
   networks: [facebook, instagram]
 
 juniors:

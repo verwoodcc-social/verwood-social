@@ -7,6 +7,7 @@ from kit import config as C
 from kit import posts as P
 
 
+@pytest.mark.skipif("YOUR" not in (ROOT / "club.yml").read_text(), reason="club.yml is filled in (club copy)")
 def test_template_config_refuses_placeholders():
     with pytest.raises(C.ConfigError) as e:
         C.load(ROOT / "club.yml")

@@ -33,6 +33,8 @@ class FakeGraph:
             return Resp(200, body)
         if path == "PAGE1/photos":
             return Resp(200, {"id": f"PH{self.n}", **({"post_id": f"PAGE1_{self.n}"} if p.get("published") != "false" else {})})
+        if path == "PAGE1/photo_stories":
+            return Resp(200, {"success": True, "post_id": f"PAGE1_S{self.n}"})
         if path == "PAGE1/feed":
             return Resp(200, {"id": f"PAGE1_F{self.n}"})
         if path == "IG1/media":
@@ -163,9 +165,9 @@ class FakeRenderer:
     def __exit__(self, *a):
         pass
 
-    def render(self, cfg, data, out_dir, stem):
+    def render(self, cfg, data, out_dir, stem, story=False):
         Path(out_dir).mkdir(parents=True, exist_ok=True)
-        f = Path(out_dir) / f"{stem}.jpg"
+        f = Path(out_dir) / f"{stem}{'-story' if story else ''}.jpg"
         f.write_bytes(b"jpg")
         return [f]
 

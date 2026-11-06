@@ -135,12 +135,15 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
         with (renderer or Renderer()) as r:
             for p in made:
                 files = r.render(cfg, p["data"], root / out_dir, p["key"])
+                story = r.render(cfg, p["data"], root / out_dir, p["key"], story=True) if cfg.stories_for(p["kind"]) else []
                 pending.append({**strip_private({k: v for k, v in p.items() if k != "data"}),
-                                "files": [str(f.relative_to(root)) for f in files]})
+                                "files": [str(f.relative_to(root)) for f in files],
+                                "story_files": [str(f.relative_to(root)) for f in story]})
     (root / PENDING).write_text(json.dumps(pending, indent=2))
     rep.add("")
     for p in pending:
-        rep.add(f"- 🖼️ **{p['title']}** ({len(p['files'])} image{'s' if len(p['files']) > 1 else ''})")
+        extra = f" + {len(p['story_files'])} story" if p.get("story_files") else ""
+        rep.add(f"- 🖼️ **{p['title']}** ({len(p['files'])} image{'s' if len(p['files']) > 1 else ''}{extra})")
     for n in notes:
         rep.add(f"- {n}")
     rep.write()
@@ -165,29 +168,16 @@ def cmd_announce(args, root=C.ROOT, gh=None, meta=None):
     opened = []
     for p in pending:
         urls = [raw_url(gh.repo, args.sha, f) for f in p["files"]]
-        body = issue_body(p, urls, nets)
+        story_urls = [raw_url(gh.repo, args.sha, f) for f in p.get("story_files", [])]
+        body = issue_body(p, urls, nets, story_urls=story_urls)
+        issue = gh.create_issue(p["title"], body)
         if auto:
-            issue = gh.create_issue(p["title"], body)
-            links, error = [], None
-            for n in nets:
-                try:
-                    links.append(publish_to(cfg, meta, urls, p["caption"], [n])[0])
-                except MetaError as e:
-                    error = f"Couldn't post to {n.capitalize()}: {e}"
-                    break
-                gh.comment(issue["number"], f"✅ Posted to {n.capitalize()}: {links[-1]['url']}\n"
-                                            f"{DONE_MARK}{json.dumps({'network': n})} -->")
+            links, error = post_all(cfg, gh, issue["number"], meta, targets(nets, urls, story_urls), p["caption"], set())
             if error:
-                gh.comment(issue["number"], f"❌ {error}\n\nOnce it's fixed, add the **approved** label to retry. "
-                                            f"Anything already posted won't be posted twice.")
-                gh.add_labels(issue["number"], ["failed"])
                 rep.add(f"- ❌ **{p['title']}**: {error} · {issue['html_url']}")
             else:
-                gh.add_labels(issue["number"], ["published"])
-                gh.close(issue["number"])
                 rep.add(f"- ✅ Posted **{p['title']}** · {issue['html_url']}")
         else:
-            issue = gh.create_issue(p["title"], body)
             rep.add(f"- 👀 **{p['title']}** is waiting for approval · {issue['html_url']}")
         state["posted"][p["key"]] = {"issue": issue["number"], "made": date.today().isoformat()}
         save_state(root, state)  # after each, so a failure part-way doesn't repeat earlier posts
@@ -199,16 +189,54 @@ def cmd_announce(args, root=C.ROOT, gh=None, meta=None):
 
 _META = {}
 
+LABEL = {"facebook": "Facebook", "instagram": "Instagram",
+         "facebook_story": "Facebook Stories", "instagram_story": "Instagram Stories"}
 
-def publish_to(cfg, meta, urls, caption, networks, skip=()):
+
+def targets(networks, urls, story_urls):
+    """Everything to post, in order: feed posts first, then each story frame.
+    Each has its own key so a retry only redoes what hasn't gone out yet."""
+    out = [(n, n, urls) for n in networks]
+    for n in networks:
+        for i, u in enumerate(story_urls, 1):
+            out.append((f"{n}_story:{i}", f"{n}_story", [u]))
+    return out
+
+
+def post_one(meta, kind, urls, caption):
+    if kind == "facebook":
+        return meta.post_facebook(urls, caption)
+    if kind == "instagram":
+        return meta.post_instagram(urls, caption)
+    if kind == "facebook_story":
+        return meta.post_facebook_story(urls[0])
+    return meta.post_instagram_story(urls[0])
+
+
+def post_all(cfg, gh, number, meta, todo, caption, done):
+    """Post each target not already done, recording progress on the issue. Returns (links, error)."""
     if meta is None:  # reuse one connection across posts in a run
         meta = _META.setdefault("m", Meta(os.environ.get("META_TOKEN"), cfg["facebook"].get("page_id")))
     links = []
-    for n in networks:
-        if n in skip:
+    for key, kind, urls in todo:
+        if key in done:
             continue
-        links.append(meta.post_facebook(urls, caption) if n == "facebook" else meta.post_instagram(urls, caption))
-    return links
+        frame = f" (frame {key.split(':')[1]})" if ":" in key and len([t for t in todo if t[1] == kind]) > 1 else ""
+        try:
+            link = post_one(meta, kind, urls, caption)
+        except MetaError as e:
+            error = f"Couldn't post to {LABEL[kind]}{frame}: {e}"
+            gh.comment(number, f"❌ {error}\n\nOnce it's fixed, add the **approved** label to retry. "
+                               f"Anything already posted won't be posted twice.")
+            gh.add_labels(number, ["failed"])
+            gh.remove_label(number, "approved")
+            return links, error
+        links.append(link)
+        gh.comment(number, f"✅ Posted to {LABEL[kind]}{frame}: {link['url']}\n{DONE_MARK}{json.dumps({'network': key})} -->")
+    gh.remove_label(number, "failed")
+    gh.add_labels(number, ["published"])
+    gh.close(number)
+    return links, None
 
 
 # --- publish one approved issue ----------------------------------------------
@@ -239,35 +267,15 @@ def cmd_publish(args, root=C.ROOT, gh=None, meta=None):
         return None
     prefix = f"https://raw.githubusercontent.com/{gh.repo}/"
     urls = meta_info.get("images", [])
-    if not urls or any(not u.startswith(prefix) for u in urls):
+    story_urls = meta_info.get("stories", [])
+    if not urls or any(not u.startswith(prefix) for u in urls + story_urls):
         gh.comment(args.issue, "⚠️ The images in this issue don't come from this repository, so I won't post them.")
         gh.remove_label(args.issue, "approved")
         return None
     nets = [n for n in meta_info.get("networks", []) if n in cfg["posts"]["networks"]]
-    done = already_done(gh, args.issue)
-    meta = meta or Meta(os.environ.get("META_TOKEN"), cfg["facebook"].get("page_id"))
-    links, error = [], None
-    for n in nets:
-        if n in done:
-            continue
-        try:
-            link = meta.post_facebook(urls, caption) if n == "facebook" else meta.post_instagram(urls, caption)
-        except MetaError as e:
-            error = (n, str(e))
-            break
-        links.append(link)
-        gh.comment(args.issue, f"✅ Posted to {n.capitalize()}: {link['url']}\n{DONE_MARK}{json.dumps({'network': n})} -->")
-    if error:
-        n, msg = error
-        gh.comment(args.issue, f"❌ Couldn't post to {n.capitalize()}: {msg}\n\nOnce it's fixed, add the **approved** "
-                               f"label again to retry. Anything already posted won't be posted twice.")
-        gh.add_labels(args.issue, ["failed"])
-        gh.remove_label(args.issue, "approved")
-        return False
-    gh.remove_label(args.issue, "failed")
-    gh.add_labels(args.issue, ["published"])
-    gh.close(args.issue)
-    return links
+    links, error = post_all(cfg, gh, args.issue, meta, targets(nets, urls, story_urls), caption,
+                            already_done(gh, args.issue))
+    return False if error else links
 
 
 def already_done(gh, number):
