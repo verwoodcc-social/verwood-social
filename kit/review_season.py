@@ -107,7 +107,7 @@ def season_post(cfg, pc, today, root):
     season = today.year if today.month > 3 else today.year - 1
     start, end = date(season, 4, 1), date(season, 9, 30)
     results = pc.results(start, end)
-    records = team_records(cfg, results)
+    records = {t: r for t, r in team_records(cfg, results).items() if r["P"] >= int(sr.get("min_matches", 3))}
     if not records:
         return None
     pos = positions(cfg, pc, season)
@@ -128,6 +128,16 @@ def season_post(cfg, pc, today, root):
     for m in matches:
         by_team.setdefault(m["team"], []).append(m)
 
+    extra = []  # career slides, kept even when there are many teams
+    if cfg["career_milestones"]["enabled"]:
+        from . import careers as K
+        log_rows = [e for e in K.Careers(cfg, root).state.get("milestone_log", []) if e.get("season") == season]
+        if log_rows:
+            extra.append({"type": "milestones", "title": "Career milestones", "sub": f"Reached in {season}",
+                          "rows": log_rows[:9]})
+        cl = career_leaders(cfg, root)
+        if cl["bat"]:
+            extra.append({"type": "leaders", **cl, "sub": f"Career totals for {cfg.short_name}, end of {season}"})
     slides = []
     summary = []
     for t in teams:
@@ -136,22 +146,13 @@ def season_post(cfg, pc, today, root):
     total = {k: sum(r[k] for r in records.values()) for k in ("P", "W", "L", "D", "A")}
     slides.append({"type": "summary", "title": f"{season} season", "sub": "Season review · all adult teams",
                    "rows": summary, "total": total})
-    for t in teams:
+    for t in teams[:10 - 1 - len(extra)]:
         b = LB.board(cfg, by_team.get(t, []), t, top=int(sr["top"]))
         p = pos.get(t)
         slides.append({"type": "team", "title": t, "sub": f"Season review · {season}",
                        "record": records[t], "pos": f"{p['pos']}{_ord(p['pos'])} of {p['of']}" if p else "",
                        "league": p["league"] if p else "", "bat": b["bat"], "bowl": b["bowl"], "field": b["field"]})
-    if cfg["career_milestones"]["enabled"]:
-        from . import careers as K
-        log_rows = [e for e in K.Careers(cfg, root).state.get("milestone_log", []) if e.get("season") == season]
-        if log_rows:
-            slides.append({"type": "milestones", "title": "Career milestones", "sub": f"Reached in {season}",
-                           "rows": log_rows[:9]})
-        cl = career_leaders(cfg, root)
-        if cl["bat"]:
-            slides.append({"type": "leaders", **cl, "sub": f"Career totals for {cfg.short_name}, end of {season}"})
-    slides = slides[:10]
+    slides = (slides + extra)[:10]
     data = {"kind": "season", "title": sr["title"], "season": season, "slides": slides}
     lines = [f"🏏 {sr['title']}: our {season} season", ""]
     for s in summary:

@@ -115,6 +115,7 @@ season_review:
   month: 10
   day: monday
   top: 3
+  min_matches: 3          # sides with fewer games (one-off XIs) are left out
   title: "Season review"
 
 # League tables: last day of each month, April to September. One carousel with each adult team's league
