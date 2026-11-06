@@ -85,14 +85,16 @@ def career_leaders(cfg, root, top=5):
         people[pkey] = {"name": rec.get("name") or rec.get("short"), **totals}
         if cid != "new":
             seen.update(c.strip() for c in cid.split("+"))
-    linked = {}
-    for pid, cid in car.links.items():
-        linked.setdefault(cid, pid)
+    full = {}
+    for row in K.load_links_rows(root):
+        for c in (row.get("cricketstatz") or "").split("+"):
+            if c.strip() and row.get("name"):
+                full.setdefault(c.strip(), row["name"])
     for cid, b in car.baseline.items():
         if cid in seen:
             continue
         nm = b["name"].split()
-        name = f"{nm[-1]} {' '.join(nm[:-1])}" if len(nm) > 1 and len(nm[-1]) <= 2 else b["name"]
+        name = full.get(cid) or (f"{nm[-1]} {' '.join(nm[:-1])}" if len(nm) > 1 and len(nm[-1]) <= 2 else b["name"])
         people[f"cs|{cid}"] = {"name": name, **{s: b[s] for s in K.STATS}}
     def best(stat, unit):
         rows = sorted(people.values(), key=lambda p: (-p[stat], p["name"]))[:top]
