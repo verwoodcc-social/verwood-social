@@ -33,10 +33,15 @@ jobs:
           cache: pip
 
       - name: Install
-        timeout-minutes: 8
+        timeout-minutes: 10
         run: |
           pip install -r requirements.txt
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
+          # The runner usually has everything Chromium needs. Only fetch system packages if it won't start
+          # (Ubuntu's package mirror is sometimes very slow, so this avoids it when possible).
+          python -c "from playwright.sync_api import sync_playwright as s; p=s().start(); p.chromium.launch().close(); p.stop()" \
+            || timeout 420 python -m playwright install-deps chromium
+          fc-list | grep -qi emoji || timeout 180 sudo apt-get install -y -q fonts-noto-color-emoji || true
 
       - name: Get player photos from the private photo store (if connected)
         if: env.PHOTOS_KEY != ''
