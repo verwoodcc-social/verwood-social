@@ -84,6 +84,9 @@ matchday:
   enabled: true
   include: all            # all = home and away, home = home games only
   juniors: false          # false = senior teams only
+  # Outdoor season only: April to September, and never for indoor teams
+  months: [4, 5, 6, 7, 8, 9]
+  exclude_teams: '\bIndoor\b'
   # Shown for home games when Play-Cricket has no ground recorded (not for indoor games)
   default_home_ground: "Potterne Park"
   title: "Matchday"

@@ -74,3 +74,12 @@ def test_made_daily_as_story_only_and_posted_to_stories_only(club_root):
     assert "PAGE1/photo_stories" in posted and "IG1/media_publish" in posted
     assert not any(c[1] == "PAGE1/photos" and c[2].get("message") for c in m.http.calls)  # no feed post
     assert gh.issues[1]["state"] == "closed" and "published" in gh.labels[1]
+
+
+def test_outdoor_season_only(club_root):
+    cfg = setup(club_root, "  months: [4, 5, 6, 7, 8, 9]\n  exclude_teams: '\\bIndoor\\b'\n")
+    pc = StubPC(GAMES)
+    assert P.matchday_post(cfg, pc, date(2026, 11, 8)) is None and pc.asked == []  # winter: nothing, no lookup
+    summer = [dict(g, match_date="09/05/2027") for g in GAMES]
+    rows = P.matchday_post(cfg, StubPC(summer), date(2027, 5, 9))["data"]["matches"]
+    assert [r["team"] for r in rows] == ["Sunday XI"]  # indoor teams left out

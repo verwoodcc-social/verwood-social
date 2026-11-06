@@ -132,7 +132,7 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
             notes.append("No new match results.")
     if "matchday" in jobs:
         p = P.matchday_post(cfg, pc, today)
-        (made.append(p) if p else notes.append("No senior games today, so no matchday story."))
+        (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
     made = [p for p in made if p["key"] not in state["posted"]]
 
     out_dir = Path("posts") / today.isoformat()

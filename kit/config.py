@@ -25,7 +25,8 @@ DEFAULTS = {
     "milestones": {"enabled": True, "batting": [50, 100], "bowling_wickets": 5,
                    "junior_photos": "name_no_photo", "stories": True},
     "matchday": {"enabled": False, "include": "all", "juniors": False, "default_home_ground": "",
-                 "no_default_ground_teams": r"\bIndoor\b", "title": "Matchday",
+                 "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
+                 "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
     "show": {"top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},
     "posts": {
@@ -183,6 +184,13 @@ def validate(cfg):
     md = cfg.get("matchday") or {}
     if md.get("include", "all") not in ("all", "home"):
         problems.append("matchday → include: use all or home.")
+    months = md.get("months", [])
+    if not isinstance(months, list) or not all(isinstance(m, int) and 1 <= m <= 12 for m in months):
+        problems.append("matchday → months: list month numbers 1 to 12, e.g. [4, 5, 6, 7, 8, 9].")
+    try:
+        re.compile(md.get("exclude_teams") or "")
+    except re.error:
+        problems.append("matchday → exclude_teams: that pattern isn't valid.")
     for k in ("enabled", "juniors"):
         if not isinstance(md.get(k, False), bool):
             problems.append(f"matchday → {k}: use true or false.")

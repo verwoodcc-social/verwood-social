@@ -398,9 +398,14 @@ def matchday_venue(cfg, row):
 def matchday_post(cfg, pc, today):
     """One 'Today' story listing all of today's chosen games, or None."""
     md = cfg["matchday"]
+    if today.month not in (md.get("months") or range(1, 13)):
+        return None  # out of season: don't even ask Play-Cricket
+    exclude = md.get("exclude_teams") or ""
     rows = []
     for r in fixture_rows(cfg, pc.fixtures(today, today)):
         if not md.get("juniors") and cfg.is_junior(r["team"]):
+            continue
+        if exclude and re.search(exclude, r["team"], re.I):
             continue
         if md.get("include") == "home" and not r["home"]:
             continue
