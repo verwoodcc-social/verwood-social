@@ -166,7 +166,7 @@ class Meta:
 
 
 # --- Insights, for the monthly sponsor report ----------------------------------
-# Needs two extra token permissions: read_insights (Facebook) and instagram_manage_insights.
+# Needs three extra token permissions: read_insights, pages_read_user_content and instagram_manage_insights.
 # Meta keeps renaming these metrics, so every figure is fetched separately and a missing one is
 # reported as unavailable rather than stopping the report.
 

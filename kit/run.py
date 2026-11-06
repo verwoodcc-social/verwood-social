@@ -449,8 +449,8 @@ def insights_check(meta, today, cfg):
     ig = ins.ig_totals(end - _td(days=7), end) if meta.ig_id else {"views": 0}
     if fb.get("views") is not None and ig:
         return f"✅ **Sponsor report** can read the figures (Facebook: {fb['views']:,} views in the last 7 days)."
-    return ("ℹ️ **Sponsor report**: Meta isn't sharing the view figures yet. Regenerate the Meta token with two extra "
-            "permissions, `read_insights` and `instagram_manage_insights` (setup guide, step 4c), and update the "
+    return ("ℹ️ **Sponsor report**: Meta isn't sharing the view figures yet. Regenerate the Meta token with three extra "
+            "permissions, `read_insights`, `pages_read_user_content` and `instagram_manage_insights` (setup guide, step 4c), and update the "
             "META_TOKEN secret. Details: " + "; ".join(ins.problems[:2]))
 
 REPORT_PENDING = ".kit-report.json"
@@ -518,8 +518,8 @@ def cmd_report_issue(args, root=C.ROOT, gh=None):
     if r["problems"]:
         notes = ("\n\n<details><summary>Figures Meta didn't provide</summary>\n\n" +
                  "\n".join(f"- {p}" for p in r["problems"]) +
-                 "\n\nIf these mention permissions, the Meta token needs `read_insights` and "
-                 "`instagram_manage_insights` (setup guide, step 4c).\n</details>")
+                 "\n\nIf these mention permissions, the Meta token needs `read_insights`, "
+                 "`pages_read_user_content` and `instagram_manage_insights` (setup guide, step 4c).\n</details>")
     body = (f"Here's the {r['month']} social media report for {sponsor}.\n\n"
             f"**[⬇️ Download the PDF]({pdf})** to send to {sponsor}. This report is never posted publicly.\n\n"
             f"![{r['month']} report]({img})\n\n### Summary (to paste into an email)\n\n```text\n{r['summary']}\n```"

@@ -78,8 +78,9 @@ renames these menus, so if something isn't exactly where described, look for the
 4. When asked, connect it to your club's business portfolio, then finish creating the app.
 5. Switch on the permissions the kit needs. In the app, open **Use cases**:
    - next to *Manage messaging & content on Instagram*, click **Customize** and click **Add** next to
-     `instagram_basic`, `instagram_content_publish` and `pages_read_engagement`
-   - switch to *Manage Pages* (the use case switcher at the top) and click **Add** next to `pages_manage_posts`
+     `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights` and `pages_read_engagement`
+   - switch to *Manage Pages* (the use case switcher at the top) and click **Add** next to `pages_manage_posts`,
+     `read_insights` and `pages_read_user_content` (the last two are for the monthly sponsor report)
 
 **4c. Make a system user and its token**
 1. Back in [business.facebook.com](https://business.facebook.com) → **Settings → Users → System users**,
@@ -94,8 +95,8 @@ renames these menus, so if something isn't exactly where described, look for the
    If several people have full control of your portfolio, Meta may ask one of them to approve this.
 3. Click **Generate token**, choose your app, and set **Token expiration** to **Never**.
 4. Tick these permissions:
-   `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`,
-   `instagram_basic`, `instagram_content_publish`, `business_management`
+   `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`, `read_insights`, `pages_read_user_content`,
+   `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights`, `business_management`
 5. Click **Generate token** and copy it. You only see it once.
 
 **4d. Save it**
