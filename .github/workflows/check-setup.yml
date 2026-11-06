@@ -57,6 +57,7 @@ jobs:
         env:
           PLAYCRICKET_API_TOKEN: ${{ secrets.PLAYCRICKET_API_TOKEN }}
           META_TOKEN: ${{ secrets.META_TOKEN }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}   # only to see if email is set up (for the expiry check)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m kit check
         continue-on-error: true

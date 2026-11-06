@@ -116,6 +116,14 @@ captain_reports:
   max_length: 700           # characters of report used in the caption
   teams: '.'                # which teams' results wait for a report: all teams (senior and youth)
 
+# Expiry reminders: an email (and a problem issue) before a key the kit uses runs out, at each of
+# warn_days before. The Meta token and photos key dates are read automatically; Microsoft doesn't share
+# the email secret's date, so copy it from Entra → App registrations → Certificates & secrets.
+expiry_reminders:
+  enabled: true
+  warn_days: [30, 7]
+  m365_secret_expires: "2028-11-05"   # the "VCC Social" secret in Entra; update this when you make a new one
+
 # Season fixture lists: 1–7 April, one post per team (senior and youth) with all its outdoor summer
 # fixtures, spread across the week so a few go out each morning.
 season_fixtures:

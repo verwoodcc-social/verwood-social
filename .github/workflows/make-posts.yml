@@ -93,6 +93,20 @@ jobs:
           META_TOKEN: ${{ secrets.META_TOKEN }}
         run: python -m kit due
 
+      - name: Remind the committee before a key expires
+        if: always()
+        continue-on-error: true   # a reminder problem must never stop the posts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
+          M365_CLIENT_ID: ${{ secrets.M365_CLIENT_ID }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+        run: python -m kit expiry
+
       - name: Remember what's been posted
         if: always()
         run: |

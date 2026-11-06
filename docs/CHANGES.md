@@ -1,5 +1,12 @@
 # What's new
 
+## 1.17.0 (Verwood)
+
+- Expiry reminders: every morning the kit checks when the Meta token, the player photos key and the
+  Microsoft 365 email secret run out, and emails the committee 30 and 7 days before (club.yml →
+  expiry_reminders). The reminder closes itself with a "renewed" email once the new key is saved.
+  Check setup shows each expiry date.
+
 ## 1.16.0 (Verwood)
 - **Captain's match reports:** a Microsoft Form + Power Automate flow (docs/CAPTAINS-REPORT-SETUP.md)
   sends a captain's few lines and player of the match to the kit, which adds them to that game's result

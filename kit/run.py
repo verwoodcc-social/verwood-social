@@ -5,6 +5,7 @@
   python -m kit publish  --issue <number>    # when an issue gets the 'approved' label
   python -m kit check                        # test the setup and render sample graphics
   python -m kit preview  --sha <commit>      # open an issue showing the sample graphics
+  python -m kit expiry                       # remind the committee before a key expires
 """
 import argparse
 import json
@@ -644,6 +645,20 @@ def cmd_resolved(args, root=C.ROOT, gh=None):
     return alerts.resolved(gh, args.key, club=cfg.short_name_upper)
 
 
+def cmd_expiry(args, root=C.ROOT, gh=None, session=None):
+    """Warn before the Meta token, photos key or Microsoft 365 secret expires."""
+    from . import expiry
+    cfg = C.load(root / "club.yml")
+    gh = gh or GitHub()
+    lines = expiry.run(cfg, gh, os.environ, today_for(cfg, getattr(args, "today", None)), session)
+    if lines:
+        rep = Report("Expiry reminders")
+        for l in lines:
+            rep.add(l)
+        rep.write()
+    return lines
+
+
 def already_done(gh, number):
     done = set()
     for c in gh._req("GET", f"issues/{number}/comments", params={"per_page": 100}):
@@ -769,6 +784,12 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
                 "expired or lost access: make a new one and update the PLAYER_PHOTOS_TOKEN secret.")
     elif cfg["milestones"]["enabled"]:
         rep.add("ℹ️ **Player photos**: not connected (optional). Milestone posts use the club badge design instead.")
+
+    # Expiry dates
+    if cfg["expiry_reminders"]["enabled"]:
+        from . import expiry
+        for line in expiry.check_lines(cfg, os.environ, today_for(cfg, getattr(args, "today", None))):
+            rep.add(line)
 
     # Career milestones
     if cfg["career_milestones"]["enabled"]:
@@ -925,6 +946,8 @@ def main(argv=None):
     al.add_argument("--title", required=True)
     al.add_argument("--link")
     al.add_argument("--quiet-first", action="store_true")
+    ex = sub.add_parser("expiry")
+    ex.add_argument("--today")
     rs = sub.add_parser("resolved")
     rs.add_argument("--key", required=True)
     rp = sub.add_parser("report")
@@ -942,7 +965,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")
