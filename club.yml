@@ -105,4 +105,4 @@ matchday:
 
 # Monthly sponsor report email (addresses are GitHub secrets, not here, because this repository is public)
 report:
-  email_subject: "VCC Social Media Report"   # add {month} to include the month, e.g. "VCC Social Media Report – {month}"
+  email_subject: "VCC Social Media Report – {month}"   # {month} becomes e.g. November 2026
