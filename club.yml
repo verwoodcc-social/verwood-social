@@ -84,7 +84,7 @@ juniors:
 # of 2026), then add Play-Cricket. Women's Softball uses Play-Cricket only. Outdoor summer games only.
 career_milestones:
   enabled: true
-  names: full               # adult career stats use full names (anyone in the juniors photo folder stays "Ben T.")
+  names: full               # career milestones always use full names (a junior's photo is never shown with it)
   baseline_until: 2026
   club_teams: '^(1st|2nd|3rd|4th|5th) XI$|^Wednesday 1st XI$|^Friendly XI$'
   softball_teams: "^Women's Softball( B)?$"

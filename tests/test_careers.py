@@ -114,7 +114,7 @@ def test_new_games_only_counts_summer_after_baseline(club_root):
     assert "11" not in car.state["counted"]  # November: not an outdoor summer game
 
 
-def test_juniors_photo_folder_keeps_short_name(club_root, tmp_path):
+def test_juniors_get_full_name_but_never_their_photo(club_root, tmp_path):
     from kit.milestones import PhotoStore
     cfg = setup(club_root)
     (tmp_path / "juniors").mkdir()
@@ -122,4 +122,4 @@ def test_juniors_photo_folder_keeps_short_name(club_root, tmp_path):
     car = K.Careers(cfg, club_root)
     ev = car.add_match(game(5, "1st XI", [bat("Charlie Gajic", "47", 25)], [], []))
     post = K.career_posts(cfg, ev, photos=PhotoStore(tmp_path))[0]
-    assert "Charlie G." in post["caption"] and "Gajic" not in post["caption"] and not post["data"]["photo_path"]
+    assert "Charlie Gajic" in post["caption"] and not post["data"]["photo_path"]

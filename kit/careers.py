@@ -282,13 +282,14 @@ def career_posts(cfg, events, photos=None):
         d = e["match"]
         side = Side(cfg).of(d)
         when = parse_date(d.get("match_date"))
-        found = photos.find(e["name"]) if photos else None
-        if cfg["career_milestones"].get("names") == "full" and not (found and found[1] == "juniors"):
-            name = e["name"].strip()  # adult career stats: full name
+        if cfg["career_milestones"].get("names") == "full":
+            name = e["name"].strip()  # career stats: always the full name
         else:
-            name = person_name(e["name"], True, rule)  # anyone in the juniors photo folder keeps the junior rule
+            name = person_name(e["name"], True, rule)
         card = {"show_names": rule != "none" or cfg["career_milestones"].get("names") == "full", "junior": False}
         shown, photo, why = presentation(cfg, card, {"full_name": e["name"], "name": name}, photos)
+        if why.startswith("junior"):
+            shown, photo, why = name, None, "junior: full name, no photo"  # ECB: never a junior's photo with their name
         big, small = WORDS[e["stat"]]
         where = "in Women's Softball" if e["pool"] == "softball" else f"for {cfg.short_name}"
         label = ("Softball " + big) if e["pool"] == "softball" else big.capitalize()
