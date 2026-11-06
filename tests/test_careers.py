@@ -123,3 +123,11 @@ def test_juniors_get_full_name_but_never_their_photo(club_root, tmp_path):
     ev = car.add_match(game(5, "1st XI", [bat("Charlie Gajic", "47", 25)], [], []))
     post = K.career_posts(cfg, ev, photos=PhotoStore(tmp_path))[0]
     assert "Charlie Gajic" in post["caption"] and not post["data"]["photo_path"]
+
+
+def test_one_player_split_across_two_records(club_root):
+    cfg = setup(club_root, links=[("67", "", "Driscoll J #1+Driscoll J #2", "")])
+    car = K.Careers(cfg, club_root)
+    rec = {"pid": "67", "key": "driscoll|j", **{s: 0 for s in K.STATS}}
+    totals, ok = car.career("club", rec)
+    assert ok and totals["runs"] == 3354 + 4170 and totals["matches"] == 287 + 241

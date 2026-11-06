@@ -206,7 +206,8 @@ class Careers:
         if it needs deciding by hand."""
         hand = self.links.get(pid)
         if hand:
-            return hand if hand in self.baseline else "new"
+            ids = [h.strip() for h in hand.split("+")]
+            return hand if all(h in self.baseline for h in ids) else "new"
         if key in self.ambiguous:
             return None
         cid = self.by_key.get(key)
@@ -222,8 +223,8 @@ class Careers:
         if pool == "softball":
             return {s: rec[s] for s in STATS}, True
         cid = self.link(rec["pid"], rec.get("key", ""))
-        base = self.baseline.get(cid) if cid not in (None, "new") else None
-        return {s: rec[s] + (base[s] if base else 0) for s in STATS}, cid is not None
+        bases = [self.baseline[c.strip()] for c in cid.split("+")] if cid not in (None, "new") else []
+        return {s: rec[s] + sum(b[s] for b in bases) for s in STATS}, cid is not None
 
     def needs_linking(self):
         """Play-Cricket club players that can't be matched to CricketStatz automatically."""
