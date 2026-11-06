@@ -44,7 +44,7 @@ def divisions(cfg, pc, season):
 def tidy_team(name, cfg):
     """'South Wilts CC - 2nd XI' -> 'South Wilts 2nd XI'."""
     n = re.sub(r"\s*-\s*", " ", str(name or "")).strip()
-    n = re.sub(r",\s*\w+(?=\s)", "", n)          # 'Winton CC, Dorset 1st XI' -> 'Winton CC 1st XI'
+    n = re.sub(r",\s*[A-Za-z]+\b", "", n)        # 'Winton CC, Dorset 1st XI' -> 'Winton CC 1st XI'
     return re.sub(r"\s+(CC|C\.C\.|Cricket Club)\b", "", n).strip() or n
 
 
