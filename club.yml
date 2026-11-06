@@ -102,3 +102,7 @@ matchday:
   default_home_ground: "Potterne Park"
   title: "Matchday"
   cta: "Come and support!"
+
+# Monthly sponsor report email (addresses are GitHub secrets, not here, because this repository is public)
+report:
+  email_subject: "VCC Social Media Report"   # add {month} to include the month, e.g. "VCC Social Media Report – {month}"

@@ -535,7 +535,8 @@ def cmd_report_issue(args, root=C.ROOT, gh=None):
             text = (f"Hello,\n\nAttached is the {r['month']} social media report for {sponsor}, ready to "
                     f"forward.\n\n{r['summary']}\n\nThe report is also here: {issue['html_url']}\n\n"
                     f"(Sent automatically by the Verwood social media kit.)")
-            sent = mailer.send(m, f"{sponsor} social media report: {r['month']}", text, [root / r["pdf"]])
+            subject = (cfg.get("report") or {}).get("email_subject") or f"{sponsor} social media report: {r['month']}"
+            sent = mailer.send(m, subject.replace("{month}", r["month"]), text, [root / r["pdf"]])
             gh.comment(issue["number"], f"📧 Emailed to {len(sent)} committee member{'s' if len(sent) != 1 else ''}.")
             rep.add(f"📧 Emailed to {len(sent)} people.")
     except mailer.MailError as e:
