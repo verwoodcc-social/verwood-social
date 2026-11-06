@@ -78,6 +78,9 @@ def due_jobs(cfg, today, only=None):
         jobs.append("matches")
     if cfg["matchday"]["enabled"] and only in (None, "matchday"):
         jobs.append("matchday")
+    from .review_season import due as sr_due
+    if only == "season" or (not only and sr_due(cfg, today)):
+        jobs.append("season")
     from .tables import due as tb_due
     if only == "tables" or (not only and tb_due(cfg, today)):
         jobs.append("tables")
@@ -160,6 +163,10 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
     if "matchday" in jobs:
         p = P.matchday_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
+    if "season" in jobs:
+        from .review_season import season_post
+        p = season_post(cfg, pc, today, root)
+        (made.append(p) if p else notes.append("No adult results last season, so no season review."))
     if "tables" in jobs:
         from .tables import tables_post
         p = tables_post(cfg, pc, today)
@@ -793,6 +800,19 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
                                 "files": [str(f.relative_to(root)) for f in files]})
                 rep.add(f"✅ **Leaderboards**: previewed from the {y} season ({lp['data']['boards'][0]['matches']} "
                         f"adult matches, {len(lp['data']['boards']) - 1} team boards).")
+        if cfg["season_review"]["enabled"] and pc_ok:
+            from .review_season import season_post
+            try:
+                sp = season_post(cfg, pc, date(today.year if today.month > 9 else today.year - 1, 10, 5), root)
+            except PlayCricketError as e:
+                sp = None
+                rep.add(f"ℹ️ **Season review** preview skipped: {e}")
+            if sp:
+                files = r.render(cfg, sp["data"], root / "posts/samples", "sample-season")
+                pending.append({**{k: v for k, v in sp.items() if k != "data"}, "key": "sample-season",
+                                "title": f"Season review ({sp['data']['season']}, real data)",
+                                "files": [str(f.relative_to(root)) for f in files]})
+                rep.add(f"✅ **Season review**: previewed for {sp['data']['season']} ({len(files)} slides).")
         if cfg["league_tables"]["enabled"] and pc_ok:
             from .tables import tables_post
             y = today.year if today.month > 9 else today.year - 1
@@ -843,7 +863,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make")
     m.add_argument("--today")
-    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "leaderboards", "tables", "all-due"])
+    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "leaderboards", "tables", "season", "all-due"])
     a = sub.add_parser("announce")
     a.add_argument("--sha", required=True)
     pub = sub.add_parser("publish")

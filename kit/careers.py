@@ -368,7 +368,13 @@ def new_games(cfg, pc, today, careers):
         except PlayCricketError as e:
             log.warning("Career totals: match %s: %s", m["id"], e)
             continue
-        events += careers.add_match(detail, announce=d.toordinal() >= look_from)
+        new = careers.add_match(detail, announce=d.toordinal() >= look_from)
+        log_ = careers.state.setdefault("milestone_log", [])
+        for e in new:
+            log_.append({"season": d.year, "date": d.isoformat(), "name": e["name"], "team": e["team"],
+                         "stat": e["stat"], "value": e["value"], "pool": e["pool"],
+                         "text": f"{e['value']:,} {WORDS[e['stat']][0]}" + (" (softball)" if e["pool"] == "softball" else "")})
+        events += new
     return events
 
 

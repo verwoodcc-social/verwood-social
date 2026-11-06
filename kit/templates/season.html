@@ -1,0 +1,69 @@
+<!doctype html>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
+.sv-title { font-weight: 900; font-size: 66px; line-height: .98; letter-spacing: -.02em; text-transform: uppercase; margin-top: 6px; }
+.sv-title.long { font-size: 52px; }
+.sv-t { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-variant-numeric: tabular-nums; }
+.sv-t th { font-size: 20px; font-weight: 800; letter-spacing: .16em; color: var(--silver-dim); text-align: right; padding: 0 12px 4px; }
+.sv-t th.l, .sv-t td.l { text-align: left; }
+.sv-t td { font-size: 27px; font-weight: 700; text-align: right; padding: 12px; background: rgba(255,255,255,.06); }
+.sv-t td:first-child { border-radius: 14px 0 0 14px; } .sv-t td:last-child { border-radius: 0 14px 14px 0; }
+.sv-t tr.tot td { background: var(--silver); color: var(--navy-ink); font-weight: 900; }
+.sv-t td.pos { font-size: 22px; color: var(--silver-dim); font-weight: 700; white-space: nowrap; }
+.sv-tot td.pos { color: var(--navy-ink); }
+.sv-rec { display: flex; gap: 14px; margin: 4px 0 18px; }
+.sv-rec div { flex: 1; background: rgba(255,255,255,.08); border-radius: 16px; padding: 14px 16px; }
+.sv-rec b { display: block; font-size: 52px; font-weight: 900; line-height: 1; letter-spacing: -.02em; }
+.sv-rec span { font-size: 18px; font-weight: 800; letter-spacing: .16em; color: var(--silver-dim); }
+.sv-rec .pos b { font-size: 40px; }
+.lb-sec h3 { font-size: 20px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--silver-dim); margin: 12px 0 2px; }
+.lb-row { display: grid; grid-template-columns: 40px 1fr auto; align-items: baseline; gap: 12px; padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,.12); }
+.lb-row .rk { font-weight: 900; font-size: 24px; color: var(--silver-dim); }
+.lb-row .nm { font-weight: 800; font-size: 28px; }
+.lb-row .dt { font-weight: 600; font-size: 20px; color: var(--silver-dim); margin-left: 10px; }
+.lb-row .vl { font-weight: 900; font-size: 32px; }
+.lb-none { font-size: 22px; color: var(--silver-dim); padding: 4px 0; }
+.ms-row { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
+.ms-row .nm { font-weight: 800; font-size: 34px; }
+.ms-row .tx { font-size: 26px; color: var(--silver); margin-top: 2px; }
+</style></head>
+<body>
+<div class="card {{ 'has-photo' if photo }}">
+  {% include "_photo.html" %}
+  <div class="head">
+    <img class="badge" src="{{ badge }}">
+    <div>
+      <div class="club">{{ club.name }}</div>
+      <div class="sv-title {{ 'long' if s.title|length > 16 }}">{{ s.title }}</div>
+      <div class="sub">{{ s.sub }}</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+  {% if s.type == 'summary' %}
+  <table class="sv-t">
+    <tr><th class="l">TEAM</th><th>P</th><th>W</th><th>L</th><th>D/T</th><th>LEAGUE</th></tr>
+    {% for r in s.rows %}<tr><td class="l">{{ r.team }}</td><td>{{ r.P }}</td><td>{{ r.W }}</td><td>{{ r.L }}</td><td>{{ r.D }}</td><td class="pos">{{ r.pos or '–' }}</td></tr>{% endfor %}
+    <tr class="tot"><td class="l">All teams</td><td>{{ s.total.P }}</td><td>{{ s.total.W }}</td><td>{{ s.total.L }}</td><td>{{ s.total.D }}</td><td class="pos"></td></tr>
+  </table>
+  {% elif s.type == 'team' %}
+  <div class="sv-rec">
+    <div><b>{{ s.record.P }}</b><span>PLAYED</span></div><div><b>{{ s.record.W }}</b><span>WON</span></div>
+    <div><b>{{ s.record.L }}</b><span>LOST</span></div>
+    {% if s.pos %}<div class="pos"><b>{{ s.pos.split(' of ')[0] }}</b><span>OF {{ s.pos.split(' of ')[1] }} IN LEAGUE</span></div>{% endif %}
+  </div>
+  {% for key, label in [('bat', 'Most runs'), ('bowl', 'Most wickets'), ('field', 'Catches & stumpings')] %}
+  <div class="lb-sec"><h3>{{ label }}</h3>
+    {% for p in s[key] %}<div class="lb-row"><div class="rk">{{ loop.index }}</div><div class="nm">{{ p.name }}<span class="dt">{{ p.detail }}</span></div><div class="vl">{{ p.value }}</div></div>
+    {% else %}<div class="lb-none">None recorded</div>{% endfor %}</div>
+  {% endfor %}
+  {% elif s.type == 'milestones' %}
+  {% for r in s.rows %}<div class="ms-row"><div class="nm">{{ r.name }}</div><div class="tx">{{ r.text }} · {{ r.team }}</div></div>{% endfor %}
+  {% else %}
+  {% for key, label in s.sections %}
+  <div class="lb-sec"><h3>{{ label }}</h3>
+    {% for p in s[key] %}<div class="lb-row"><div class="rk">{{ loop.index }}</div><div class="nm">{{ p.name }}</div><div class="vl">{{ p.value }}</div></div>{% endfor %}</div>
+  {% endfor %}
+  {% endif %}
+{% include "_foot.html" %}
+</div>
+</body></html>

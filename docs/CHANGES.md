@@ -1,5 +1,11 @@
 # What's new
 
+## 1.14.0 (Verwood)
+- **Season review:** first Monday of October, one carousel for the outdoor season: every adult team's
+  record and league position, a slide per team (record, league finish, top 3 run scorers, wicket
+  takers and catchers), the career milestones reached that season, and the all-time career leaders.
+  Replaces October's monthly leaderboards. Settings under `season_review:`.
+
 ## 1.13.0 (Verwood)
 - **League tables:** on the last day of each month, April to September, one carousel with the league
   table for each adult team (from Play-Cricket), Verwood's row highlighted, and a caption listing each
