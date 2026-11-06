@@ -40,12 +40,13 @@ def summarise(cfg, detail):
         runs = _int(b.get("runs"), None)
         if how == "did not bat" or _norm(name) in NO_NAME or runs is None:
             continue
-        bat.append({"k": _key(b.get("batsman_id"), name), "name": name, "runs": runs, "out": how not in NOT_OUT})
+        bat.append({"k": _key(b.get("batsman_id"), name), "name": person_name(name, True, "initial"), "runs": runs,
+                    "out": how not in NOT_OUT})
     for b in (by.get(them) or {}).get("bowl") or []:
         name = str(b.get("bowler_name") or "").strip()
         if _norm(name) in NO_NAME:
             continue
-        bowl.append({"k": _key(b.get("bowler_id"), name), "name": name, "w": _int(b.get("wickets")),
+        bowl.append({"k": _key(b.get("bowler_id"), name), "name": person_name(name, True, "initial"), "w": _int(b.get("wickets")),
                      "r": _int(b.get("runs")), "overs": str(b.get("overs") or "")})
     for b in (by.get(them) or {}).get("bat") or []:  # their batting = our fielding
         how = str(b.get("how_out") or "").strip().lower()
@@ -60,7 +61,7 @@ def summarise(cfg, detail):
         who = str(who or "").strip()
         if not who or _norm(who) in NO_NAME:
             continue
-        f = field.setdefault(_key(pid, who), {"k": _key(pid, who), "name": who, "ct": 0, "st": 0})
+        f = field.setdefault(_key(pid, who), {"k": _key(pid, who), "name": person_name(who, True, "initial"), "ct": 0, "st": 0})
         f[kind] += 1
     if not bat and not bowl:
         return None
@@ -133,7 +134,7 @@ def board(cfg, matches, title, top=5):
             p = catches.setdefault(f["k"], {"name": f["name"], "ct": 0, "st": 0})
             p["ct"] += f["ct"]
             p["st"] += f["st"]
-    short = lambda n: person_name(n, True, rule)
+    short = (lambda n: n) if rule == "initial" else (lambda n: person_name(n, True, rule))
     bat = [{"name": short(p["name"]), "value": p["runs"],
             "detail": f"{p['inns']} inns · HS {p['hs']}{'*' if p['hs_no'] else ''}"}
            for p in sorted(runs.values(), key=lambda p: (-p["runs"], p["inns"], p["name"])) if p["runs"] > 0][:top]

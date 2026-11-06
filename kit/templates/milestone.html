@@ -40,12 +40,12 @@
   <div class="ms-body">
     {% if player_photo %}<div class="ms-photo"><img src="{{ player_photo }}" alt=""></div>{% endif %}
     <div class="ms-text">
-      <div class="ms-kicker">Milestone</div>
+      <div class="ms-kicker">{{ 'Career milestone' if m.career else 'Milestone' }}</div>
       <div class="ms-label">{{ m.label }}</div>
       <div class="ms-figures">{{ m.figures }}</div>
       {% if m.detail %}<div class="ms-detail">{{ m.detail }}</div>{% endif %}
       {% if m.name %}<div class="ms-name">{{ m.name }}</div>{% endif %}
-      <div class="ms-match">for our {{ m.team }}<br>v {{ m.opponent }}</div>
+      <div class="ms-match">{% if m.context %}{{ m.context }}{% else %}for our {{ m.team }}<br>v {{ m.opponent }}{% endif %}</div>
     </div>
   </div>
 

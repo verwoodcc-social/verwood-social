@@ -79,6 +79,22 @@ juniors:
   # Which teams count as junior (kept out of matchday stories). Verwood's Daughters and Sons sides are junior.
   team_pattern: '\b(U\s?\d{1,2}[A-Z]?|Under\s?\d{1,2}|Girls|Boys|Juniors?|All Stars|Dynamos|Colts|Daughters|Sons)\b'
 
+# Career milestones: 500 runs (then every 500); 50 wickets, matches, catches and keeping catches (then every 50).
+# Saturday, midweek and Sunday sides start from the CricketStatz totals in careers/baseline.csv (to the end
+# of 2026), then add Play-Cricket. Women's Softball uses Play-Cricket only. Outdoor summer games only.
+career_milestones:
+  enabled: true
+  baseline_until: 2026
+  club_teams: '^(1st|2nd|3rd|4th|5th) XI$|^Wednesday 1st XI$|^Friendly XI$'
+  softball_teams: "^Women's Softball( B)?$"
+  softball_history_from: 2015
+  every:
+    runs: 500
+    wickets: 50
+    matches: 50
+    catches: 50
+    keeper_catches: 50
+
 # Season leaderboards: first Monday of each month, May to October (season to date).
 # A club-wide board for all adult teams, then one per adult team. Junior and indoor teams are left out.
 leaderboards:

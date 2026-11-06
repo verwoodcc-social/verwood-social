@@ -1,5 +1,14 @@
 # What's new
 
+## 1.11.0 (Verwood)
+- **Career milestones:** a post when a player reaches 500 career runs (then every 500), or 50 wickets,
+  appearances, catches or catches as wicketkeeper (then every 50). Saturday, midweek and Sunday sides
+  start from the CricketStatz totals to the end of 2026 (`careers/baseline.csv`) and add each outdoor
+  Play-Cricket game from 2027. Women's Softball uses Play-Cricket only (all past outdoor seasons are
+  added up once). Players are matched by Play-Cricket id (`careers/links.csv`); a few shared names need
+  checking by hand. Indoor, junior and winter games aren't counted.
+- Saved totals and the leaderboards cache now hold shortened names only.
+
 ## 1.10.0 (Verwood)
 - **Problem alerts by email:** if the daily posts, a post, a club news preview or the sponsor report
   fails, a *problem* issue opens and the committee is emailed (through Microsoft 365, to ALERT_EMAIL_TO

@@ -133,6 +133,17 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
         photos = PhotoStore(root / "player-photos")
         ms, skipped = P.match_posts(cfg, pc, today, state["posted"], photos=photos)
         made += ms
+        if cfg["career_milestones"]["enabled"]:
+            from . import careers as K
+            car = K.Careers(cfg, root)
+            try:
+                filled = K.backfill_softball(cfg, pc, car, today)
+                if filled:
+                    notes.append(f"Added {filled} past Women's Softball games to the softball career totals.")
+                made += K.career_posts(cfg, K.new_games(cfg, pc, today, car), photos=photos)
+            except PlayCricketError as e:
+                notes.append(f"Career totals not updated today: {e}")
+            car.save()
         notes += [f"Not posted: {s}" for s in skipped]
         if not ms and not skipped:
             notes.append("No new match results.")
@@ -712,6 +723,19 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
                 "expired or lost access: make a new one and update the PLAYER_PHOTOS_TOKEN secret.")
     elif cfg["milestones"]["enabled"]:
         rep.add("ℹ️ **Player photos**: not connected (optional). Milestone posts use the club badge design instead.")
+
+    # Career milestones
+    if cfg["career_milestones"]["enabled"]:
+        from . import careers as K
+        car = K.Careers(cfg, root)
+        linked = len([1 for v in car.links.values() if v])
+        todo = [r for r in K.load_links_rows(root) if not r["cricketstatz"]]
+        line = (f"✅ **Career milestones**: {len(car.baseline)} CricketStatz starting totals, {linked} Play-Cricket "
+                f"players linked.")
+        if todo:
+            line += (f" {len(todo)} still to check in careers/links.csv ({', '.join(r['name'] for r in todo[:9])}); "
+                     f"no career posts for them until they're filled in.")
+        rep.add(line)
 
     # Repository must be public so Instagram can fetch the images
     try:
