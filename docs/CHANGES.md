@@ -1,5 +1,12 @@
 # What's new
 
+## 1.8.0 (Verwood)
+- **Monthly sponsor report:** on the 1st of each month, a one-page PDF for the sponsor with last month's
+  views, accounts reached, likes/comments/shares, followers (and change), the top three posts and how
+  many posts and Stories carried their logo. Opened as an issue (label *report*) to forward on; never
+  posted. Run it for any month from **Actions → Sponsor report**. Needs the Meta token to include
+  `read_insights` and `instagram_manage_insights`; the setup check says if it doesn't.
+
 ## 1.7.0 (Verwood)
 - **Club news and events:** Issues → New issue → *Club news or event*. Fill in a headline, details and
   (optionally) a date, time, venue, link, photo and a "post on" date. The kit makes a branded post and

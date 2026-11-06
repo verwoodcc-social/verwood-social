@@ -7,6 +7,7 @@ Images must be public URLs (Instagram fetches them itself) and JPEG.
 """
 import json
 import time
+from datetime import timedelta
 
 import requests
 
@@ -162,3 +163,139 @@ class Meta:
         except MetaError:
             link = None
         return {"network": "instagram", "id": media_id, "url": link or f"https://www.instagram.com/{self.ig_username or ''}"}
+
+
+# --- Insights, for the monthly sponsor report ----------------------------------
+# Needs two extra token permissions: read_insights (Facebook) and instagram_manage_insights.
+# Meta keeps renaming these metrics, so every figure is fetched separately and a missing one is
+# reported as unavailable rather than stopping the report.
+
+class Insights:
+    def __init__(self, meta):
+        self.m = meta
+        if meta.page_token is None:
+            meta.resolve()
+        self.problems = []
+
+    def _get(self, path, **params):
+        return self.m._call("GET", path, token=self.m.page_token, **params)
+
+    def _note(self, what, e):
+        self.problems.append(f"{what}: {e}")
+
+    def followers(self):
+        out = {"facebook": None, "instagram": None}
+        try:
+            p = self._get(self.m.page_id, fields="followers_count,fan_count")
+            out["facebook"] = p.get("followers_count", p.get("fan_count"))
+        except MetaError as e:
+            self._note("Facebook followers", e)
+        if self.m.ig_id:
+            try:
+                out["instagram"] = self._get(self.m.ig_id, fields="followers_count").get("followers_count")
+            except MetaError as e:
+                self._note("Instagram followers", e)
+        return out
+
+    def page_totals(self, since, until):
+        """Facebook Page views (and people reached, where Meta provides it) between two datetimes."""
+        out = {}
+        for key, metrics in (("views", ("page_media_view", "page_impressions")),
+                             ("reach", ("page_total_media_view_unique", "page_impressions_unique"))):
+            for metric in metrics:
+                try:
+                    data = self._get(f"{self.m.page_id}/insights", metric=metric, period="day",
+                                     since=int(since.timestamp()), until=int(until.timestamp())).get("data", [])
+                except MetaError as e:
+                    self._note(f"Facebook {key} ({metric})", e)
+                    continue
+                if data:
+                    out[key] = sum(int(v.get("value") or 0) for v in data[0].get("values", [])
+                                   if isinstance(v.get("value"), (int, float)))
+                    out[f"{key}_daily_total"] = key == "reach"
+                    break
+        return out
+
+    def page_posts(self, since, until):
+        """Facebook posts published in the range, with views and engagement."""
+        try:
+            posts = self._get(f"{self.m.page_id}/published_posts",
+                              fields="id,created_time,message,permalink_url,shares,"
+                                     "reactions.summary(total_count).limit(0),comments.summary(total_count).limit(0)",
+                              since=int(since.timestamp()), until=int(until.timestamp()), limit=100).get("data", [])
+        except MetaError as e:
+            self._note("Facebook posts", e)
+            return []
+        out = []
+        for p in posts:
+            row = {"network": "Facebook", "id": p["id"], "when": p.get("created_time", ""),
+                   "text": (p.get("message") or "").strip(), "url": p.get("permalink_url", ""),
+                   "likes": ((p.get("reactions") or {}).get("summary") or {}).get("total_count", 0),
+                   "comments": ((p.get("comments") or {}).get("summary") or {}).get("total_count", 0),
+                   "shares": (p.get("shares") or {}).get("count", 0), "views": None}
+            for metric in ("post_media_view", "post_impressions"):
+                try:
+                    d = self._get(f"{p['id']}/insights", metric=metric).get("data", [])
+                except MetaError as e:
+                    if not any("Facebook post views" in x for x in self.problems):
+                        self._note("Facebook post views", e)
+                    continue
+                if d and d[0].get("values"):
+                    row["views"] = d[0]["values"][-1].get("value")
+                    break
+            out.append(row)
+        return out
+
+    def ig_totals(self, since, until):
+        """Instagram account views, accounts reached and interactions (Meta allows 30 days per request)."""
+        if not self.m.ig_id:
+            return {}
+        out = {}
+        chunks, start = [], since
+        while start < until:
+            end = min(until, start + timedelta(days=30))
+            chunks.append((start, end))
+            start = end
+        for metric, key in (("views", "views"), ("reach", "reach"), ("total_interactions", "interactions"),
+                            ("likes", "likes"), ("comments", "comments"), ("shares", "shares")):
+            total, ok = 0, False
+            for a, b in chunks:
+                try:
+                    data = self._get(f"{self.m.ig_id}/insights", metric=metric, period="day",
+                                     metric_type="total_value", since=int(a.timestamp()),
+                                     until=int(b.timestamp())).get("data", [])
+                except MetaError as e:
+                    self._note(f"Instagram {key}", e)
+                    break
+                if data:
+                    total += int((data[0].get("total_value") or {}).get("value") or 0)
+                    ok = True
+            if ok:
+                out[key] = total
+        return out
+
+    def ig_posts(self, since, until):
+        if not self.m.ig_id:
+            return []
+        try:
+            media = self._get(f"{self.m.ig_id}/media",
+                              fields="id,caption,timestamp,permalink,media_type,like_count,comments_count",
+                              since=int(since.timestamp()), until=int(until.timestamp()), limit=100).get("data", [])
+        except MetaError as e:
+            self._note("Instagram posts", e)
+            return []
+        out = []
+        for p in media:
+            row = {"network": "Instagram", "id": p["id"], "when": p.get("timestamp", ""),
+                   "text": (p.get("caption") or "").strip(), "url": p.get("permalink", ""),
+                   "likes": p.get("like_count", 0), "comments": p.get("comments_count", 0), "shares": 0,
+                   "views": None, "reach": None}
+            try:
+                d = self._get(f"{p['id']}/insights", metric="views,reach,shares").get("data", [])
+                vals = {x["name"]: (x.get("values") or [{}])[-1].get("value") for x in d}
+                row.update(views=vals.get("views"), reach=vals.get("reach"), shares=vals.get("shares") or 0)
+            except MetaError as e:
+                if not any("Instagram post views" in x for x in self.problems):
+                    self._note("Instagram post views", e)
+            out.append(row)
+        return out

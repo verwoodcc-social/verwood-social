@@ -1,0 +1,58 @@
+name: Sponsor report
+
+# On the 1st of each month: last month's Facebook and Instagram figures as a PDF for the sponsor,
+# opened as an issue. Nothing is posted publicly. Run it by hand for any month from the Actions tab.
+on:
+  schedule:
+    - cron: "41 7 1 * *"   # 07:41 UTC on the 1st
+  workflow_dispatch:
+    inputs:
+      month:
+        description: "Month as YYYY-MM (leave empty for last month)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: sponsor-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Read the figures from Meta and make the PDF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          MONTH: ${{ inputs.month }}
+        run: python -m kit report ${MONTH:+--month "$MONTH"}
+
+      - name: Save the report to the repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add posts state
+          git diff --cached --quiet || git commit -m "Sponsor report"
+          git pull --rebase --quiet && git push --quiet
+
+      - name: Open the report issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m kit report-issue --sha "$(git rev-parse HEAD)"

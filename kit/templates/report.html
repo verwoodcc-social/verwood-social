@@ -1,0 +1,113 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>{{ fonts|safe }}
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 794px; }
+body { font-family: "KitFont", "Inter", sans-serif; color: #14213D; background: #FFFFFF; font-size: 12px; }
+.page { width: 794px; height: 1123px; display: flex; flex-direction: column; }
+.band { background: linear-gradient(150deg, var(--navy) 0%, var(--navy-deep) 70%, var(--navy-ink) 100%);
+  color: #fff; padding: 34px 44px 30px; display: flex; align-items: center; gap: 20px; }
+.band .badge { width: 62px; height: 72px; object-fit: contain; }
+.band .t { flex: 1; }
+.band .club { font-weight: 800; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--silver); }
+.band h1 { font-weight: 900; font-size: 38px; letter-spacing: -.01em; margin-top: 4px; line-height: 1.05; }
+.band .range { margin-top: 6px; font-size: 13px; color: var(--silver); font-weight: 600; }
+.band .spons { text-align: right; }
+.band .spons .lbl { font-size: 10px; letter-spacing: .18em; font-weight: 800; color: var(--silver); text-transform: uppercase; }
+.band .spons img { display: block; margin-top: 8px; height: 54px; background: #fff; border-radius: 8px; padding: 6px 10px; }
+.body { flex: 1; padding: 34px 44px 0; display: flex; flex-direction: column; gap: 32px; }
+.intro { font-size: 14px; line-height: 1.5; color: #33415C; }
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.tile { border: 1px solid #DCE3EE; border-radius: 12px; padding: 14px 14px 12px; }
+.tile .n { font-weight: 900; font-size: 30px; letter-spacing: -.02em; color: var(--navy-deep); line-height: 1.05; }
+.tile .l { margin-top: 6px; font-size: 11.5px; line-height: 1.35; color: #4A5875; font-weight: 600; }
+h2 { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 800; color: #4A5875; margin-bottom: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: right; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: #6B7894; font-weight: 700;
+  padding: 0 0 7px; border-bottom: 1px solid #DCE3EE; }
+th:first-child, td:first-child { text-align: left; }
+td { text-align: right; padding: 9px 0; border-bottom: 1px solid #EEF2F7; font-variant-numeric: tabular-nums; font-weight: 600; }
+td:first-child { font-weight: 800; }
+.up { color: #18794E; } .down { color: #B42318; }
+.two { display: grid; grid-template-columns: 1fr 1.35fr; gap: 28px; }
+.kinds td { font-weight: 600; } .kinds td:first-child { font-weight: 600; }
+.kinds tr.sum td { font-weight: 800; border-bottom: 0; }
+.top { display: flex; flex-direction: column; gap: 10px; }
+.tp { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: baseline;
+  padding-bottom: 10px; border-bottom: 1px solid #EEF2F7; }
+.tp .rk { font-weight: 900; font-size: 16px; color: var(--navy-deep); }
+.tp .tt { font-weight: 700; font-size: 13px; line-height: 1.35; }
+.tp .mt { font-size: 11px; color: #6B7894; margin-top: 2px; }
+.tp .v { text-align: right; font-weight: 800; font-size: 13px; white-space: nowrap; }
+.tp .v span { display: block; font-size: 11px; font-weight: 600; color: #6B7894; }
+.empty { color: #6B7894; font-size: 12.5px; }
+.foot { padding: 16px 44px 26px; font-size: 10px; line-height: 1.5; color: #6B7894; border-top: 1px solid #EEF2F7; margin-top: 18px; }
+</style></head>
+<body><div class="page">
+  <div class="band">
+    <img class="badge" src="{{ badge }}">
+    <div class="t">
+      <div class="club">{{ club.name }} · Social media report</div>
+      <h1>{{ r.month }}</h1>
+      <div class="range">Facebook and Instagram, {{ r.range }}</div>
+    </div>
+    {% if sponsor.logo %}<div class="spons"><div class="lbl">Prepared for</div><img src="{{ sponsor.logo }}" alt="{{ r.sponsor }}"></div>{% endif %}
+  </div>
+
+  <div class="body">
+    <p class="intro">Thank you for supporting {{ club.short_name }}. Here's how our posts did on Facebook and Instagram in {{ r.month }}.
+      Every post and Story we published carried the {{ r.sponsor }} logo.</p>
+
+    <div class="tiles">
+      <div class="tile"><div class="n">{{ fmt(r.totals.views) }}</div><div class="l">views of our posts</div></div>
+      <div class="tile"><div class="n">{{ fmt(r.totals.reach) }}</div><div class="l">accounts reached</div></div>
+      <div class="tile"><div class="n">{{ fmt(r.totals.engagement) }}</div><div class="l">likes, comments and shares</div></div>
+      <div class="tile"><div class="n">{{ r.kit.feed + r.kit.stories }}</div><div class="l">posts and Stories showing the {{ r.sponsor }} logo</div></div>
+    </div>
+
+    <div>
+      <h2>By platform</h2>
+      <table>
+        <tr><th>Platform</th><th>Views</th><th>Reached</th><th>Likes, comments, shares</th><th>Followers</th><th>Change</th></tr>
+        {% for n in r.networks %}
+        <tr><td>{{ n.name }}</td><td>{{ fmt(n.views) }}</td><td>{{ fmt(n.reach) }}</td><td>{{ fmt(n.engagement) }}</td>
+          <td>{{ fmt(n.followers) }}</td>
+          <td class="{{ 'up' if n.change and n.change > 0 else ('down' if n.change and n.change < 0 else '') }}">
+            {% if n.change is none %}–{% elif n.change > 0 %}+{{ n.change }}{% else %}−{{ -n.change }}{% endif %}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="two">
+      <div>
+        <h2>Posts with your logo</h2>
+        {% if r.kit.rows %}
+        <table class="kinds">
+          {% for name, n in r.kit.rows %}<tr><td>{{ name }}</td><td>{{ n }}</td></tr>{% endfor %}
+          <tr class="sum"><td>Shown as</td><td>{{ r.kit.feed }} posts · {{ r.kit.stories }} Stories</td></tr>
+        </table>
+        {% else %}<p class="empty">No posts this month.</p>{% endif %}
+      </div>
+      <div>
+        <h2>Top posts</h2>
+        {% if r.top %}
+        <div class="top">
+          {% for p in r.top %}
+          <div class="tp"><div class="rk">{{ loop.index }}</div>
+            <div><div class="tt">{{ p.title }}</div><div class="mt">{{ p.network }}{% if p.date %} · {{ p.date }}{% endif %}</div></div>
+            <div class="v">{% if p.views is not none %}{{ fmt(p.views) }} views{% endif %}<span>{{ p.engagement }} likes, comments, shares</span></div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}<p class="empty">No post figures available this month.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    Figures from Meta (Facebook and Instagram) for {{ r.range }}. Views count each time a post or Story was shown; accounts reached
+    counts people, added up across both platforms and each day, so one person may be counted more than once.
+    {% if r.first_report %}Follower changes start from next month's report.{% endif %}
+    {% if r.problems %}Some figures weren't available from Meta this month and are shown as –.{% endif %}
+  </div>
+</div></body></html>

@@ -437,6 +437,101 @@ def cmd_due(args, root=C.ROOT, gh=None, meta=None):
     rep.write()
 
 
+# --- monthly sponsor report --------------------------------------------------
+
+def insights_check(meta, today, cfg):
+    """One line for the setup check: can the token read the figures the sponsor report needs?"""
+    from .meta import Insights
+    from datetime import timedelta as _td
+    ins = Insights(meta)
+    end = datetime(today.year, today.month, today.day, tzinfo=cfg.tz)
+    fb = ins.page_totals(end - _td(days=7), end)
+    ig = ins.ig_totals(end - _td(days=7), end) if meta.ig_id else {"views": 0}
+    if fb.get("views") is not None and ig:
+        return f"✅ **Sponsor report** can read the figures (Facebook: {fb['views']:,} views in the last 7 days)."
+    return ("ℹ️ **Sponsor report**: Meta isn't sharing the view figures yet. Regenerate the Meta token with two extra "
+            "permissions, `read_insights` and `instagram_manage_insights` (setup guide, step 4c), and update the "
+            "META_TOKEN secret. Details: " + "; ".join(ins.problems[:2]))
+
+REPORT_PENDING = ".kit-report.json"
+
+
+def published_issues(gh, since):
+    out = []
+    for page in range(1, 6):
+        batch = gh._req("GET", "issues", params={"state": "closed", "labels": "social-post,published",
+                                                 "since": since.isoformat(), "per_page": 100, "page": page})
+        out += [i for i in batch if "pull_request" not in i]
+        if len(batch) < 100:
+            break
+    return out
+
+
+def cmd_report(args, root=C.ROOT, gh=None, meta=None, render=None):
+    """Make the sponsor report for a month (default: last month): PDF + preview image."""
+    from . import report as RP
+    from .meta import Insights
+    cfg = C.load(root / "club.yml")
+    gh = gh or GitHub()
+    today = today_for(cfg, getattr(args, "today", None))
+    if getattr(args, "month", None):
+        y, m = (int(x) for x in args.month.split("-"))
+        month = (y, m)
+    else:
+        month = RP.previous_month(today)
+    meta = meta or Meta(os.environ.get("META_TOKEN"), cfg["facebook"].get("page_id"))
+    ins = Insights(meta)
+    start, end = RP.month_bounds(month, cfg.tz)
+    state = load_state(root)
+    prev_key = f"{RP.previous_month(date(*month, 1))[0]}-{RP.previous_month(date(*month, 1))[1]:02d}"
+    r = RP.gather(cfg, ins, published_issues(gh, start), month,
+                  (state.get("report_followers") or {}).get(prev_key))
+    state.setdefault("report_followers", {})[r["month_key"]] = r["followers"]
+    save_state(root, state)
+    if render is None:
+        from .render import render_report as render
+    pdf, jpg = render(cfg, r, root / "posts" / "reports", f"{cfg.short_name.lower()}-social-report-{r['month_key']}")
+    out = {"month": r["month"], "month_key": r["month_key"], "pdf": str(pdf.relative_to(root)),
+           "jpg": str(jpg.relative_to(root)), "summary": RP.caption(r), "problems": r["problems"]}
+    (root / REPORT_PENDING).write_text(json.dumps(out, indent=2))
+    rep = Report(f"Sponsor report: {r['month']}")
+    rep.add("```\n" + out["summary"] + "\n```")
+    for prob in r["problems"]:
+        rep.add(f"- ⚠️ {prob}")
+    rep.write()
+    return out
+
+
+def cmd_report_issue(args, root=C.ROOT, gh=None):
+    """Open the issue holding the report (label 'report': it can't be posted)."""
+    cfg = C.load(root / "club.yml")
+    pending = root / REPORT_PENDING
+    if not pending.exists():
+        return None
+    r = json.loads(pending.read_text())
+    gh = gh or GitHub()
+    gh.ensure_labels()
+    sponsor = (cfg["branding"].get("sponsor_text") or "your sponsor").strip()
+    pdf = f"https://github.com/{gh.repo}/raw/{args.sha}/{r['pdf']}"
+    img = raw_url(gh.repo, args.sha, r["jpg"])
+    notes = ""
+    if r["problems"]:
+        notes = ("\n\n<details><summary>Figures Meta didn't provide</summary>\n\n" +
+                 "\n".join(f"- {p}" for p in r["problems"]) +
+                 "\n\nIf these mention permissions, the Meta token needs `read_insights` and "
+                 "`instagram_manage_insights` (setup guide, step 4c).\n</details>")
+    body = (f"Here's the {r['month']} social media report for {sponsor}.\n\n"
+            f"**[⬇️ Download the PDF]({pdf})** to send to {sponsor}. This report is never posted publicly.\n\n"
+            f"![{r['month']} report]({img})\n\n### Summary (to paste into an email)\n\n```text\n{r['summary']}\n```"
+            f"{notes}\n\nClose this issue once it's been sent.")
+    issue = gh.create_issue(f"{sponsor} report: {r['month']}", body, labels=("report",))
+    pending.unlink()
+    rep = Report("Sponsor report ready")
+    rep.add(f"📄 {issue['html_url']}")
+    rep.write()
+    return issue["number"]
+
+
 def already_done(gh, number):
     done = set()
     for c in gh._req("GET", f"issues/{number}/comments", params={"per_page": 100}):
@@ -529,6 +624,7 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
                 ok = False
                 rep.add("❌ **Instagram**: your Facebook Page has no Instagram professional account linked. "
                         "Link them, or remove instagram from posts → networks in club.yml.")
+        rep.add(insights_check(meta, today_for(cfg, getattr(args, "today", None)), cfg))
     except MetaError as e:
         ok = False
         rep.add(f"❌ **Facebook / Instagram**: {e}")
@@ -632,6 +728,11 @@ def main(argv=None):
     nw.add_argument("--today")
     du = sub.add_parser("due")
     du.add_argument("--today")
+    rp = sub.add_parser("report")
+    rp.add_argument("--month", help="YYYY-MM (default: last month)")
+    rp.add_argument("--today")
+    ri = sub.add_parser("report-issue")
+    ri.add_argument("--sha", required=True)
     ch = sub.add_parser("check")
     ch.add_argument("--today")
     pv = sub.add_parser("preview")
@@ -640,7 +741,8 @@ def main(argv=None):
     try:
         result = {"make": cmd_make, "announce": cmd_announce, "publish": cmd_publish,
                   "check": cmd_check, "preview": cmd_preview,
-                  "news": cmd_news, "due": cmd_due}[args.cmd](args)
+                  "news": cmd_news, "due": cmd_due,
+                  "report": cmd_report, "report-issue": cmd_report_issue}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")

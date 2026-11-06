@@ -134,3 +134,39 @@ class Renderer:
             self._page.screenshot(path=str(f), type="jpeg", quality=92, clip={"x": 0, "y": 0, "width": w, "height": h})
             files.append(f)
         return files
+
+
+def report_html(cfg, r):
+    """The monthly sponsor report page (A4)."""
+    from .config import overlay
+    from .report import fmt
+    env = Environment(loader=FileSystemLoader(_template_dirs(cfg)), autoescape=True)
+    fonts = []
+    for name, weight in FONT_WEIGHTS.items():
+        f = HERE / f"fonts/InterDisplay-{name}.otf"
+        if f.exists():
+            fonts.append(f'@font-face{{font-family:"KitFont";font-weight:{weight};'
+                         f'src:url({_data_uri(f)}) format("opentype");}}')
+    pal = cfg.palette()
+    root = ":root{" + "".join(f"--{k}:{v};" for k, v in pal.items()) + "}"
+    common = _common(cfg, "report")
+    return env.get_template("report.html").render(fonts="".join(fonts) + root, r=r, fmt=fmt, badge=common["badge"],
+                                                  club=common["club"], sponsor=common["sponsor"])
+
+
+def render_report(cfg, r, out_dir, stem):
+    """PDF (A4) and a preview JPEG of the sponsor report. Returns (pdf, jpg)."""
+    from playwright.sync_api import sync_playwright
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    html = report_html(cfg, r)
+    pdf, jpg = out_dir / f"{stem}.pdf", out_dir / f"{stem}.jpg"
+    with sync_playwright() as pw:
+        b = pw.chromium.launch()
+        page = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=2)
+        page.set_content(html, wait_until="load")
+        page.evaluate("document.fonts.ready")
+        page.screenshot(path=str(jpg), type="jpeg", quality=90, clip={"x": 0, "y": 0, "width": 794, "height": 1123})
+        page.pdf(path=str(pdf), format="A4", print_background=True, margin={"top": "0", "bottom": "0", "left": "0", "right": "0"})
+        b.close()
+    return pdf, jpg
