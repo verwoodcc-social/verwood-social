@@ -31,6 +31,8 @@ DEFAULTS = {
                           "every": {"runs": 500, "wickets": 50, "matches": 50, "catches": 50, "keeper_catches": 50},
                           "watch": {"enabled": True, "runs": 50, "wickets": 3, "matches": 1, "catches": 2,
                                     "keeper_catches": 2, "active_days": 21, "max": 8}},
+    "captain_reports": {"enabled": False, "wait": True, "wait_until": "09:15", "max_length": 700,
+                        "teams": r"^(1st|2nd|3rd|4th|5th) XI$|^Wednesday 1st XI$|^Friendly XI$|^Women's Softball( B)?$"},
     "season_fixtures": {"enabled": False, "month": 4, "first_day": 1, "days": 7, "season_start_month": 4,
                         "season_end_month": 9, "exclude": r"\bIndoor\b"},
     "season_review": {"enabled": False, "month": 10, "day": "monday", "top": 3, "min_matches": 3,

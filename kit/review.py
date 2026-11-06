@@ -14,6 +14,7 @@ LABELS = {
     "scheduled": ("FBCA04", "Approved: will be posted on its 'post on' date"),
     "club-news": ("0E8A16", "Club news or event form"),
     "report": ("5319E7", "Monthly sponsor report (never posted)"),
+    "captain-report": ("C5DEF5", "A captain's match report (from the Microsoft Form)"),
     "problem": ("B60205", "Something went wrong: closes itself when it's working again"),
 }
 MARK = re.compile(r"<!--\s*csk-post\s+(\{.*?\})\s*-->", re.S)

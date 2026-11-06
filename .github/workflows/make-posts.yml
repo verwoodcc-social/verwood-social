@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: "17 6 * * *"   # 06:17 UTC (06:17 in UK winter, 07:17 in summer). GitHub can start it a little late.
     - cron: "17 8 * * *"   # a second try, in case Play-Cricket was briefly unavailable. Nothing is posted twice.
+    - cron: "23 9 * * *"   # last run of the morning: results still waiting for a captain's report go out now
+  issues:
+    types: [opened]        # a captain's report arrived (from the Microsoft Form): post its result straight away
   workflow_dispatch:
     inputs:
       only:
@@ -25,7 +28,9 @@ concurrency:
 jobs:
   make:
     # Only runs in clubs' own copies, not in the template itself.
-    if: github.repository != 'verwoodcc-social/cricket-social-kit'
+    if: >-
+      github.repository != 'verwoodcc-social/cricket-social-kit' &&
+      (github.event_name != 'issues' || startsWith(github.event.issue.title, 'Captain'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -61,7 +66,8 @@ jobs:
       - name: Read Play-Cricket and make the graphics
         env:
           PLAYCRICKET_API_TOKEN: ${{ secrets.PLAYCRICKET_API_TOKEN }}
-          KIT_ONLY: ${{ inputs.only }}
+          KIT_ONLY: ${{ github.event_name == 'issues' && 'matches' || inputs.only }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m kit make
 
       - name: Save the images to the repository

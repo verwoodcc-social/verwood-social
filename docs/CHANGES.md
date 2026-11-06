@@ -1,5 +1,11 @@
 # What's new
 
+## 1.16.0 (Verwood)
+- **Captain's match reports:** a Microsoft Form + Power Automate flow (docs/CAPTAINS-REPORT-SETUP.md)
+  sends a captain's few lines and player of the match to the kit, which adds them to that game's result
+  post. Adult results wait until 9:15am for a report (a third morning run at about 9:20 makes sure they
+  go out); a report arriving earlier posts its result within minutes. Settings under `captain_reports:`.
+
 ## 1.15.0 (Verwood)
 - **Season fixture lists:** 1–7 April, one post per team (senior and youth) with all its outdoor summer
   fixtures (date, opponent, time, home/away), spread across the week so a few go out each morning:

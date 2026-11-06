@@ -118,7 +118,7 @@ def clear_old_images(root, today):
 
 # --- make --------------------------------------------------------------------
 
-def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
+def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
     rep = Report("Make posts")
     cfg = C.load(root / "club.yml")
     today = today_for(cfg, args.today)
@@ -186,6 +186,15 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
         p = leaderboards_post(cfg, pc, today, root)
         (made.append(p) if p else notes.append("No adult scorecards this season yet, so no leaderboards."))
     made = [p for p in made if p["key"] not in state["posted"]]
+    if "matches" in jobs and cfg["captain_reports"]["enabled"]:
+        from . import captains
+        try:
+            gh_ = gh or GitHub()
+            reports = captains.load(cfg, gh_, today)
+            made, waits = captains.attach(cfg, gh_, made, reports, state, now or datetime.now(cfg.tz))
+            notes += waits
+        except GitHubError as e:
+            notes.append(f"Captain's reports not checked: {e}")
     if made:
         from .matchphotos import MatchPhotos, add_backgrounds
         used = state.setdefault("match_photos_used", {})
@@ -251,6 +260,12 @@ def cmd_announce(args, root=C.ROOT, gh=None, meta=None):
                 rep.add(f"- ✅ Posted **{p['title']}** · {issue['html_url']}")
         else:
             rep.add(f"- 👀 **{p['title']}** is waiting for approval · {issue['html_url']}")
+        if p.get("report_issue"):
+            from .captains import close_used
+            try:
+                close_used(gh, p["report_issue"], issue["number"])
+            except GitHubError:
+                pass
         state["posted"][p["key"]] = {"issue": issue["number"], "made": date.today().isoformat()}
         save_state(root, state)  # after each, so a failure part-way doesn't repeat earlier posts
         opened.append(issue["number"])

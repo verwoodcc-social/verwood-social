@@ -107,6 +107,15 @@ career_milestones:
     active_days: 21
     max: 8
 
+# Captain's match reports (Microsoft Form -> Power Automate -> GitHub; see docs/CAPTAINS-REPORT-SETUP.md).
+# A report is added to the result post's caption. Adult results wait until wait_until (UK time) for one.
+captain_reports:
+  enabled: true
+  wait: true
+  wait_until: "09:15"
+  max_length: 700           # characters of report used in the caption
+  teams: '^(1st|2nd|3rd|4th|5th) XI$|^Wednesday 1st XI$|^Friendly XI$|^Women''s Softball( B)?$'
+
 # Season fixture lists: 1–7 April, one post per team (senior and youth) with all its outdoor summer
 # fixtures, spread across the week so a few go out each morning.
 season_fixtures:
