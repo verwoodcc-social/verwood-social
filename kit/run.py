@@ -387,7 +387,11 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
         rule = ("juniors' photos are used without names" if cfg["milestones"]["junior_photos"] == "photo_no_name"
                 else "juniors are named but their photos aren't used")
         rep.add(f"✅ **Player photos** connected: {groups['adults']} adults, {groups['juniors']} juniors ({rule}).")
-    elif os.environ.get("PHOTOS_KEY") is not None or cfg["milestones"]["enabled"]:
+    elif os.environ.get("PHOTOS_KEY"):
+        ok = False
+        rep.add("❌ **Player photos**: the photo key is saved but the photo store couldn't be read. The key may have "
+                "expired or lost access: make a new one and update the PLAYER_PHOTOS_TOKEN secret.")
+    elif cfg["milestones"]["enabled"]:
         rep.add("ℹ️ **Player photos**: not connected (optional). Milestone posts use the club badge design instead.")
 
     # Repository must be public so Instagram can fetch the images

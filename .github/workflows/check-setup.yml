@@ -39,6 +39,7 @@ jobs:
 
       - name: Get player photos from the private photo store (if connected)
         if: env.PHOTOS_KEY != ''
+        continue-on-error: true   # a photo problem must never stop the posts
         uses: actions/checkout@v4
         with:
           repository: verwoodcc-social/verwood-player-photos
