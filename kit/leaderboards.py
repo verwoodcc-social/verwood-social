@@ -174,7 +174,9 @@ def leaderboards_post(cfg, pc, today, root):
                 boards.append(b)
     boards = boards[:10]  # Instagram carousels hold 10
     club = boards[0]
-    sub = f"{season} season so far"
+    start, end = season_range(cfg, today)
+    y_end = date(start.year + (int(lb["season_end_month"]) == 12), int(lb["season_end_month"]) % 12 + 1, 1)
+    sub = f"{season} season" if today >= y_end else f"{season} season so far"
     data = {"kind": "leaderboards", "title": lb["title"], "sub": sub, "boards": boards}
     lines = [f"📊 {lb['title']}: {sub}", ""]
     if club["bat"]:
