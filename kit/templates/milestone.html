@@ -1,0 +1,55 @@
+<!doctype html>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
+.ms-kicker { font-weight: 800; font-size: 26px; letter-spacing: .22em; text-transform: uppercase; color: var(--silver-dim); }
+.ms-label { font-weight: 900; font-size: 78px; line-height: .95; text-transform: uppercase; letter-spacing: -.01em;
+  color: var(--silver); margin-top: 10px; }
+.ms-figures { font-weight: 900; font-size: 210px; line-height: .9; letter-spacing: -.04em; margin-top: 18px; white-space: nowrap; }
+.ms-detail { font-weight: 600; font-size: 30px; color: var(--silver-dim); margin-top: 10px; }
+.ms-name { font-weight: 900; font-size: 64px; line-height: 1.02; margin-top: 34px; }
+.ms-match { font-weight: 600; font-size: 28px; color: var(--silver); margin-top: 16px; line-height: 1.3; }
+.ms-body { flex: 1; display: flex; align-items: center; gap: 44px; min-height: 0; }
+.ms-photo { flex: 0 0 440px; height: 640px; border-radius: 32px; overflow: hidden; position: relative;
+  box-shadow: 0 24px 60px rgba(0,0,0,.45); border: 6px solid var(--silver); }
+.ms-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; display: block; }
+.ms-text { flex: 1; min-width: 0; }
+.ms-solo .ms-text { text-align: left; }
+.ms-watermark { position: absolute !important; right: -120px; top: 300px; width: 760px; opacity: .09; z-index: 0 !important; }
+.has-pp .ms-figures { font-size: 150px; }
+.has-pp .ms-name { font-size: 52px; }
+.story .ms-body { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 36px; flex: 0 0 auto; }
+.story .ms-photo { flex: 0 0 auto; width: 500px; height: 540px; align-self: flex-start; }
+.story .ms-figures { font-size: 230px; }
+.story .has-pp .ms-figures { font-size: 150px; margin-top: 8px; }
+.story .has-pp .ms-label { font-size: 66px; }
+.story .has-pp .ms-name { font-size: 54px; margin-top: 22px; }
+.story .ms-solo .ms-body { margin-top: 120px; }
+</style></head>
+<body>
+<div class="card {{ 'has-photo' if photo }} {{ 'has-pp' if player_photo else 'ms-solo' }}">
+  {% include "_photo.html" %}
+  {% if not player_photo %}<img class="ms-watermark" src="{{ badge }}" alt="">{% endif %}
+  <div class="head">
+    <img class="badge" src="{{ badge }}">
+    <div>
+      <div class="club">{{ club.name }}</div>
+      <div class="sub" style="margin-top:4px">{{ m.team }} · {{ m.date }}</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="ms-body">
+    {% if player_photo %}<div class="ms-photo"><img src="{{ player_photo }}" alt=""></div>{% endif %}
+    <div class="ms-text">
+      <div class="ms-kicker">Milestone</div>
+      <div class="ms-label">{{ m.label }}</div>
+      <div class="ms-figures">{{ m.figures }}</div>
+      {% if m.detail %}<div class="ms-detail">{{ m.detail }}</div>{% endif %}
+      {% if m.name %}<div class="ms-name">{{ m.name }}</div>{% endif %}
+      <div class="ms-match">for our {{ m.team }}<br>v {{ m.opponent }}</div>
+    </div>
+  </div>
+
+{% if story and wording.story_cta %}<div class="cta">{{ wording.story_cta }}</div>{% endif %}
+{% include "_foot.html" %}
+</div>
+</body></html>

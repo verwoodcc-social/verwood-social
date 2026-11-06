@@ -22,6 +22,8 @@ DEFAULTS = {
                 "abandoned": "Abandoned", "cancelled": "Cancelled", "no_result": "No result",
                 "fixtures_sign_off": "Come down and support! 🏏",
                 "story_cta": "Full details on our page"},
+    "milestones": {"enabled": True, "batting": [50, 100], "bowling_wickets": 5,
+                   "junior_photos": "name_no_photo", "stories": True},
     "show": {"top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},
     "posts": {
         "fixtures": {"enabled": True, "day": "friday"},
@@ -97,8 +99,10 @@ class Config(dict):
         return self.image(f"{kind}_background") or self.image("background_image")
 
     def stories_for(self, kind):
-        """Whether this kind of post (match / fixtures / roundup) also goes out as a story."""
+        """Whether this kind of post (match / fixtures / roundup / milestone) also goes out as a story."""
         st = self["posts"].get("stories") or {}
+        if kind == "milestone":
+            return bool(st.get("enabled")) and bool(self["milestones"].get("stories", True))
         return bool(st.get("enabled")) and kind in (st.get("for") or [])
 
     def words(self):
@@ -163,6 +167,16 @@ def validate(cfg):
         problems.append("posts → stories → enabled: use true or false.")
     if any(k not in ("match", "fixtures", "roundup") for k in (st.get("for") or [])):
         problems.append("posts → stories → for: list any of match, fixtures, roundup, like [match, fixtures, roundup].")
+    mi = cfg.get("milestones") or {}
+    if not isinstance(mi.get("enabled", True), bool):
+        problems.append("milestones → enabled: use true or false.")
+    try:
+        if not mi.get("batting") or any(int(x) <= 0 for x in mi["batting"]) or int(mi.get("bowling_wickets", 5)) <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        problems.append("milestones → batting / bowling_wickets: use numbers, like batting: [50, 100] and bowling_wickets: 5.")
+    if mi.get("junior_photos") not in ("name_no_photo", "photo_no_name"):
+        problems.append("milestones → junior_photos: use name_no_photo or photo_no_name (ECB guidance: never both).")
     if p.get("approval") not in ("review", "automatic"):
         problems.append("posts → approval: use review or automatic.")
     nets = p.get("networks") or []

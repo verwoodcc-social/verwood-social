@@ -222,7 +222,8 @@ def match_card(cfg, detail):
         if runs is None:
             continue
         balls = str(b.get("balls") or "").strip()
-        batting.append({"name": person_name(name, junior, rule), "runs": runs, "balls": _int(balls, 999),
+        batting.append({"name": person_name(name, junior, rule), "full_name": name, "player_id": str(b.get("batsman_id") or ""),
+                        "not_out": how in NOT_OUT, "runs": runs, "balls": _int(balls, 999),
                         "figures": f"{runs}{'*' if how in NOT_OUT else ''}",
                         "detail": f"{balls} balls" if balls not in ("", "0") else ""})
     for b in (by.get(them) or {}).get("bowl") or []:
@@ -231,7 +232,8 @@ def match_card(cfg, detail):
             continue
         w, r = _int(b.get("wickets")), _int(b.get("runs"))
         overs = str(b.get("overs") or "").strip()
-        bowling.append({"name": person_name(name, junior, rule), "w": w, "r": r, "figures": f"{w}-{r}",
+        bowling.append({"name": person_name(name, junior, rule), "full_name": name, "player_id": str(b.get("bowler_id") or ""),
+                        "w": w, "r": r, "figures": f"{w}-{r}", "overs": overs,
                         "detail": f"{overs.removesuffix('.0')} overs" if overs else ""})
     if not batting and not bowling:
         return None  # result entered but no scorecard
@@ -249,6 +251,7 @@ def match_card(cfg, detail):
         "top_batting": [p for p in batting if p["runs"] > 0][:3] if show_names else [],
         "top_bowling": [p for p in bowling if p["w"] > 0][:3] if show_names else [],
         "junior": cfg.is_junior(row["team"]), "names_shortened": junior,
+        "all_batting": batting, "all_bowling": bowling, "show_names": show_names,
     }
 
 
@@ -347,7 +350,7 @@ def roundup_post(cfg, pc, today):
             "alt": f"{cfg['club']['name']} results for {data['date_range']}: {len(rows)} matches, {wins} won."}
 
 
-def match_posts(cfg, pc, today, already_posted):
+def match_posts(cfg, pc, today, already_posted, photos=None):
     days = int(cfg["posts"]["match_results"]["lookback_days"])
     start, end = today - timedelta(days=days), today - timedelta(days=1)
     out, skipped = [], []
@@ -375,4 +378,6 @@ def match_posts(cfg, pc, today, already_posted):
         out.append({"key": key, "kind": "match", "title": f"{card['team']} v {card['opponent']} ({short_date(card['date_obj'])})",
                     "data": card, "caption": caption_match(cfg, card), "alt": alt_match(cfg, card),
                     "match_id": card["id"]})
+        from .milestones import milestone_posts
+        out += [mp for mp in milestone_posts(cfg, card, photos) if mp["key"] not in already_posted]
     return out, skipped

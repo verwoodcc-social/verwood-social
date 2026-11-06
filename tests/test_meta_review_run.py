@@ -260,7 +260,7 @@ def test_check_reports_each_connection(club_root, capsys):
     assert ok is True
     assert "Play-Cricket** connected" in out and 'Page "Verwood Cricket Club"' in out and "@verwoodcc" in out
     pending = json.loads((club_root / ".kit-pending.json").read_text())
-    assert len(pending) == 3
+    assert [p["key"] for p in pending] == ["sample-fixtures", "sample-roundup", "sample-match", "sample-milestone"]
 
 
 def test_check_explains_bad_settings(tmp_path, capsys):

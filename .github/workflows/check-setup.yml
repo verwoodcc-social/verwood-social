@@ -22,6 +22,8 @@ jobs:
     if: github.repository != 'verwoodcc-social/cricket-social-kit'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      PHOTOS_KEY: ${{ secrets.PLAYER_PHOTOS_TOKEN }}   # empty if no photo store is connected
     steps:
       - uses: actions/checkout@v4
 
@@ -34,6 +36,14 @@ jobs:
         run: |
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
+
+      - name: Get player photos from the private photo store (if connected)
+        if: env.PHOTOS_KEY != ''
+        uses: actions/checkout@v4
+        with:
+          repository: verwoodcc-social/verwood-player-photos
+          token: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
+          path: player-photos   # git-ignored: photos are only drawn into graphics, never saved here
 
       - name: Check settings and connections, make sample graphics
         id: check

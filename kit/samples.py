@@ -30,6 +30,14 @@ def sample_posts(cfg, today):
                              {"name": "B. Opener", "figures": "45*", "detail": "51 balls"}],
              "top_bowling": [{"name": "C. Seamer", "figures": "4-31", "detail": "8 overs"},
                              {"name": "D. Spinner", "figures": "3-22", "detail": "9 overs"}]}
+    milestone = {"kind": "milestone", "type": "100", "label": "Century", "figures": "104*", "detail": "71 balls",
+                 "name": "A. Batter", "photo_path": "", "team": "1st XI", "opponent": "Example Town CC 1st XI",
+                 "date": P.long_date(d(-2))}
+    extra = []
+    if cfg["milestones"]["enabled"]:
+        extra.append({"key": "sample-milestone", "kind": "milestone", "title": "Sample milestone", "data": milestone,
+                      "caption": "🎉 Congratulations to A. Batter on a magnificent century!\n104* (71 balls) for our 1st XI v Example Town CC 1st XI.",
+                      "alt": "Sample milestone graphic"})
     return [
         {"key": "sample-fixtures", "kind": "fixtures", "title": "Sample fixtures", "data": fixtures,
          "caption": P.caption_fixtures(cfg, fixtures), "alt": "Sample fixtures graphic"},
@@ -37,4 +45,4 @@ def sample_posts(cfg, today):
          "caption": P.caption_roundup(cfg, results), "alt": "Sample results graphic"},
         {"key": "sample-match", "kind": "match", "title": "Sample match result", "data": match,
          "caption": P.caption_match(cfg, match), "alt": "Sample match result graphic"},
-    ]
+    ] + extra

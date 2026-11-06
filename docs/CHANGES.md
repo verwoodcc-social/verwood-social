@@ -1,5 +1,12 @@
 # What's new
 
+## 1.4.0 (Verwood)
+- **Milestone posts:** 50s, 100s and five-wicket hauls get a post (and story) of their own, made
+  alongside the daily match post. Never repeated.
+- **Player photos** (optional) from a private photo store: `adults/` and `juniors/` folders. Adults
+  get photo and name; juniors follow ECB guidance and never get both (`milestones → junior_photos`).
+  Photos are only ever drawn into the finished graphic and are never saved in this repository.
+
 ## 1.3.0 (Verwood)
 - **Instagram and Facebook Stories:** each post can also go out as a tall 1080×1920 story, after the
   normal post (`posts → stories`). Busy weeks split across several story frames. A story that fails

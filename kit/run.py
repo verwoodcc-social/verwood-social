@@ -121,7 +121,9 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None):
         p = P.roundup_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No results in the last 7 days."))
     if "matches" in jobs:
-        ms, skipped = P.match_posts(cfg, pc, today, state["posted"])
+        from .milestones import PhotoStore
+        photos = PhotoStore(root / "player-photos")
+        ms, skipped = P.match_posts(cfg, pc, today, state["posted"], photos=photos)
         made += ms
         notes += [f"Not posted: {s}" for s in skipped]
         if not ms and not skipped:
@@ -373,6 +375,20 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
     except MetaError as e:
         ok = False
         rep.add(f"❌ **Facebook / Instagram**: {e}")
+
+    # Player photos (optional, private store)
+    from .milestones import PhotoStore
+    store_dir = root / "player-photos"
+    if store_dir.is_dir():
+        ph = PhotoStore(store_dir)
+        groups = {"adults": 0, "juniors": 0}
+        for _, g in ph.index.values():
+            groups[g] += 1
+        rule = ("juniors' photos are used without names" if cfg["milestones"]["junior_photos"] == "photo_no_name"
+                else "juniors are named but their photos aren't used")
+        rep.add(f"✅ **Player photos** connected: {groups['adults']} adults, {groups['juniors']} juniors ({rule}).")
+    elif os.environ.get("PHOTOS_KEY") is not None or cfg["milestones"]["enabled"]:
+        rep.add("ℹ️ **Player photos**: not connected (optional). Milestone posts use the club badge design instead.")
 
     # Repository must be public so Instagram can fetch the images
     try:

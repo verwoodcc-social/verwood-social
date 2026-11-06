@@ -2,3 +2,6 @@ __pycache__/
 .pytest_cache/
 .kit-pending.json
 tests/out/
+
+# Private player photos (checked out from the private photo store during each run; never committed here)
+player-photos/

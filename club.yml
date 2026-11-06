@@ -43,6 +43,16 @@ wording:
   fixtures_sign_off: "Come down and support! 🏏"
   story_cta: "Full details on our page"   # the button-style line at the bottom of each story
 
+# ---- Milestone posts: a post of their own for 50s, 100s and five-wicket hauls ----
+milestones:
+  enabled: true
+  batting: [50, 100]           # runs that count as a milestone
+  bowling_wickets: 5           # wickets in an innings
+  # ECB guidance: a junior's photo and name must never appear together.
+  #   name_no_photo = juniors are named ("Ben T.") but their photo isn't used (recommended)
+  #   photo_no_name = juniors' photos are used, with no name on the graphic or caption
+  junior_photos: name_no_photo
+
 # ---- Show or hide (true = show, false = hide) ----------------------------------
 show:
   top_performers: true
