@@ -53,7 +53,7 @@ def make_folders(cfg, env, http=None):
 
 def _children(sp, drive, item):
     url = f"/drives/{drive}/items/{item}/children"
-    params = {"$select": "id,name,folder,file,size,@microsoft.graph.downloadUrl", "$top": 999}
+    params = {"$top": 999}
     while url:
         page = sp._req("GET", url, params=params)
         yield from page.get("value", [])
@@ -82,10 +82,15 @@ def sync(cfg, env, dest, http=None):
         for k in _children(sp, drive, item):
             if "folder" in k:
                 walk(k["id"], rel / k["name"])
-            elif Path(k["name"]).suffix.lower() in PHOTO_TYPES and k.get("@microsoft.graph.downloadUrl"):
+            elif Path(k["name"]).suffix.lower() in PHOTO_TYPES:
                 out = dest / rel / k["name"]
                 out.parent.mkdir(parents=True, exist_ok=True)
-                r = sp.http.get(k["@microsoft.graph.downloadUrl"], timeout=120)
+                url = k.get("@microsoft.graph.downloadUrl")
+                if url:
+                    r = sp.http.get(url, timeout=120)
+                else:  # Graph leaves the download link out of some listings: ask for the file itself
+                    r = sp.http.get(f"https://graph.microsoft.com/v1.0/drives/{drive}/items/{k['id']}/content",
+                                    headers={"Authorization": f"Bearer {sp.token}"}, timeout=120)
                 if r.status_code == 200:
                     out.write_bytes(r.content)
                     count += 1

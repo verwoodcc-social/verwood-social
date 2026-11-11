@@ -10,14 +10,14 @@ class Graph:
         self.tree = {"root": [{"id": "s", "name": "Social media photos", "folder": {}}],
                      "s": [{"id": "m", "name": "match-photos", "folder": {}}],
                      "m": [{"id": "t", "name": "1st XI", "folder": {}}],
-                     "t": [{"id": "f1", "name": "a.jpg", "file": {}, "@microsoft.graph.downloadUrl": "https://dl/a"},
+                     "t": [{"id": "f1", "name": "a.jpg", "file": {}},
                            {"id": "f2", "name": "notes.txt", "file": {}, "@microsoft.graph.downloadUrl": "https://dl/n"}]}
         self.made = []
 
     def post(self, url, data=None, timeout=None):
         return R(200, {"access_token": "tok"})
 
-    def get(self, url, timeout=None):
+    def get(self, url, timeout=None, headers=None):
         r = R(200, {})
         r.content = b"JPEG"
         return r
