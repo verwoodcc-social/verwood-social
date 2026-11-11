@@ -54,7 +54,7 @@ def test_make_folders_adds_missing_only():
     made = PS.make_folders(cfg(), ENV, http=g)
     assert "match-photos/1st XI" not in made
     assert {"match-photos/Under 12 Indoor", "match-photos/Indoor", "match-photos/Juniors", "match-photos/Club",
-            "adults", "juniors", "To check"} <= set(made)
+            "adults", "juniors"} <= set(made) and "To check" not in made  # already there
 
 
 def test_under_and_u_are_the_same_team(tmp_path):
