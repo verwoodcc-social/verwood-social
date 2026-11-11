@@ -670,7 +670,11 @@ def cmd_photos(args, root=C.ROOT, http=None):
         rep.write()
         return True
     try:
-        if args.action == "folders":
+        if args.action == "import":
+            done = photostore.import_dir(cfg, os.environ, root / "player-photos", http)
+            rep.add(f"✅ Copied {len(done)} photo(s) from the old GitHub photo store: {', '.join(done)}"
+                    if done else "✅ Nothing to copy from the old GitHub photo store.")
+        elif args.action == "folders":
             made = photostore.make_folders(cfg, os.environ, http)
             rep.add(f"✅ Made {len(made)} folder(s): {', '.join(made)}" if made else "✅ All the photo folders are there.")
         else:
@@ -992,7 +996,7 @@ def main(argv=None):
     al.add_argument("--link")
     al.add_argument("--quiet-first", action="store_true")
     ph = sub.add_parser("photos")
-    ph.add_argument("action", choices=["sync", "folders"])
+    ph.add_argument("action", choices=["sync", "folders", "import"])
     bk = sub.add_parser("backup")
     bk.add_argument("files", nargs="+")
     ex = sub.add_parser("expiry")

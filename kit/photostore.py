@@ -93,3 +93,23 @@ def sync(cfg, env, dest, http=None):
                     log.warning("Couldn't download %s (%s)", rel / k["name"], r.status_code)
     walk(root, Path("."))
     return count
+
+
+def import_dir(cfg, env, src, http=None):
+    """Copy photos from a local folder (the old GitHub photo store) into SharePoint, keeping the layout.
+    Photos already there (same folder and name) are left alone. Returns the ones copied."""
+    ps = cfg["photo_store"]
+    sp = _sp(env, http)
+    drive = sp.drive(ps["site"])
+    src = Path(src)
+    done = []
+    for f in sorted(src.rglob("*")):
+        if not f.is_file() or f.suffix.lower() not in PHOTO_TYPES or ".git" in f.parts:
+            continue
+        rel = f.relative_to(src)
+        parent = sp.folder(drive, "/".join([ps["folder"], *rel.parts[:-1]]))
+        if any(k["name"] == f.name for k in _children(sp, drive, parent)):
+            continue
+        sp.upload(drive, parent, f)
+        done.append(str(rel))
+    return done

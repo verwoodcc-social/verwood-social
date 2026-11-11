@@ -61,6 +61,7 @@ jobs:
           REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
           REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
         run: |
+          [ -d player-photos/.git ] && python -m kit photos import   # one-off: copy the old GitHub photos across
           python -m kit photos folders   # makes a folder for any team added to club.yml → photo_store → teams
           python -m kit photos sync
 
