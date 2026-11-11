@@ -1,5 +1,12 @@
 # What's new
 
+## 1.20.0 (Verwood)
+
+- Photos emailed to Media@verwoodcc.co.uk: the committee gets a morning email listing new photos waiting
+  in To check (each photo is mentioned once).
+- iPhone HEIC photos are converted to JPEG when the photo store is copied in.
+- The monthly report email (not the sponsor PDF) ends with photo counts per team and the teams with none.
+
 ## 1.19.0 (Verwood)
 
 - Photo store moved to the club SharePoint (Club Documents → Documents → Social media photos), so photos can

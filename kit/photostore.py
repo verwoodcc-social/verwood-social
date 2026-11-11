@@ -19,6 +19,7 @@ from . import mailer
 
 log = logging.getLogger(__name__)
 PHOTO_TYPES = (".jpg", ".jpeg", ".png", ".webp")
+HEIC = (".heic", ".heif")   # iPhone photos: converted to JPEG when they're copied in
 GENERIC = ["Indoor", "Juniors", "Club"]
 TO_CHECK = "To check"   # emailed-in photos wait here until someone moves them into a team folder
 
@@ -84,7 +85,7 @@ def sync(cfg, env, dest, http=None):
             if "folder" in k:
                 if k["name"].strip().lower() != TO_CHECK.lower():  # never use photos nobody has checked
                     walk(k["id"], rel / k["name"])
-            elif Path(k["name"]).suffix.lower() in PHOTO_TYPES:
+            elif Path(k["name"]).suffix.lower() in PHOTO_TYPES + HEIC:
                 out = dest / rel / k["name"]
                 out.parent.mkdir(parents=True, exist_ok=True)
                 url = k.get("@microsoft.graph.downloadUrl")
@@ -94,7 +95,14 @@ def sync(cfg, env, dest, http=None):
                     r = sp.http.get(f"https://graph.microsoft.com/v1.0/drives/{drive}/items/{k['id']}/content",
                                     headers={"Authorization": f"Bearer {sp.token}"}, timeout=120)
                 if r.status_code == 200:
-                    out.write_bytes(r.content)
+                    if out.suffix.lower() in HEIC:
+                        try:
+                            out = to_jpeg(r.content, out)
+                        except Exception as e:  # a photo that can't be read is skipped, never fatal
+                            log.warning("Couldn't convert %s: %s", rel / k["name"], e)
+                            continue
+                    else:
+                        out.write_bytes(r.content)
                     count += 1
                 else:
                     log.warning("Couldn't download %s (%s)", rel / k["name"], r.status_code)
@@ -120,3 +128,98 @@ def import_dir(cfg, env, src, http=None):
         sp.upload(drive, parent, f)
         done.append(str(rel))
     return done
+
+
+def to_jpeg(data, out):
+    """Save HEIC/HEIF bytes as a JPEG next to where the original would go. Returns the new path."""
+    import io
+    from PIL import Image, ImageOps
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+    im = ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert("RGB")
+    jpg = out.with_suffix(".jpg")
+    im.save(jpg, quality=90)
+    return jpg
+
+
+def tree(cfg, env, http=None):
+    """{folder path: [file names]} for every folder in the store (photos only)."""
+    ps = cfg["photo_store"]
+    sp = _sp(env, http)
+    drive = sp.drive(ps["site"])
+    root = sp.folder(drive, ps["folder"])
+    out = {}
+
+    def walk(item, rel):
+        files = []
+        for k in _children(sp, drive, item):
+            if "folder" in k:
+                walk(k["id"], f"{rel}/{k['name']}" if rel else k["name"])
+            elif Path(k["name"]).suffix.lower() in PHOTO_TYPES + HEIC:
+                files.append(k["name"])
+        out[rel] = files
+    walk(root, "")
+    return out
+
+
+def counts(cfg, t):
+    """Photos per team folder (including subfolders), from tree(); teams in club.yml with none are listed too."""
+    teams = {}
+    for path, files in t.items():
+        parts = path.split("/")
+        if parts[0] == "match-photos" and len(parts) >= 2:
+            teams[parts[1]] = teams.get(parts[1], 0) + len(files)
+    for name in [str(x) for x in cfg["photo_store"].get("teams") or []] + GENERIC:
+        teams.setdefault(name, 0)
+    players = sum(len(f) for p, f in t.items() if p.split("/")[0] == "adults")
+    waiting = sum(len(f) for p, f in t.items() if p.split("/")[0] == TO_CHECK)
+    return teams, players, waiting
+
+
+def summary_text(cfg, t):
+    """A few lines about the photo store, for the monthly committee email."""
+    teams, players, waiting = counts(cfg, t)
+    total = sum(teams.values())
+    have = sorted((n, c) for n, c in teams.items() if c)
+    none = [n for n, c in teams.items() if not c and n not in GENERIC]
+    lines = [f"Photo store: {total} team photo{'s' if total != 1 else ''} and {players} player photo"
+             f"{'s' if players != 1 else ''}" + (f", with {waiting} waiting in To check." if waiting else ".")]
+    if have:
+        lines.append("Photos per team: " + ", ".join(f"{n} {c}" for n, c in have) + ".")
+    if none:
+        lines.append(f"No photos yet ({len(none)} teams, so their posts use the Juniors, Indoor or Club photos or "
+                     f"the plain club colours): " + ", ".join(none) + ".")
+    return "\n".join(lines)
+
+
+SEEN = "state/photos-to-check.json"
+
+
+def notify(cfg, env, root, http=None, send=None):
+    """Email the committee about photos that have arrived in To check since last time. Returns how many."""
+    import json
+    t = tree(cfg, env, http)
+    waiting = sorted(f"{p}/{f}" for p, fs in t.items() if p.split("/")[0] == TO_CHECK for f in fs)
+    path = Path(root) / SEEN
+    try:
+        seen = set(json.loads(path.read_text()))
+    except (FileNotFoundError, ValueError):
+        seen = set()
+    new = [w for w in waiting if w not in seen]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(waiting, indent=1) + "\n")  # forget ones that have been moved or deleted
+    if not new:
+        return 0
+    ps = cfg["photo_store"]
+    link = f"https://{ps['site']}/Shared%20Documents/{ps['folder'].replace(' ', '%20')}/{TO_CHECK.replace(' ', '%20')}"
+    names = "\n".join(f"- {w.split('/', 1)[1]}" for w in new[:30]) + ("\n- …" if len(new) > 30 else "")
+    text = (f"Hello,\n\n{len(new)} new photo{'s have' if len(new) != 1 else ' has'} been emailed in and "
+            f"{'are' if len(new) != 1 else 'is'} waiting in To check:\n\n{names}\n\n"
+            f"Open the folder: {link}\n\nMove each photo you're happy with into its team folder (select it, then "
+            f"Move to), and delete any that shouldn't be used. Photos in To check are never posted.\n\n"
+            f"(Sent automatically by the Verwood social media kit.)")
+    s = mailer.settings(env)
+    if not s:
+        return 0
+    (send or mailer.send)(s, f"{cfg.short_name_upper} social media: {len(new)} new photo{'s' if len(new) != 1 else ''} to check", text)
+    return len(new)

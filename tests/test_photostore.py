@@ -64,3 +64,31 @@ def test_under_and_u_are_the_same_team(tmp_path):
     c = C.load(C.ROOT / "club.yml")
     assert mp.folder_for(c, "U12 Indoor")[0] == "Under 12 Indoor"
     assert _key("Girls Under 11 A") == _key("Girls U11 A")
+
+
+def test_notify_emails_new_photos_once(tmp_path):
+    g = Graph()
+    sent = []
+    c = cfg()
+    assert PS.notify(c, ENV, tmp_path, http=g, send=lambda s, subj, text: sent.append((subj, text))) == 1
+    assert "1 new photo to check" in sent[0][0] and "emailed.jpg" in sent[0][1]
+    assert PS.notify(c, ENV, tmp_path, http=g, send=lambda *a: sent.append(a)) == 0 and len(sent) == 1
+
+
+def test_summary_lists_teams_with_and_without_photos():
+    t = {"": [], "match-photos": [], "match-photos/1st XI": ["a.jpg", "b.jpg"], "match-photos/Under 12 Indoor": [],
+         "adults": ["Jack Smith.jpg"], "To check": ["x.jpg"]}
+    text = PS.summary_text(cfg(), t)
+    assert "2 team photos and 1 player photo, with 1 waiting in To check" in text
+    assert "1st XI 2" in text and "Under 12 Indoor" in text.split("No photos yet")[1]
+
+
+def test_heic_becomes_jpeg(tmp_path):
+    import io
+    from PIL import Image
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+    buf = io.BytesIO()
+    Image.new("RGB", (40, 30), (26, 65, 146)).save(buf, format="HEIF")
+    out = PS.to_jpeg(buf.getvalue(), tmp_path / "IMG_0001.HEIC")
+    assert out.name == "IMG_0001.jpg" and Image.open(out).format == "JPEG"

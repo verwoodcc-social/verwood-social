@@ -610,8 +610,16 @@ def cmd_report_issue(args, root=C.ROOT, gh=None):
     try:
         m = mailer.settings()
         if m:
+            photos = ""
+            if cfg["photo_store"]["source"] == "sharepoint":
+                try:
+                    from . import photostore
+                    photos = ("\n\nFor the committee (not part of the report):\n" +
+                              photostore.summary_text(cfg, photostore.tree(cfg, os.environ)))
+                except Exception as e:  # never stop the report over this
+                    log.warning("Photo summary skipped: %s", e)
             text = (f"Hello,\n\nAttached is the {r['month']} social media report for {sponsor}, ready to "
-                    f"forward.\n\n{r['summary']}\n\nThe report is also here: {issue['html_url']}\n\n"
+                    f"forward.\n\n{r['summary']}\n\nThe report is also here: {issue['html_url']}{photos}\n\n"
                     f"(Sent automatically by the Verwood social media kit.)")
             subject = (cfg.get("report") or {}).get("email_subject") or f"{sponsor} social media report: {r['month']}"
             sent = mailer.send(m, subject.replace("{month}", r["month"]), text, [root / r["pdf"]])
@@ -670,7 +678,11 @@ def cmd_photos(args, root=C.ROOT, http=None):
         rep.write()
         return True
     try:
-        if args.action == "import":
+        if args.action == "notify":
+            n = photostore.notify(cfg, os.environ, root, http)
+            rep.add(f"📧 Emailed the committee about {n} new photo(s) in To check." if n else
+                    "✅ No new photos waiting in To check.")
+        elif args.action == "import":
             done = photostore.import_dir(cfg, os.environ, root / "player-photos", http)
             rep.add(f"✅ Copied {len(done)} photo(s) from the old GitHub photo store: {', '.join(done)}"
                     if done else "✅ Nothing to copy from the old GitHub photo store.")
@@ -999,7 +1011,7 @@ def main(argv=None):
     al.add_argument("--link")
     al.add_argument("--quiet-first", action="store_true")
     ph = sub.add_parser("photos")
-    ph.add_argument("action", choices=["sync", "folders", "import"])
+    ph.add_argument("action", choices=["sync", "folders", "import", "notify"])
     bk = sub.add_parser("backup")
     bk.add_argument("files", nargs="+")
     ex = sub.add_parser("expiry")
