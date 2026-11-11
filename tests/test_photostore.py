@@ -8,7 +8,8 @@ class Graph:
     """A tiny drive: Social media photos/match-photos/1st XI/a.jpg and notes.txt."""
     def __init__(self):
         self.tree = {"root": [{"id": "s", "name": "Social media photos", "folder": {}}],
-                     "s": [{"id": "m", "name": "match-photos", "folder": {}}],
+                     "s": [{"id": "m", "name": "match-photos", "folder": {}}, {"id": "c", "name": "To check", "folder": {}}],
+                     "c": [{"id": "f9", "name": "emailed.jpg", "file": {}}],
                      "m": [{"id": "t", "name": "1st XI", "folder": {}}],
                      "t": [{"id": "f1", "name": "a.jpg", "file": {}},
                            {"id": "f2", "name": "notes.txt", "file": {}, "@microsoft.graph.downloadUrl": "https://dl/n"}]}
@@ -53,7 +54,7 @@ def test_make_folders_adds_missing_only():
     made = PS.make_folders(cfg(), ENV, http=g)
     assert "match-photos/1st XI" not in made
     assert {"match-photos/Under 12 Indoor", "match-photos/Indoor", "match-photos/Juniors", "match-photos/Club",
-            "adults", "juniors"} <= set(made)
+            "adults", "juniors", "To check"} <= set(made)
 
 
 def test_under_and_u_are_the_same_team(tmp_path):

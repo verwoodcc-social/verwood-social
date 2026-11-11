@@ -20,6 +20,7 @@ from . import mailer
 log = logging.getLogger(__name__)
 PHOTO_TYPES = (".jpg", ".jpeg", ".png", ".webp")
 GENERIC = ["Indoor", "Juniors", "Club"]
+TO_CHECK = "To check"   # emailed-in photos wait here until someone moves them into a team folder
 
 
 def _sp(env, http=None):
@@ -34,7 +35,7 @@ def _sp(env, http=None):
 
 def folder_names(cfg):
     teams = [str(t).strip() for t in (cfg["photo_store"].get("teams") or []) if str(t).strip()]
-    return ([f"match-photos/{t}" for t in teams + GENERIC] + ["adults", "juniors"])
+    return ([f"match-photos/{t}" for t in teams + GENERIC] + ["adults", "juniors", TO_CHECK])
 
 
 def make_folders(cfg, env, http=None):
@@ -81,7 +82,8 @@ def sync(cfg, env, dest, http=None):
         nonlocal count
         for k in _children(sp, drive, item):
             if "folder" in k:
-                walk(k["id"], rel / k["name"])
+                if k["name"].strip().lower() != TO_CHECK.lower():  # never use photos nobody has checked
+                    walk(k["id"], rel / k["name"])
             elif Path(k["name"]).suffix.lower() in PHOTO_TYPES:
                 out = dest / rel / k["name"]
                 out.parent.mkdir(parents=True, exist_ok=True)
