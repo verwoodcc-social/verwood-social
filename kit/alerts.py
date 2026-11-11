@@ -25,6 +25,8 @@ HINTS = {
     "sponsor-report": "Run it again from Actions → Sponsor report once it's fixed.",
     "club-news": "Edit the form to try again.",
     "check-setup": "Open the run to see which line has a ❌.",
+    "backup": "Nothing is lost: last week's backup is still in SharePoint. Run it again from Actions → Weekly "
+              "backup once it's fixed (docs/BACKUP-SETUP.md).",
 }
 
 

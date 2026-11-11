@@ -659,6 +659,26 @@ def cmd_expiry(args, root=C.ROOT, gh=None, session=None):
     return lines
 
 
+def cmd_backup(args, root=C.ROOT, http=None):
+    """Upload the backup bundles made by the workflow to SharePoint."""
+    from . import backup
+    cfg = C.load(root / "club.yml")
+    rep = Report("Weekly backup")
+    if not cfg["backup"]["enabled"]:
+        rep.add("ℹ️ Backups are switched off (club.yml → backup → enabled).")
+        rep.write()
+        return True
+    try:
+        for line in backup.run(cfg, os.environ, args.files, http=http):
+            rep.add(line)
+    except backup.BackupError as e:
+        rep.add(f"❌ **Backup**: {e}")
+        rep.write()
+        return False
+    rep.write()
+    return True
+
+
 def already_done(gh, number):
     done = set()
     for c in gh._req("GET", f"issues/{number}/comments", params={"per_page": 100}):
@@ -946,6 +966,8 @@ def main(argv=None):
     al.add_argument("--title", required=True)
     al.add_argument("--link")
     al.add_argument("--quiet-first", action="store_true")
+    bk = sub.add_parser("backup")
+    bk.add_argument("files", nargs="+")
     ex = sub.add_parser("expiry")
     ex.add_argument("--today")
     rs = sub.add_parser("resolved")
@@ -965,7 +987,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")
@@ -973,7 +995,7 @@ def main(argv=None):
         return 1
     if args.cmd == "check" and result is False:
         return 1
-    if args.cmd == "publish" and result is False:
+    if args.cmd in ("publish", "backup") and result is False:
         return 1
     return 0
 

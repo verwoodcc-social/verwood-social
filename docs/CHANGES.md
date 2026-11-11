@@ -1,5 +1,12 @@
 # What's new
 
+## 1.18.0 (Verwood)
+
+- Weekly backup: every Sunday the kit and the private photo store are saved to the club SharePoint
+  (club.yml → backup; setup in docs/BACKUP-SETUP.md). The newest 8 weeks are kept.
+- Make posts: a "date" box to catch up a missed day.
+- Instagram Stories are retried when Instagram says the image isn't ready yet.
+
 ## 1.17.0 (Verwood)
 
 - Expiry reminders: every morning the kit checks when the Meta token, the player photos key and the

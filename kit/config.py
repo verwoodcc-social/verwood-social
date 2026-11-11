@@ -32,6 +32,7 @@ DEFAULTS = {
                           "every": {"runs": 500, "wickets": 50, "matches": 50, "catches": 50, "keeper_catches": 50},
                           "watch": {"enabled": True, "runs": 50, "wickets": 3, "matches": 1, "catches": 2,
                                     "keeper_catches": 2, "active_days": 21, "max": 8}},
+    "backup": {"enabled": False, "site": "", "folder": "Social media kit backups", "keep": 8},
     "expiry_reminders": {"enabled": True, "warn_days": [30, 7], "m365_secret_expires": ""},
     "captain_reports": {"enabled": False, "wait": True, "wait_until": "09:15", "max_length": 700,
                         "teams": r"^(1st|2nd|3rd|4th|5th) XI$|^Wednesday 1st XI$|^Friendly XI$|^Women's Softball( B)?$"},
@@ -245,6 +246,12 @@ def validate(cfg):
             problems.append(f"matchday → {k}: use true or false.")
     if p.get("approval") not in ("review", "automatic"):
         problems.append("posts → approval: use review or automatic.")
+    bk = cfg.get("backup") or {}
+    if bk.get("enabled") and not re.match(r"^[\w.-]+\.sharepoint\.com/sites/[^/]+$", str(bk.get("site") or "")):
+        problems.append("backup → site: use the site's address without https://, like "
+                        "verwoodcc.sharepoint.com/sites/VerwoodCCClubDocuments.")
+    if not isinstance(bk.get("keep", 8), int) or bk.get("keep", 8) < 0:
+        problems.append("backup → keep: use a whole number of weeks, like 8.")
     er = cfg.get("expiry_reminders") or {}
     wd = er.get("warn_days")
     if not isinstance(wd, list) or not wd or not all(isinstance(d, int) and d > 0 for d in wd):

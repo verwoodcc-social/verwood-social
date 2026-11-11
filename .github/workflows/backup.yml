@@ -1,0 +1,90 @@
+name: Weekly backup
+
+# Every Sunday: the kit and the private photo store, each as one git bundle (every file plus its history),
+# saved to the club SharePoint (club.yml → backup). Run it by hand any time from the Actions tab.
+on:
+  schedule:
+    - cron: "37 3 * * 0"   # 03:37 UTC on Sundays
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    if: github.repository != 'verwoodcc-social/cricket-social-kit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PHOTOS_KEY: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # the whole history, so the backup is complete
+
+      - name: Get the photo store (if connected)
+        if: env.PHOTOS_KEY != ''
+        uses: actions/checkout@v4
+        with:
+          repository: verwoodcc-social/verwood-player-photos
+          token: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
+          path: player-photos
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt   # no browser needed for this one
+
+      - name: Make the backup files
+        run: |
+          mkdir -p backup
+          d=$(date -u +%F)
+          git bundle create "backup/verwood-social-$d.bundle" --all
+          if [ -d player-photos/.git ]; then
+            git -C player-photos bundle create "$PWD/backup/verwood-player-photos-$d.bundle" --all
+          fi
+          ls -la backup
+
+      - name: Save to SharePoint
+        env:
+          M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
+          M365_CLIENT_ID: ${{ secrets.M365_CLIENT_ID }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+        run: python -m kit backup backup/*.bundle
+
+      - name: Email the committee if the backup failed
+        if: failure()
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
+          M365_CLIENT_ID: ${{ secrets.M365_CLIENT_ID }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+        run: python -m kit alert --key backup --title "The weekly backup didn't work" --link "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+      - name: Clear any earlier problem
+        if: success()
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
+          M365_CLIENT_ID: ${{ secrets.M365_CLIENT_ID }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+        run: python -m kit resolved --key backup
