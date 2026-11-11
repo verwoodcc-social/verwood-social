@@ -1,6 +1,6 @@
 name: Weekly backup
 
-# Every Sunday: the kit and the private photo store, each as one git bundle (every file plus its history),
+# Every Sunday: the kit as one git bundle (every file plus its history),
 # saved to the club SharePoint (club.yml → backup). Run it by hand any time from the Actions tab.
 on:
   schedule:
@@ -20,21 +20,10 @@ jobs:
     if: github.repository != 'verwoodcc-social/cricket-social-kit'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      PHOTOS_KEY: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0          # the whole history, so the backup is complete
-
-      - name: Get the photo store (if connected)
-        if: env.PHOTOS_KEY != ''
-        uses: actions/checkout@v4
-        with:
-          repository: verwoodcc-social/verwood-player-photos
-          token: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
-          path: player-photos
-          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -49,9 +38,6 @@ jobs:
           mkdir -p backup
           d=$(date -u +%F)
           git bundle create "backup/verwood-social-$d.bundle" --all
-          if [ -d player-photos/.git ]; then
-            git -C player-photos bundle create "$PWD/backup/verwood-player-photos-$d.bundle" --all
-          fi
           ls -la backup
 
       - name: Save to SharePoint

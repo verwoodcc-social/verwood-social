@@ -1,15 +1,16 @@
 # Weekly backup to SharePoint
 
-Every Sunday at about 03:40 (UK winter time) the **Weekly backup** workflow saves two files to the club
-SharePoint, in **Verwood CC Club Documents → Documents → Social media kit backups → <date>**:
+Every Sunday at about 03:40 (UK winter time) the **Weekly backup** workflow saves
+`verwood-social-<date>.bundle` (the whole kit, with its settings, career data, saved state and history) to
+the club SharePoint, in **Verwood CC Club Documents → Documents → Social media kit backups → <date>**.
 
-- `verwood-social-<date>.bundle`: the whole kit, with its settings, career data, saved state and history.
-- `verwood-player-photos-<date>.bundle`: the private photo store, with its history.
+The photos themselves live in SharePoint (Social media photos), not in the kit, so they aren't in this
+backup. A photo deleted there by mistake can be restored from the SharePoint recycle bin for 93 days.
 
 The newest 8 weeks are kept (club.yml → backup → keep). Older weeks go to the SharePoint recycle bin,
 where they can be restored for 93 days. If a backup fails, the committee gets an email.
 
-The photo store backup sits in the club SharePoint, so keep that site's sharing limited to the committee.
+Keep the Club Documents site's sharing limited to the committee: it holds the player photos.
 
 ## One-off setup: let the Microsoft 365 app save to that one site
 

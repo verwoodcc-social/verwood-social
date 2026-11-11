@@ -116,8 +116,8 @@ captain_reports:
   max_length: 700           # characters of report used in the caption
   teams: '.'                # which teams' results wait for a report: all teams (senior and youth)
 
-# Weekly backup (Sunday): the kit and the private photo store, each as one file holding every file and its
-# history, saved to the club SharePoint. The newest `keep` weeks are kept; older ones go to the recycle bin.
+# Weekly backup (Sunday): the kit, as one file holding every file and its history, saved to the club
+# SharePoint. The newest `keep` weeks are kept; older ones go to the recycle bin.
 # Restoring: docs/BACKUP-SETUP.md.
 backup:
   enabled: true
