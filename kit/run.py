@@ -122,7 +122,7 @@ def clear_old_images(root, today):
 def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
     rep = Report("Make posts")
     cfg = C.load(root / "club.yml")
-    today = today_for(cfg, args.today)
+    today = today_for(cfg, args.today or os.environ.get("KIT_TODAY") or None)  # KIT_TODAY: catch up a missed day
     only = args.only or os.environ.get("KIT_ONLY") or None
     if only in ("", "all-due"):
         only = None

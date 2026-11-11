@@ -16,6 +16,10 @@ on:
         type: choice
         options: [all-due, fixtures, roundup, matches, matchday, leaderboards, tables, season, season-fixtures]
         default: all-due
+      date:
+        description: "Catch up a missed day: run as if it were this date (YYYY-MM-DD). Leave empty for today."
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -67,6 +71,7 @@ jobs:
         env:
           PLAYCRICKET_API_TOKEN: ${{ secrets.PLAYCRICKET_API_TOKEN }}
           KIT_ONLY: ${{ github.event_name == 'issues' && 'matches' || inputs.only }}
+          KIT_TODAY: ${{ inputs.date }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m kit make
 
