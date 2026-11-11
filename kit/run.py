@@ -831,6 +831,9 @@ def cmd_check(args, root=C.ROOT, pc=None, meta=None, gh=None, renderer=None):
         ok = False
         rep.add("❌ **Player photos**: the photo key is saved but the photo store couldn't be read. The key may have "
                 "expired or lost access: make a new one and update the PLAYER_PHOTOS_TOKEN secret.")
+    elif cfg["photo_store"]["source"] == "sharepoint":
+        rep.add("ℹ️ **Photo store** (SharePoint → Social media photos): no photos yet. Posts use the plain club "
+                "colours until some are added.")
     elif cfg["milestones"]["enabled"]:
         rep.add("ℹ️ **Player photos**: not connected (optional). Milestone posts use the club badge design instead.")
 

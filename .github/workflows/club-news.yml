@@ -21,8 +21,6 @@ jobs:
       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      PHOTOS_KEY: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -41,15 +39,6 @@ jobs:
           python -c "from playwright.sync_api import sync_playwright as s; p=s().start(); p.chromium.launch().close(); p.stop()" \
             || timeout 420 python -m playwright install-deps chromium
           fc-list | grep -qi emoji || timeout 180 sudo apt-get install -y -q fonts-noto-color-emoji || true
-
-      - name: Get club photos from the private photo store (if connected)
-        if: env.PHOTOS_KEY != ''
-        continue-on-error: true
-        uses: actions/checkout@v4
-        with:
-          repository: verwoodcc-social/verwood-player-photos
-          token: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
-          path: player-photos
 
       - name: Get photos from the SharePoint photo store
         continue-on-error: true   # a photo problem must never stop the posts

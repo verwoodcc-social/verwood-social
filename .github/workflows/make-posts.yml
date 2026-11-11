@@ -37,8 +37,6 @@ jobs:
       (github.event_name != 'issues' || startsWith(github.event.issue.title, 'Captain'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      PHOTOS_KEY: ${{ secrets.PLAYER_PHOTOS_TOKEN }}   # empty if no photo store is connected
     steps:
       - uses: actions/checkout@v4
 
@@ -57,15 +55,6 @@ jobs:
           python -c "from playwright.sync_api import sync_playwright as s; p=s().start(); p.chromium.launch().close(); p.stop()" \
             || timeout 420 python -m playwright install-deps chromium
           fc-list | grep -qi emoji || timeout 180 sudo apt-get install -y -q fonts-noto-color-emoji || true
-
-      - name: Get player photos from the private photo store (if connected)
-        if: env.PHOTOS_KEY != ''
-        continue-on-error: true   # a photo problem must never stop the posts
-        uses: actions/checkout@v4
-        with:
-          repository: verwoodcc-social/verwood-player-photos
-          token: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
-          path: player-photos   # git-ignored: photos are only drawn into graphics, never saved here
 
       - name: Get photos from the SharePoint photo store
         continue-on-error: true   # a photo problem must never stop the posts

@@ -22,8 +22,6 @@ jobs:
     if: github.repository != 'verwoodcc-social/cricket-social-kit'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      PHOTOS_KEY: ${{ secrets.PLAYER_PHOTOS_TOKEN }}   # empty if no photo store is connected
     steps:
       - uses: actions/checkout@v4
 
@@ -43,15 +41,6 @@ jobs:
             || timeout 420 python -m playwright install-deps chromium
           fc-list | grep -qi emoji || timeout 180 sudo apt-get install -y -q fonts-noto-color-emoji || true
 
-      - name: Get player photos from the private photo store (if connected)
-        if: env.PHOTOS_KEY != ''
-        continue-on-error: true   # a photo problem must never stop the posts
-        uses: actions/checkout@v4
-        with:
-          repository: verwoodcc-social/verwood-player-photos
-          token: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
-          path: player-photos   # git-ignored: photos are only drawn into graphics, never saved here
-
       - name: Get photos from the SharePoint photo store
         continue-on-error: true   # a photo problem must never stop the posts
         env:
@@ -61,7 +50,6 @@ jobs:
           REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
           REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
         run: |
-          [ -d player-photos/.git ] && python -m kit photos import   # one-off: copy the old GitHub photos across
           python -m kit photos folders   # makes a folder for any team added to club.yml → photo_store → teams
           python -m kit photos sync
 

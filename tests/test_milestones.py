@@ -101,7 +101,7 @@ def test_photos_never_saved_in_public_repo(tmp_path):
     ignored = (ROOT / ".gitignore").read_text()
     assert "player-photos/" in ignored
     wf = (ROOT / ".github/workflows/make-posts.yml").read_text()
-    assert "git add posts state" in wf and "player-photos" in wf  # only posts/ and state/ are ever committed
+    assert "git add posts state" in wf and "kit photos sync" in wf  # photos copied in; only posts/ and state/ committed
 
 
 def test_bad_milestone_settings(club_root):
