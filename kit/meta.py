@@ -112,7 +112,18 @@ class Meta:
         return {"network": "facebook_story", "id": r.get("post_id") or photo_id,
                 "url": f"https://www.facebook.com/{self.page_id}"}
 
-    def post_instagram_story(self, image_url):
+    def post_instagram_story(self, image_url, tries=3):
+        """Instagram sometimes says "The requested resource does not exist" for a Story made straight after
+        the feed post (the image isn't ready on its side yet). Wait and try again before giving up."""
+        for n in range(tries):
+            try:
+                return self._instagram_story(image_url)
+            except MetaError as e:
+                if "does not exist" not in str(e) or n == tries - 1:
+                    raise
+                self.sleep(30 * (n + 1))
+
+    def _instagram_story(self, image_url):
         if self.page_token is None:
             self.resolve()
         if not self.ig_id:

@@ -85,3 +85,16 @@ def test_config_validation():
     with pytest.raises(C.ConfigError) as e:
         C.validate(c)
     assert "warn_days" in str(e.value) and "m365_secret_expires" in str(e.value)
+
+
+def test_instagram_story_retries_when_not_ready():
+    from kit.meta import Meta, MetaError
+    m = Meta("t", "1", sleep=lambda s: None)
+    calls = []
+    def story(url):
+        calls.append(url)
+        if len(calls) < 3:
+            raise MetaError("The requested resource does not exist")
+        return {"network": "instagram_story"}
+    m._instagram_story = story
+    assert m.post_instagram_story("u")["network"] == "instagram_story" and len(calls) == 3
