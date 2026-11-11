@@ -659,6 +659,31 @@ def cmd_expiry(args, root=C.ROOT, gh=None, session=None):
     return lines
 
 
+def cmd_photos(args, root=C.ROOT, http=None):
+    """photos sync: copy the SharePoint photo store into ./player-photos. photos folders: make team folders."""
+    from . import photostore
+    from .backup import BackupError
+    cfg = C.load(root / "club.yml")
+    rep = Report("Photo store")
+    if cfg["photo_store"]["source"] != "sharepoint":
+        rep.add("ℹ️ The photo store is the GitHub one (club.yml → photo_store → source).")
+        rep.write()
+        return True
+    try:
+        if args.action == "folders":
+            made = photostore.make_folders(cfg, os.environ, http)
+            rep.add(f"✅ Made {len(made)} folder(s): {', '.join(made)}" if made else "✅ All the photo folders are there.")
+        else:
+            n = photostore.sync(cfg, os.environ, root / "player-photos", http)
+            rep.add(f"✅ {n} photo(s) from the SharePoint photo store.")
+    except BackupError as e:
+        rep.add(f"⚠️ **Photo store**: {e} Posts go ahead without photos.")
+        rep.write()
+        return args.action != "folders"
+    rep.write()
+    return True
+
+
 def cmd_backup(args, root=C.ROOT, http=None):
     """Upload the backup bundles made by the workflow to SharePoint."""
     from . import backup
@@ -966,6 +991,8 @@ def main(argv=None):
     al.add_argument("--title", required=True)
     al.add_argument("--link")
     al.add_argument("--quiet-first", action="store_true")
+    ph = sub.add_parser("photos")
+    ph.add_argument("action", choices=["sync", "folders"])
     bk = sub.add_parser("backup")
     bk.add_argument("files", nargs="+")
     ex = sub.add_parser("expiry")
@@ -987,7 +1014,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")
@@ -995,7 +1022,7 @@ def main(argv=None):
         return 1
     if args.cmd == "check" and result is False:
         return 1
-    if args.cmd in ("publish", "backup") and result is False:
+    if args.cmd in ("publish", "backup", "photos") and result is False:
         return 1
     return 0
 

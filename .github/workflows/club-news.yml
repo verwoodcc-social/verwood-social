@@ -51,6 +51,16 @@ jobs:
           token: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
           path: player-photos
 
+      - name: Get photos from the SharePoint photo store
+        continue-on-error: true   # a photo problem must never stop the posts
+        env:
+          M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
+          M365_CLIENT_ID: ${{ secrets.M365_CLIENT_ID }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+        run: python -m kit photos sync
+
       - name: Make the graphic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

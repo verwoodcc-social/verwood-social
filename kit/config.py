@@ -32,6 +32,7 @@ DEFAULTS = {
                           "every": {"runs": 500, "wickets": 50, "matches": 50, "catches": 50, "keeper_catches": 50},
                           "watch": {"enabled": True, "runs": 50, "wickets": 3, "matches": 1, "catches": 2,
                                     "keeper_catches": 2, "active_days": 21, "max": 8}},
+    "photo_store": {"source": "github", "site": "", "folder": "Social media photos", "teams": []},
     "backup": {"enabled": False, "site": "", "folder": "Social media kit backups", "keep": 8},
     "expiry_reminders": {"enabled": True, "warn_days": [30, 7], "m365_secret_expires": ""},
     "captain_reports": {"enabled": False, "wait": True, "wait_until": "09:15", "max_length": 700,
@@ -246,6 +247,14 @@ def validate(cfg):
             problems.append(f"matchday → {k}: use true or false.")
     if p.get("approval") not in ("review", "automatic"):
         problems.append("posts → approval: use review or automatic.")
+    ps = cfg.get("photo_store") or {}
+    if ps.get("source") not in ("github", "sharepoint"):
+        problems.append("photo_store → source: use sharepoint or github.")
+    if ps.get("source") == "sharepoint" and not re.match(r"^[\w.-]+\.sharepoint\.com/sites/[^/]+$", str(ps.get("site") or "")):
+        problems.append("photo_store → site: use the site's address without https://, like "
+                        "verwoodcc.sharepoint.com/sites/VerwoodCCClubDocuments.")
+    if not isinstance(ps.get("teams") or [], list):
+        problems.append("photo_store → teams: list the team names, one per line starting with a dash.")
     bk = cfg.get("backup") or {}
     if bk.get("enabled") and not re.match(r"^[\w.-]+\.sharepoint\.com/sites/[^/]+$", str(bk.get("site") or "")):
         problems.append("backup → site: use the site's address without https://, like "

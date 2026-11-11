@@ -18,7 +18,10 @@ INDOOR, JUNIORS, CLUB = "Indoor", "Juniors", "Club"
 
 
 def _key(name):
-    return re.sub(r"[^a-z0-9]", "", (name or "").lower())
+    """Folder/team names compared ignoring capitals, spaces and punctuation, and with "Under" = "U"
+    (Play-Cricket writes some teams both ways, e.g. "Under 12 Indoor" and "U12 Indoor")."""
+    n = re.sub(r"\bunder\s*(?=\d)", "u", (name or "").lower())
+    return re.sub(r"[^a-z0-9]", "", n)
 
 
 class MatchPhotos:

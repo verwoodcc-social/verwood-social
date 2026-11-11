@@ -1,5 +1,12 @@
 # What's new
 
+## 1.19.0 (Verwood)
+
+- Photo store moved to the club SharePoint (Club Documents → Documents → Social media photos), so photos can
+  be added from a phone or computer without a GitHub account (club.yml → photo_store).
+- A folder for every current team, named exactly as on Play-Cricket. Check setup makes a folder for any
+  team added to the list. Team names match whether Play-Cricket writes "Under 12" or "U12".
+
 ## 1.18.0 (Verwood)
 
 - Weekly backup: every Sunday the kit and the private photo store are saved to the club SharePoint

@@ -52,6 +52,18 @@ jobs:
           token: ${{ secrets.PLAYER_PHOTOS_TOKEN }}
           path: player-photos   # git-ignored: photos are only drawn into graphics, never saved here
 
+      - name: Get photos from the SharePoint photo store
+        continue-on-error: true   # a photo problem must never stop the posts
+        env:
+          M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
+          M365_CLIENT_ID: ${{ secrets.M365_CLIENT_ID }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+        run: |
+          python -m kit photos folders   # makes a folder for any team added to club.yml → photo_store → teams
+          python -m kit photos sync
+
       - name: Check settings and connections, make sample graphics
         id: check
         env:

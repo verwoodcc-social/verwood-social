@@ -180,6 +180,64 @@ news:
   reminder: true          # a "Today" Story on the morning of an event
   reminder_title: "Today"
 
+# Photo store: the club SharePoint (Club Documents → Documents → Social media photos). Before posts are
+# made, the photos are copied in for drawing into the graphics; nothing is ever saved back or made public.
+# teams: one folder each under match-photos, named exactly as on Play-Cricket (Teams page, active teams).
+photo_store:
+  source: sharepoint        # sharepoint, or github (the old verwood-player-photos repository)
+  site: verwoodcc.sharepoint.com/sites/VerwoodCCClubDocuments
+  folder: Social media photos
+  teams:
+    - "1st XI"
+    - "2nd XI"
+    - "3rd XI"
+    - "4th XI"
+    - "5th XI"
+    - "Under 19"
+    - "Friendly XI"
+    - "Wednesday 1st XI"
+    - "Women's Softball"
+    - "Women's Softball B"
+    - "Under 8"
+    - "U9 Softball"
+    - "Under 10 A"
+    - "Under 10 Softball"
+    - "Under 11"
+    - "Girls Under 11 A"
+    - "Girls Under 11 B"
+    - "Under 13 A"
+    - "Under 13 B"
+    - "Girls Under 13"
+    - "Under 15"
+    - "Under 15 A"
+    - "Under 15 B"
+    - "Indoor A"
+    - "Indoor B"
+    - "Indoor C"
+    - "Indoor D"
+    - "Indoor E"
+    - "Women's Softball Indoor B"
+    - "Under 9 Indoor"
+    - "U10 A Indoor"
+    - "U10B Indoor"
+    - "U11 Indoor"
+    - "Girls U11A Indoor"
+    - "Girls U11B Indoor"
+    - "Under 12 Indoor"
+    - "U13 Indoor"
+    - "Girls U13 Indoor"
+    - "U14 Indoor"
+    - "U15A Indoor"
+    - "U15B Indoor"
+    - "Verwood Daughters"
+    - "Verwood Mums"
+    - "Verwood Daughters 2"
+    - "Verwood Mums 2"
+    - "Dads"
+    - "Sons"
+    - "King XI"
+    - "Driscoll XI"
+
 # Match photos as backgrounds, from the match-photos folders in the private photo store
 match_photos:
   enabled: true
