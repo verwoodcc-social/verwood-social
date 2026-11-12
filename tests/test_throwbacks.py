@@ -23,16 +23,15 @@ def test_best_moment():
     assert T.best_moment(card(all_batting=[{"runs": 101}], summary="Verwood won by 10 wickets"))[1] == "century"
 
 
-def test_pick_varies_team_and_season(verwood):
+def test_pick_oldest_first_varying_team(verwood):
     data = {"used": {"1": "2026-11-05"}, "checked": [], "moments": [
-        {"id": "1", "date": "2019-06-01", "team": "1st XI", "score": 150, "why": "century"},
-        {"id": "2", "date": "2019-07-01", "team": "2nd XI", "score": 140, "why": "century"},
-        {"id": "3", "date": "2021-07-01", "team": "1st XI", "score": 130, "why": "century"},
-        {"id": "4", "date": "2022-07-01", "team": "3rd XI", "score": 90, "why": "five-for"}]}
-    assert T.pick(verwood, data, date(2026, 11, 12))["id"] == "4"   # 2 is the same season, 3 the same team
-    data["moments"] = data["moments"][:3]
-    assert T.pick(verwood, data, date(2026, 11, 12))["id"] == "2"   # nothing else: rules relaxed
-
+        {"id": "1", "date": "2016-06-01", "team": "1st XI", "score": 150, "why": "century"},
+        {"id": "2", "date": "2017-07-01", "team": "1st XI", "score": 140, "why": "century"},
+        {"id": "3", "date": "2018-07-01", "team": "2nd XI", "score": 90, "why": "five-for"},
+        {"id": "4", "date": "2025-07-01", "team": "3rd XI", "score": 300, "why": "century"}]}
+    assert T.pick(verwood, data, date(2026, 11, 12))["id"] == "3"   # 2 is older, but the 1st XI was last week
+    data["moments"] = data["moments"][:2]
+    assert T.pick(verwood, data, date(2026, 11, 12))["id"] == "2"   # nothing else: rule relaxed
 
 def test_due(verwood):
     verwood["throwback"]["enabled"] = True

@@ -1,4 +1,5 @@
-"""Throwback Thursday (club.yml → throwback): a standout game from a past season, posted each Thursday in winter.
+"""Throwback Thursday (club.yml → throwback): a standout game from a past season, posted each Thursday in winter,
+oldest first.
 
 `build` looks through every season from first_season on Play-Cricket and keeps a short note of each standout
 game in state/throwbacks.json: a century, a five-wicket haul, a big or very close win, a tie or a big total.
@@ -130,22 +131,21 @@ def due(cfg, today):
 
 
 def pick(cfg, data, today):
-    """The next game to look back on: the best unused one, not the same team as the last few or the same season
-    as the last one."""
+    """The next game to look back on: the oldest one not used yet, so the posts work forward in time and the
+    most recent seasons (freshest in people's minds) come last. Where it can, it skips a team used in the
+    last three weeks, taking the next oldest game instead."""
     used = data["used"]
     last = sorted((kv for kv in used.items() if kv[1][:1].isdigit()), key=lambda kv: kv[1])[-3:]
     by_id = {m["id"]: m for m in data["moments"]}
     recent_teams = {by_id[i]["team"] for i, _ in last if i in by_id}
-    last_season = by_id[last[-1][0]]["date"][:4] if last and last[-1][0] in by_id else None
     exclude = cfg["throwback"].get("exclude_teams") or ""
     pool = [m for m in data["moments"] if m["id"] not in used and m["date"] < today.isoformat()
             and not (exclude and re.search(exclude, m["team"], re.I))]
     for strict in (True, False):
-        c = [m for m in pool if not strict or (m["team"] not in recent_teams and m["date"][:4] != last_season)]
+        c = [m for m in pool if not strict or m["team"] not in recent_teams]
         if c:
-            return max(c, key=lambda m: (m["score"], m["date"]))
+            return min(c, key=lambda m: (m["date"], -m["score"]))
     return None
-
 
 def _years_ago(d, today):
     n = today.year - d.year - ((today.month, today.day) < (d.month, d.day))

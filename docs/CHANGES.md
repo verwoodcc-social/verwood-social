@@ -1,5 +1,9 @@
 # What's new
 
+## 1.25.1 (12 November 2026)
+
+- Throwback Thursday now starts with the oldest standout games and works forward, so recent seasons come last. It still skips a team used in the last three weeks where it can.
+
 ## 1.25.0 (12 November 2026)
 
 - Evening Stories: the day's match result and Throwback Thursday Stories go out again on Instagram at 18:00 UK time, when Instagram is busiest. Each once. Set in club.yml → evening_stories.
