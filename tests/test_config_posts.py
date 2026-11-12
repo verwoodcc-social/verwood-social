@@ -181,3 +181,29 @@ def test_feed_posts_wait_for_post_from(verwood, monkeypatch):
     verwood["posts"]["post_from"] = ""
     monkeypatch.delenv("KIT_POST_NOW")
     assert not hold_until(verwood, datetime(2026, 11, 12, 6, 20, tzinfo=verwood.tz))
+
+
+def test_evening_stories_reshare_once(club_root, monkeypatch):
+    import json
+    from datetime import datetime
+    from types import SimpleNamespace
+    from kit import config as C
+    from kit.run import cmd_evening_stories, load_state
+    y = (club_root / "club.yml").read_text() + "\nevening_stories:\n  enabled: true\n"
+    (club_root / "club.yml").write_text(y)
+    cfg = C.load(club_root / "club.yml")
+    d = club_root / "posts/2026-11-12"
+    d.mkdir(parents=True)
+    (d / "match-1-story.jpg").write_bytes(b"x")
+    (club_root / "state/posted.json").write_text(json.dumps({"posted": {
+        "match-1": {"made": "2026-11-12"}, "match-2": {"made": "2026-11-11"}, "fixtures-x": {"made": "2026-11-12"}}}))
+    sent = []
+    meta = SimpleNamespace(post_instagram_story=lambda u: sent.append(u))
+    monkeypatch.delenv("KIT_POST_NOW", raising=False)
+    early = datetime(2026, 11, 12, 17, 2, tzinfo=cfg.tz)
+    assert cmd_evening_stories(None, club_root, meta=meta, sha="abc", now=early, repo="o/r") and not sent
+    late = datetime(2026, 11, 12, 18, 2, tzinfo=cfg.tz)
+    cmd_evening_stories(None, club_root, meta=meta, sha="abc", now=late, repo="o/r")
+    assert sent == ["https://raw.githubusercontent.com/o/r/abc/posts/2026-11-12/match-1-story.jpg"]
+    cmd_evening_stories(None, club_root, meta=meta, sha="abc", now=late, repo="o/r")
+    assert len(sent) == 1 and load_state(club_root)["evening_stories"]["match-1"] == "2026-11-12"

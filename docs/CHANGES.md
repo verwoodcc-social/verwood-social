@@ -1,5 +1,9 @@
 # What's new
 
+## 1.25.0 (12 November 2026)
+
+- Evening Stories: the day's match result and Throwback Thursday Stories go out again on Instagram at 18:00 UK time, when Instagram is busiest. Each once. Set in club.yml → evening_stories.
+
 ## 1.24.0 (12 November 2026)
 
 - Feed posts go out at 10:00 UK time (club.yml → posts → post_from), when Facebook is busiest; they're still made early. Stories-only posts (Today, Game off) and runs started by hand go straight away. Make posts now runs at 06:17, 08:17, 09:01 and 10:01 UTC. Captain's reports are waited for until 09:55.

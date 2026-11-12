@@ -54,6 +54,7 @@ DEFAULTS = {
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
+    "evening_stories": {"enabled": False, "time": "18:00", "networks": ["instagram"], "kinds": ["match", "throwback"]},
     "throwback": {"enabled": False, "day": "thursday", "months": [11, 12, 1, 2, 3], "first_season": 2016,
                   "exclude_teams": "", "title": "Throwback Thursday",
                   "question": "Were you there? Tell us in the comments!"},
@@ -255,6 +256,13 @@ def validate(cfg):
     for k in ("enabled", "juniors"):
         if not isinstance(md.get(k, False), bool):
             problems.append(f"matchday → {k}: use true or false.")
+    es = cfg.get("evening_stories") or {}
+    if not isinstance(es.get("enabled", False), bool):
+        problems.append("evening_stories → enabled: use true or false.")
+    if not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", str(es.get("time", "18:00"))):
+        problems.append('evening_stories → time: use a 24-hour time in quotes, e.g. "18:00".')
+    if any(n not in ("instagram", "facebook") for n in es.get("networks") or []):
+        problems.append("evening_stories → networks: use instagram and/or facebook.")
     tb = cfg.get("throwback") or {}
     if not isinstance(tb.get("enabled", False), bool):
         problems.append("throwback → enabled: use true or false.")

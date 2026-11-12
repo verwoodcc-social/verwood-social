@@ -1,0 +1,47 @@
+name: Evening Stories
+
+# Re-shares the day's result Stories on Instagram in the evening (club.yml → evening_stories).
+# Two runs so it's 18:00 UK time all year: 18:01 UTC in winter, 17:01 UTC (18:01 BST) in summer.
+on:
+  schedule:
+    - cron: "1 17 * * *"
+    - cron: "1 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cricket-social-kit
+  cancel-in-progress: false
+
+jobs:
+  stories:
+    if: github.repository != 'verwoodcc-social/cricket-social-kit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Re-share today's Stories
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          KIT_POST_NOW: ${{ github.event_name == 'workflow_dispatch' }}
+        run: python -m kit evening-stories
+
+      - name: Save what was shared
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state
+          git diff --cached --quiet || git commit -m "Evening Stories $(date -u +%F)"
+          git pull --rebase --quiet && git push --quiet

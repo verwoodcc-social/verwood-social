@@ -748,6 +748,57 @@ def cmd_throwbacks(args, root=C.ROOT, pc=None):
     return True
 
 
+def cmd_evening_stories(args, root=C.ROOT, meta=None, sha=None, now=None, repo=None):
+    """Re-share today's result Stories in the evening, when Instagram is busiest (club.yml → evening_stories)."""
+    cfg = C.load(root / "club.yml")
+    ev = cfg["evening_stories"]
+    rep = Report("Evening Stories")
+    now = now or datetime.now(cfg.tz)
+    if not ev["enabled"]:
+        rep.add("ℹ️ Evening Stories are switched off (club.yml → evening_stories).")
+        rep.write()
+        return True
+    if now.strftime("%H:%M") < ev["time"] and os.environ.get("KIT_POST_NOW", "").lower() != "true":
+        rep.add(f"⏰ Not {ev['time']} yet (UK time).")
+        rep.write()
+        return True
+    state = load_state(root)
+    done = state.setdefault("evening_stories", {})
+    today = now.date().isoformat()
+    kinds = tuple(f"{k}-" for k in ev["kinds"])
+    todo = [k for k, v in sorted(state["posted"].items())
+            if v.get("made") == today and k.startswith(kinds) and k not in done]
+    if not todo:
+        rep.add("Nothing to re-share this evening.")
+        rep.write()
+        return True
+    repo = repo or os.environ.get("GITHUB_REPOSITORY", "")
+    sha = sha or os.environ.get("GITHUB_SHA", "HEAD")
+    meta = meta or Meta(os.environ.get("META_TOKEN"), cfg["facebook"].get("page_id"))
+    ok = True
+    for key in todo:
+        files = sorted(root.glob(f"posts/*/{key}-story*.jpg"))
+        if files:  # the newest day's copy, all its frames
+            day = max(f.parent.name for f in files)
+            files = [f for f in files if f.parent.name == day]
+        if not files:
+            done[key] = "no story"
+            continue
+        try:
+            for f in files:
+                url = raw_url(repo, sha, str(f.relative_to(root)))
+                for net in ev["networks"]:
+                    (meta.post_instagram_story if net == "instagram" else meta.post_facebook_story)(url)
+            done[key] = today
+            rep.add(f"- ✅ {key}: {len(files)} Story frame(s) to {', '.join(ev['networks'])}")
+        except MetaError as e:
+            ok = False
+            rep.add(f"- ❌ {key}: {e}")
+        save_state(root, state)
+    rep.write()
+    return ok
+
+
 def cmd_word_docs(args, root=C.ROOT, http=None):
     """Turn the Markdown documents in SharePoint into Word copies."""
     from . import worddocs
@@ -1082,6 +1133,7 @@ def main(argv=None):
     ph = sub.add_parser("photos")
     ph.add_argument("action", choices=["sync", "folders", "import", "notify"])
     sub.add_parser("word-docs")
+    sub.add_parser("evening-stories")
     tbp = sub.add_parser("throwbacks")
     tbp.add_argument("action", choices=["build"])
     tbp.add_argument("--limit", type=int, default=None, help="at most this many scorecards this time")
@@ -1106,7 +1158,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "throwbacks": cmd_throwbacks}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "evening-stories": cmd_evening_stories, "throwbacks": cmd_throwbacks}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")
@@ -1114,7 +1166,7 @@ def main(argv=None):
         return 1
     if args.cmd == "check" and result is False:
         return 1
-    if args.cmd in ("publish", "backup", "photos", "word-docs") and result is False:
+    if args.cmd in ("publish", "backup", "photos", "word-docs", "evening-stories") and result is False:
         return 1
     return 0
 
