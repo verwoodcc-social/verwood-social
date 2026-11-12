@@ -423,3 +423,52 @@ def matchday_post(cfg, pc, today):
             "data": data, "caption": "\n".join(lines + ["", md["cta"]]) + _tags(cfg),
             "alt": f"{cfg['club']['name']} games today: " + "; ".join(f"{r['time']} {r['team']} v {r['opponent']}" for r in rows),
             "stories_only": True}
+
+
+# --- game off: cancelled or abandoned games, as a story ----------------------
+
+def _day_word(d, today):
+    return {0: "Today", 1: "Tomorrow", -1: "Yesterday"}.get((d - today).days, short_date(d))
+
+
+def game_off_post(cfg, pc, today, already_posted):
+    """One story for games Play-Cricket newly shows as cancelled or abandoned (yesterday to the next few
+    days), or None. A game is only ever announced once."""
+    go = cfg["game_off"]
+    exclude = go.get("exclude_teams") or ""
+    done = {i for k in already_posted if k.startswith("gameoff-") for i in k[len("gameoff-"):].split("-")}
+    start, end = today - timedelta(days=1), today + timedelta(days=int(go.get("lookahead_days", 1)))
+    side_of = Side(cfg)
+    rows = []
+    for m in pc.results(start, end):
+        side = side_of.of(m)
+        if not side or str(m["id"]) in done:
+            continue
+        code, text = outcome(m, side, cfg)
+        if code not in ("A", "C"):
+            continue
+        team = m.get(f"{side}_team_name", "").strip()
+        if not go.get("juniors", True) and cfg.is_junior(team):
+            continue
+        if exclude and re.search(exclude, team, re.I):
+            continue
+        d = parse_date(m["match_date"])
+        rows.append({"id": str(m["id"]), "date_obj": d, "date": _day_word(d, today), "team": team,
+                     "opponent": opponent_label(m, side), "home": side == "home",
+                     "time": (m.get("match_time") or "").strip(), "outcome": code, "summary": text})
+    if not rows:
+        return None
+    rows.sort(key=lambda r: (r["date_obj"], r["time"], r["team"]))
+    ids = sorted(r["id"] for r in rows)
+    data = {"kind": "gameoff", "title": go["title"], "date_range": date_range([r["date_obj"] for r in rows]),
+            "matches": rows, "cta": go.get("cta", "")}
+    lines = [f"⛔ {go['title']}", ""]
+    for r in rows:
+        lines.append(f"{r['date']}: {r['team']} v {r['opponent']} ({'H' if r['home'] else 'A'}) · {r['summary'].lower()}")
+    if go.get("cta"):
+        lines += ["", go["cta"]]
+    return {"key": "gameoff-" + "-".join(ids), "kind": "gameoff",
+            "title": f"{go['title']}: " + ", ".join(r["team"] for r in rows),
+            "data": data, "caption": "\n".join(lines) + _tags(cfg),
+            "alt": f"{cfg['club']['name']}: " + "; ".join(f"{r['team']} v {r['opponent']} {r['summary'].lower()}" for r in rows),
+            "stories_only": not go.get("feed", False)}

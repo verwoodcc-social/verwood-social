@@ -148,3 +148,22 @@ def test_in_progress_code_from_live_api_is_held_back(verwood):
     # Play-Cricket's live API sends result "M" / "Match In Progress" for unfinished games.
     m = {"home_club_id": "8472", "home_team_id": "1", "away_team_id": "2", "result": "M", "result_applied_to": ""}
     assert P.outcome(m, "home", verwood) == ("P", "Result to follow")
+
+
+def test_game_off_story_once_per_game(verwood, pc):
+    verwood["game_off"]["enabled"] = True
+    p = P.game_off_post(verwood, pc, date(2026, 10, 27), {})
+    assert p["key"] == "gameoff-7700003" and p["stories_only"]
+    r = p["data"]["matches"][0]
+    assert (r["team"], r["date"], r["outcome"], r["summary"]) == ("3rd XI", "Yesterday", "A", "Abandoned")
+    assert "3rd XI v" in p["caption"] and "abandoned" in p["caption"]
+    assert P.game_off_post(verwood, pc, date(2026, 10, 27), {"gameoff-7700003": {}}) is None
+    verwood["game_off"]["exclude_teams"] = r"\b3rd\b"
+    assert P.game_off_post(verwood, pc, date(2026, 10, 27), {}) is None
+
+
+def test_game_off_is_a_due_job(verwood):
+    from kit.run import due_jobs
+    verwood["game_off"]["enabled"] = True
+    assert "game-off" in due_jobs(verwood, date(2026, 10, 27))
+    assert due_jobs(verwood, date(2026, 10, 27), "game-off") == ["game-off"]

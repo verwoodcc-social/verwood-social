@@ -7,6 +7,9 @@ on:
     - cron: "17 6 * * *"   # 06:17 UTC (06:17 in UK winter, 07:17 in summer). GitHub can start it a little late.
     - cron: "17 8 * * *"   # a second try, in case Play-Cricket was briefly unavailable. Nothing is posted twice.
     - cron: "23 9 * * *"   # last run of the morning: results still waiting for a captain's report go out now
+    - cron: "47 11 * * *"  # midday and afternoon checks for games called off (game off story only)
+    - cron: "47 13 * * *"
+    - cron: "17 16 * * *"
   issues:
     types: [opened]        # a captain's report arrived (from the Microsoft Form): post its result straight away
   workflow_dispatch:
@@ -14,7 +17,7 @@ on:
       only:
         description: "Which posts to make now"
         type: choice
-        options: [all-due, fixtures, roundup, matches, matchday, leaderboards, tables, season, season-fixtures]
+        options: [all-due, fixtures, roundup, matches, matchday, game-off, leaderboards, tables, season, season-fixtures]
         default: all-due
       date:
         description: "Catch up a missed day: run as if it were this date (YYYY-MM-DD). Leave empty for today."
@@ -69,7 +72,7 @@ jobs:
       - name: Read Play-Cricket and make the graphics
         env:
           PLAYCRICKET_API_TOKEN: ${{ secrets.PLAYCRICKET_API_TOKEN }}
-          KIT_ONLY: ${{ github.event_name == 'issues' && 'matches' || inputs.only }}
+          KIT_ONLY: ${{ github.event_name == 'issues' && 'matches' || (github.event.schedule == '47 11 * * *' || github.event.schedule == '47 13 * * *' || github.event.schedule == '17 16 * * *') && 'game-off' || inputs.only }}
           KIT_TODAY: ${{ inputs.date }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m kit make

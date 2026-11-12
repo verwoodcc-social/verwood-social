@@ -79,6 +79,8 @@ def due_jobs(cfg, today, only=None):
         jobs.append("matches")
     if cfg["matchday"]["enabled"] and only in (None, "matchday"):
         jobs.append("matchday")
+    if cfg["game_off"]["enabled"] and only in (None, "game-off"):
+        jobs.append("game-off")
     from .season_fixtures import due as sf_due
     if only == "season-fixtures" or (not only and sf_due(cfg, today)):
         jobs.append("season-fixtures")
@@ -167,6 +169,9 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
     if "matchday" in jobs:
         p = P.matchday_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
+    if "game-off" in jobs:
+        p = P.game_off_post(cfg, pc, today, state["posted"])
+        (made.append(p) if p else notes.append("No games newly called off."))
     if "season-fixtures" in jobs:
         from .season_fixtures import season_fixture_posts
         sfp = season_fixture_posts(cfg, pc, today, state)
@@ -1015,7 +1020,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make")
     m.add_argument("--today")
-    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "leaderboards", "tables", "season",
+    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "game-off", "leaderboards", "tables", "season",
                                          "season-fixtures", "all-due"])
     a = sub.add_parser("announce")
     a.add_argument("--sha", required=True)

@@ -54,6 +54,8 @@ DEFAULTS = {
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
+    "game_off": {"enabled": False, "juniors": True, "exclude_teams": "", "lookahead_days": 1, "feed": False,
+                 "title": "Game off", "cta": ""},
     "show": {"top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},
     "posts": {
         "fixtures": {"enabled": True, "day": "friday"},
@@ -246,6 +248,16 @@ def validate(cfg):
     for k in ("enabled", "juniors"):
         if not isinstance(md.get(k, False), bool):
             problems.append(f"matchday → {k}: use true or false.")
+    go = cfg.get("game_off") or {}
+    for k in ("enabled", "juniors", "feed"):
+        if not isinstance(go.get(k, False), bool):
+            problems.append(f"game_off → {k}: use true or false.")
+    if not isinstance(go.get("lookahead_days", 1), int) or not 0 <= go.get("lookahead_days", 1) <= 7:
+        problems.append("game_off → lookahead_days: use a whole number from 0 to 7.")
+    try:
+        re.compile(go.get("exclude_teams") or "")
+    except re.error:
+        problems.append("game_off → exclude_teams: that pattern isn't valid.")
     if p.get("approval") not in ("review", "automatic"):
         problems.append("posts → approval: use review or automatic.")
     ps = cfg.get("photo_store") or {}

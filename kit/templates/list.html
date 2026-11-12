@@ -47,6 +47,18 @@
       </div>
     </div>
     {% endfor %}
+  {% elif kind == 'gameoff' %}
+    {% for m in rows %}
+    <div class="row res go">
+      <div class="pill {{ m.outcome }}">{{ {'A':'AB','C':'OFF'}.get(m.outcome, m.outcome) }}</div>
+      <div>
+        <div class="meta">{{ m.date }}{% if m.time %} · {{ m.time }}{% endif %} · {{ 'Home' if m.home else 'Away' }}</div>
+        <div class="team">{{ m.team }}</div>
+        <div class="opp">v {{ m.opponent }}</div>
+      </div>
+      <div class="scores"><div class="sum">{{ m.summary }}</div></div>
+    </div>
+    {% endfor %}
   {% elif kind == 'matchday' %}
     {% for m in rows %}
     <div class="row fix md">

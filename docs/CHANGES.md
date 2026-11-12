@@ -1,5 +1,9 @@
 # What's new
 
+## 1.22.0 (12 November 2026)
+
+- Game off: a Story when Play-Cricket shows a game as cancelled or abandoned (yesterday, today or tomorrow), once per game. Checked on every Make posts run, plus new checks at 11:47, 13:47 and 16:17 UTC. Set in club.yml → game_off.
+
 ## 1.21.0 (12 November 2026)
 
 - Word copies of the kit's documents: Markdown saved in SharePoint → Social media kit documents → Markdown is turned into Word documents in Social media kit documents (Actions → Word documents, daily at 05:11 UTC and on demand). Set in club.yml → word_docs.
