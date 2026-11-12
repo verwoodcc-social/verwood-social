@@ -12,7 +12,11 @@ from datetime import date, datetime, timedelta
 from .review import MARK
 
 KIND_NAMES = {"match": "Match results", "roundup": "Weekly results summaries", "fixtures": "Fixture lists",
-              "milestone": "Milestones", "matchday": "Matchday Stories", "news": "Club news and events"}
+              "milestone": "Milestones", "matchday": "Matchday Stories", "news": "Club news and events",
+              "throwback": "Throwback Thursday", "watch": "Milestone watch", "career": "Career milestones",
+              "leaderboards": "Leaderboards", "tables": "League tables", "season": "Season review",
+              "season_fixtures": "Season fixture lists", "gameoff": "Game off"}
+BY_HAND = "Posted by hand"
 
 
 def month_bounds(month, tz):
@@ -68,6 +72,76 @@ def engagement(p):
     return int(p.get("likes") or 0) + int(p.get("comments") or 0) + int(p.get("shares") or 0)
 
 
+def _key_text(t):
+    return re.sub(r"[^a-z0-9]", "", (t or "").lower())[:80]
+
+
+def kit_captions(issues):
+    """{caption fingerprint: kind} for the kit's posts, so a post on Facebook or Instagram can be matched to it."""
+    from .review import parse_issue, GitHubError
+    out = {}
+    for i in issues:
+        try:
+            info, cap = parse_issue(i.get("body") or "")
+        except (GitHubError, ValueError):
+            continue
+        if not info.get("sample") and _key_text(cap):
+            out[_key_text(cap)] = info.get("kind", "other")
+    return out
+
+
+def post_type(p, captions):
+    k = captions.get(_key_text(p.get("text")))
+    if k is None:  # the caption was edited on the issue or on the post: try its first line
+        first = _key_text((p.get("text") or "").split("\n", 1)[0])
+        k = next((v for c, v in captions.items() if first and len(first) >= 15 and c.startswith(first)), None)
+    return BY_HAND if k is None else KIND_NAMES.get(k, k.replace("_", " ").capitalize())
+
+
+def committee(posts, captions, n=10):
+    """Every post of the month (kit and by hand), ranked, plus averages by type: for the committee email."""
+    rows = []
+    for p in posts:
+        rows.append({"network": p["network"], "title": first_line(p.get("text"), 70) or "(no caption)",
+                     "type": post_type(p, captions), "views": p.get("views"), "engagement": engagement(p),
+                     "url": p.get("url", ""), "when": (p.get("when") or "")[:10]})
+    rows.sort(key=lambda r: (r["views"] or 0, r["engagement"]), reverse=True)
+    groups = {}
+    for r in rows:
+        groups.setdefault(r["type"], []).append(r)
+
+    def avg(rs, k):
+        vals = [r[k] for r in rs if r[k] is not None]
+        return round(sum(vals) / len(vals)) if vals else None
+    types = sorted(({"type": t, "posts": len(rs), "views": avg(rs, "views"), "engagement": avg(rs, "engagement")}
+                    for t, rs in groups.items()), key=lambda x: ((x["views"] or 0), x["engagement"] or 0), reverse=True)
+    kit = [r for r in rows if r["type"] != BY_HAND]
+    hand = [r for r in rows if r["type"] == BY_HAND]
+    return {"top": rows[:n], "types": types, "total": len(rows),
+            "kit": {"posts": len(kit), "views": avg(kit, "views"), "engagement": avg(kit, "engagement")},
+            "hand": {"posts": len(hand), "views": avg(hand, "views"), "engagement": avg(hand, "engagement")}}
+
+
+def committee_text(c):
+    """Plain text for the committee email (not part of the sponsor report)."""
+    if not c or not c["total"]:
+        return ""
+    lines = [f"How the posts did ({c['total']} posts on Facebook and Instagram, including any posted by hand; "
+             f"Stories aren't included):", "", "Top posts (views · likes, comments and shares):"]
+    for i, r in enumerate(c["top"], 1):
+        lines.append(f"{i}. {r['title']} ({r['network']}, {r['when']}, {r['type']}): "
+                     f"{fmt(r['views'])} views · {r['engagement']}" + (f"\n   {r['url']}" if r["url"] else ""))
+    lines += ["", "Average per post, by type:"]
+    for t in c["types"]:
+        lines.append(f"- {t['type']}: {t['posts']} post{'s' if t['posts'] != 1 else ''}, "
+                     f"{fmt(t['views'])} views, {fmt(t['engagement'])} likes/comments/shares")
+    k, h = c["kit"], c["hand"]
+    if h["posts"] and k["posts"]:
+        lines += ["", f"Kit posts averaged {fmt(k['views'])} views and {fmt(k['engagement'])} interactions; posts "
+                      f"made by hand averaged {fmt(h['views'])} views and {fmt(h['engagement'])}."]
+    return "\n".join(lines)
+
+
 def gather(cfg, ins, issues, month, previous_followers=None):
     """Everything the report shows. `ins` is a meta.Insights; `issues` the kit's published issues."""
     start, end = month_bounds(month, cfg.tz)
@@ -96,6 +170,7 @@ def gather(cfg, ins, issues, month, previous_followers=None):
         vals = [n[key] for n in networks if n[key] is not None]
         return sum(vals) if vals else None
 
+    board = committee(fb_posts + ig_posts, kit_captions(issues))
     top = sorted([p for p in fb_posts + ig_posts if p.get("views") is not None or engagement(p)],
                  key=lambda p: (p.get("views") or 0, engagement(p)), reverse=True)[:3]
     for p in top:
@@ -110,7 +185,7 @@ def gather(cfg, ins, issues, month, previous_followers=None):
             "range": f"1–{(end - timedelta(days=1)).day} {calendar.month_name[month[1]]} {month[0]}",
             "sponsor": (b.get("sponsor_text") or "our sponsor").strip(),
             "totals": {"views": total("views"), "reach": total("reach"), "engagement": total("engagement")},
-            "networks": networks, "kit": kit_posts(issues, start, end), "top": top,
+            "networks": networks, "kit": kit_posts(issues, start, end), "top": top, "committee": board,
             "followers": followers, "first_report": not previous_followers,
             "problems": list(dict.fromkeys(ins.problems))}
 

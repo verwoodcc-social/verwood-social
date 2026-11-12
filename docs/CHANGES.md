@@ -1,5 +1,9 @@
 # What's new
 
+## 1.26.0 (12 November 2026)
+
+- Monthly report email: a committee-only section ranking every post of the month on Facebook and Instagram (the kit's and any posted by hand) by views and interactions, with averages by type and kit versus by hand. The sponsor PDF is unchanged. Actions → Top posts shows the same for any month without sending anything.
+
 ## 1.25.1 (12 November 2026)
 
 - Throwback Thursday now starts with the oldest standout games and works forward, so recent seasons come last. It still skips a team used in the last three weeks where it can.

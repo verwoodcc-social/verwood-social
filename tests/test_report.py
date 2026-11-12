@@ -117,3 +117,19 @@ def test_email_settings_and_send(tmp_path):
     assert url.endswith("/users/a@club.co.uk/sendMail")
     msg = kw["json"]["message"]
     assert len(msg["toRecipients"]) == 3 and msg["attachments"][0]["name"] == "r.pdf"
+
+
+def test_committee_ranks_all_posts_and_spots_hand_posts(club_root):
+    cfg = C.load(club_root / "club.yml")
+    meta = {"key": "k", "kind": "match", "images": ["i"], "networks": ["facebook"], "stories": [], "sample": False}
+    issue = {"closed_at": "2026-10-12T09:00:00Z",
+             "body": "<!-- caption:start -->\n```text\n🏏 VICTORY for the 1st XI!\nmore\n```\n<!-- caption:end -->\n"
+                     f"<!-- csk-post {json.dumps(meta)} -->"}
+    r = RP.gather(cfg, FakeIns(), [issue], (2026, 10))
+    c = r["committee"]
+    assert [x["views"] for x in c["top"]] == [2300, 1200, 900]
+    assert c["top"][0]["type"] == "Match results" and c["top"][1]["type"] == RP.BY_HAND
+    assert c["kit"]["posts"] == 1 and c["hand"]["posts"] == 2
+    text = RP.committee_text(c)
+    assert "1. 🏏 VICTORY for the 1st XI! (Facebook" in text and "Posted by hand: 2 posts" in text
+    assert "posts made by hand averaged 1,050 views" in text

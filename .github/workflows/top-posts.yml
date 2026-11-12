@@ -1,0 +1,34 @@
+name: Top posts
+
+# Shows how the posts did (the committee section of the monthly report email) for any month, without making
+# or emailing the report. Results are on the run's summary page.
+on:
+  workflow_dispatch:
+    inputs:
+      month:
+        description: "Month as YYYY-MM (leave empty for this month so far)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  show:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -r requirements.txt
+      - name: How the posts did
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          MONTH: ${{ inputs.month }}
+        run: python -m kit top-posts ${MONTH:+--month "$MONTH"}

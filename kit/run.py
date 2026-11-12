@@ -572,6 +572,29 @@ def published_issues(gh, since):
     return out
 
 
+def cmd_top_posts(args, root=C.ROOT, gh=None, meta=None):
+    """Show the committee's 'how the posts did' section for a month, without making or emailing the report."""
+    from . import report as RP
+    from .meta import Insights
+    cfg = C.load(root / "club.yml")
+    gh = gh or GitHub()
+    today = today_for(cfg)
+    month = tuple(int(x) for x in args.month.split("-")) if args.month else RP.previous_month(today)
+    if not args.month and today.day > 1:
+        month = (today.year, today.month)  # by default, this month so far
+    meta = meta or Meta(os.environ.get("META_TOKEN"), cfg["facebook"].get("page_id"))
+    start, end = RP.month_bounds(month, cfg.tz)
+    ins = Insights(meta)
+    posts = ins.page_posts(start, end) + ins.ig_posts(start, end)
+    c = RP.committee(posts, RP.kit_captions(published_issues(gh, start)))
+    rep = Report(f"How the posts did: {RP.month_label(month)}")
+    rep.add("```text\n" + (RP.committee_text(c) or "No posts this month.") + "\n```")
+    for p in ins.problems:
+        rep.add(f"- ⚠️ {p}")
+    rep.write()
+    return True
+
+
 def cmd_report(args, root=C.ROOT, gh=None, meta=None, render=None):
     """Make the sponsor report for a month (default: last month): PDF + preview image."""
     from . import report as RP
@@ -597,7 +620,8 @@ def cmd_report(args, root=C.ROOT, gh=None, meta=None, render=None):
         from .render import render_report as render
     pdf, jpg = render(cfg, r, root / "posts" / "reports", f"{cfg.short_name.lower()}-social-report-{r['month_key']}")
     out = {"month": r["month"], "month_key": r["month_key"], "pdf": str(pdf.relative_to(root)),
-           "jpg": str(jpg.relative_to(root)), "summary": RP.caption(r), "problems": r["problems"]}
+           "jpg": str(jpg.relative_to(root)), "summary": RP.caption(r), "problems": r["problems"],
+           "committee": RP.committee_text(r.get("committee"))}
     (root / REPORT_PENDING).write_text(json.dumps(out, indent=2))
     rep = Report(f"Sponsor report: {r['month']}")
     rep.add("```\n" + out["summary"] + "\n```")
@@ -638,11 +662,13 @@ def cmd_report_issue(args, root=C.ROOT, gh=None):
         m = mailer.settings()
         if m:
             photos = ""
+            if r.get("committee"):
+                photos += "\n\nFor the committee (not part of the report):\n\n" + r["committee"]
             if cfg["photo_store"]["source"] == "sharepoint":
                 try:
                     from . import photostore
-                    photos = ("\n\nFor the committee (not part of the report):\n" +
-                              photostore.summary_text(cfg, photostore.tree(cfg, os.environ)))
+                    photos += (("\n\n" if photos else "\n\nFor the committee (not part of the report):\n") +
+                               photostore.summary_text(cfg, photostore.tree(cfg, os.environ)))
                 except Exception as e:  # never stop the report over this
                     log.warning("Photo summary skipped: %s", e)
             text = (f"Hello,\n\nAttached is the {r['month']} social media report for {sponsor}, ready to "
@@ -1146,6 +1172,8 @@ def main(argv=None):
     rp = sub.add_parser("report")
     rp.add_argument("--month", help="YYYY-MM (default: last month)")
     rp.add_argument("--today")
+    tp = sub.add_parser("top-posts")
+    tp.add_argument("--month", help="YYYY-MM (default: this month so far)")
     ri = sub.add_parser("report-issue")
     ri.add_argument("--sha", required=True)
     ch = sub.add_parser("check")
@@ -1158,7 +1186,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "evening-stories": cmd_evening_stories, "throwbacks": cmd_throwbacks}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "evening-stories": cmd_evening_stories, "top-posts": cmd_top_posts, "throwbacks": cmd_throwbacks}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")
