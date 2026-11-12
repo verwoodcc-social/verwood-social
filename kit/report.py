@@ -17,6 +17,7 @@ KIND_NAMES = {"match": "Match results", "roundup": "Weekly results summaries", "
               "leaderboards": "Leaderboards", "tables": "League tables", "season": "Season review",
               "season_fixtures": "Season fixture lists", "gameoff": "Game off"}
 BY_HAND = "Posted by hand"
+OLDER = "Automatic (earlier Metricool version)"
 
 
 def month_bounds(month, tz):
@@ -90,20 +91,25 @@ def kit_captions(issues):
     return out
 
 
-def post_type(p, captions):
+def post_type(p, captions, tags=""):
     k = captions.get(_key_text(p.get("text")))
     if k is None:  # the caption was edited on the issue or on the post: try its first line
         first = _key_text((p.get("text") or "").split("\n", 1)[0])
         k = next((v for c, v in captions.items() if first and len(first) >= 15 and c.startswith(first)), None)
-    return BY_HAND if k is None else KIND_NAMES.get(k, k.replace("_", " ").capitalize())
+    if k is None:
+        # Before 11 November 2026 the automatic posts came from the older Metricool version, which left no
+        # record here. They end with the kit's hashtag line, which hand-written posts rarely copy exactly.
+        old = tags and tags in (p.get("text") or "") and (p.get("when") or "")[:10] < "2026-11-11"
+        return OLDER if old else BY_HAND
+    return KIND_NAMES.get(k, k.replace("_", " ").capitalize())
 
 
-def committee(posts, captions, n=10):
+def committee(posts, captions, n=10, tags=""):
     """Every post of the month (kit and by hand), ranked, plus averages by type: for the committee email."""
     rows = []
     for p in posts:
         rows.append({"network": p["network"], "title": first_line(p.get("text"), 70) or "(no caption)",
-                     "type": post_type(p, captions), "views": p.get("views"), "engagement": engagement(p),
+                     "type": post_type(p, captions, tags), "views": p.get("views"), "engagement": engagement(p),
                      "url": p.get("url", ""), "when": (p.get("when") or "")[:10]})
     rows.sort(key=lambda r: (r["views"] or 0, r["engagement"]), reverse=True)
     groups = {}
@@ -115,7 +121,7 @@ def committee(posts, captions, n=10):
         return round(sum(vals) / len(vals)) if vals else None
     types = sorted(({"type": t, "posts": len(rs), "views": avg(rs, "views"), "engagement": avg(rs, "engagement")}
                     for t, rs in groups.items()), key=lambda x: ((x["views"] or 0), x["engagement"] or 0), reverse=True)
-    kit = [r for r in rows if r["type"] != BY_HAND]
+    kit = [r for r in rows if r["type"] != BY_HAND]  # automatic, including the earlier version
     hand = [r for r in rows if r["type"] == BY_HAND]
     return {"top": rows[:n], "types": types, "total": len(rows),
             "kit": {"posts": len(kit), "views": avg(kit, "views"), "engagement": avg(kit, "engagement")},
@@ -137,7 +143,7 @@ def committee_text(c):
                      f"{fmt(t['views'])} views, {fmt(t['engagement'])} likes/comments/shares")
     k, h = c["kit"], c["hand"]
     if h["posts"] and k["posts"]:
-        lines += ["", f"Kit posts averaged {fmt(k['views'])} views and {fmt(k['engagement'])} interactions; posts "
+        lines += ["", f"Automatic posts averaged {fmt(k['views'])} views and {fmt(k['engagement'])} interactions; posts "
                       f"made by hand averaged {fmt(h['views'])} views and {fmt(h['engagement'])}."]
     return "\n".join(lines)
 
@@ -170,7 +176,7 @@ def gather(cfg, ins, issues, month, previous_followers=None):
         vals = [n[key] for n in networks if n[key] is not None]
         return sum(vals) if vals else None
 
-    board = committee(fb_posts + ig_posts, kit_captions(issues))
+    board = committee(fb_posts + ig_posts, kit_captions(issues), tags=(cfg["club"].get("hashtags") or "").strip())
     top = sorted([p for p in fb_posts + ig_posts if p.get("views") is not None or engagement(p)],
                  key=lambda p: (p.get("views") or 0, engagement(p)), reverse=True)[:3]
     for p in top:

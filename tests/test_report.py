@@ -132,4 +132,7 @@ def test_committee_ranks_all_posts_and_spots_hand_posts(club_root):
     assert c["kit"]["posts"] == 1 and c["hand"]["posts"] == 2
     text = RP.committee_text(c)
     assert "1. 🏏 VICTORY for the 1st XI! (Facebook" in text and "Posted by hand: 2 posts" in text
-    assert "posts made by hand averaged 1,050 views" in text
+    assert "posts made by hand averaged 1,050 views" in text and "Automatic posts averaged" in text
+    old = {"network": "Facebook", "text": "Win!\n\n#VerwoodCC #CricketDorset", "when": "2026-11-02T08:00:00+0000"}
+    assert RP.post_type(old, {}, "#VerwoodCC #CricketDorset") == RP.OLDER
+    assert RP.post_type({**old, "when": "2026-12-02T08:00:00+0000"}, {}, "#VerwoodCC #CricketDorset") == RP.BY_HAND

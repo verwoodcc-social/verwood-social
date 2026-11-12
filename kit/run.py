@@ -586,7 +586,7 @@ def cmd_top_posts(args, root=C.ROOT, gh=None, meta=None):
     start, end = RP.month_bounds(month, cfg.tz)
     ins = Insights(meta)
     posts = ins.page_posts(start, end) + ins.ig_posts(start, end)
-    c = RP.committee(posts, RP.kit_captions(published_issues(gh, start)))
+    c = RP.committee(posts, RP.kit_captions(published_issues(gh, start)), tags=(cfg["club"].get("hashtags") or "").strip())
     rep = Report(f"How the posts did: {RP.month_label(month)}")
     rep.add("```text\n" + (RP.committee_text(c) or "No posts this month.") + "\n```")
     for p in ins.problems:
