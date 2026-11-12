@@ -700,6 +700,27 @@ def cmd_photos(args, root=C.ROOT, http=None):
     return True
 
 
+def cmd_word_docs(args, root=C.ROOT, http=None):
+    """Turn the Markdown documents in SharePoint into Word copies."""
+    from . import worddocs
+    from .backup import BackupError
+    cfg = C.load(root / "club.yml")
+    rep = Report("Word documents")
+    if not cfg["word_docs"]["enabled"]:
+        rep.add("ℹ️ Word copies are switched off (club.yml → word_docs).")
+        rep.write()
+        return True
+    try:
+        for line in worddocs.run(cfg, os.environ, http):
+            rep.add(line)
+    except BackupError as e:
+        rep.add(f"❌ **Word documents**: {e}")
+        rep.write()
+        return False
+    rep.write()
+    return True
+
+
 def cmd_backup(args, root=C.ROOT, http=None):
     """Upload the backup bundles made by the workflow to SharePoint."""
     from . import backup
@@ -1012,6 +1033,7 @@ def main(argv=None):
     al.add_argument("--quiet-first", action="store_true")
     ph = sub.add_parser("photos")
     ph.add_argument("action", choices=["sync", "folders", "import", "notify"])
+    sub.add_parser("word-docs")
     bk = sub.add_parser("backup")
     bk.add_argument("files", nargs="+")
     ex = sub.add_parser("expiry")
@@ -1033,7 +1055,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")
@@ -1041,7 +1063,7 @@ def main(argv=None):
         return 1
     if args.cmd == "check" and result is False:
         return 1
-    if args.cmd in ("publish", "backup", "photos") and result is False:
+    if args.cmd in ("publish", "backup", "photos", "word-docs") and result is False:
         return 1
     return 0
 

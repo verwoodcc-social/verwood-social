@@ -125,6 +125,13 @@ backup:
   folder: Social media kit backups
   keep: 8
 
+# Word copies of the kit's documents: Markdown saved in <folder>/Markdown on the club SharePoint is turned
+# into Word documents in <folder> (Actions → Word documents, daily and on demand).
+word_docs:
+  enabled: true
+  site: verwoodcc.sharepoint.com/sites/VerwoodCCClubDocuments
+  folder: Social media kit documents
+
 # Expiry reminders: an email (and a problem issue) before a key the kit uses runs out, at each of
 # warn_days before. The Meta token and photos key dates are read automatically; Microsoft doesn't share
 # the email secret's date, so copy it from Entra → App registrations → Certificates & secrets.

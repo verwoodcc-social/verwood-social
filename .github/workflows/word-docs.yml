@@ -1,0 +1,41 @@
+name: Word documents
+
+# Turns the kit's Markdown documents in the club SharePoint (Social media kit documents → Markdown) into Word
+# copies next to them. Runs each morning and whenever started from the Actions tab.
+on:
+  schedule:
+    - cron: "11 5 * * *"   # 05:11 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: word-docs
+  cancel-in-progress: false
+
+jobs:
+  convert:
+    if: github.repository != 'verwoodcc-social/cricket-social-kit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt pypandoc_binary
+
+      - name: Make the Word copies
+        env:
+          M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
+          M365_CLIENT_ID: ${{ secrets.M365_CLIENT_ID }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+        run: python -m kit word-docs

@@ -1,5 +1,9 @@
 # What's new
 
+## 1.21.0 (12 November 2026)
+
+- Word copies of the kit's documents: Markdown saved in SharePoint → Social media kit documents → Markdown is turned into Word documents in Social media kit documents (Actions → Word documents, daily at 05:11 UTC and on demand). Set in club.yml → word_docs.
+
 ## 1.20.0 (Verwood)
 
 - Photos emailed to Media@verwoodcc.co.uk: the committee gets a morning email listing new photos waiting

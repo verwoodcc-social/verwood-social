@@ -83,3 +83,27 @@ def test_backup_needs_m365(tmp_path):
     import pytest
     with pytest.raises(B.BackupError, match="isn't set up"):
         B.run(C.load(C.ROOT / "club.yml"), {}, [f])
+
+
+def test_word_docs_converts_new_markdown(tmp_path):
+    from kit import worddocs as W
+    from test_photostore import Graph as G
+    g = G()
+    g.tree["root"].append({"id": "kd", "name": "Social media kit documents", "folder": {}})
+    g.tree["kd"] = [{"id": "md", "name": "Markdown", "folder": {}}, {"id": "w1", "name": "Old.docx", "file": {},
+                                                                    "lastModifiedDateTime": "2026-11-12T10:00:00Z"}]
+    g.tree["md"] = [{"id": "f1", "name": "Guide.md", "file": {}, "lastModifiedDateTime": "2026-11-12T09:00:00Z"},
+                    {"id": "f2", "name": "Old.md", "file": {}, "lastModifiedDateTime": "2026-11-12T09:00:00Z"}]
+    uploads = []
+    g.put = lambda *a, **k: R(201, {"id": "x"})
+    orig = g.request
+    def req(method, url, **kw):
+        if "createUploadSession" in url:
+            uploads.append(url)
+            return R(200, {"uploadUrl": "https://upload/x"})
+        return orig(method, url, **kw)
+    g.request = req
+    made = []
+    cfg = C.load(C.ROOT / "club.yml")
+    lines = W.run(cfg, ENV, http=g, convert_fn=lambda b, out, t: (out.write_bytes(b"docx"), made.append(out.name)))
+    assert made == ["Guide.docx"] and lines == ["- ✅ Guide.docx"]

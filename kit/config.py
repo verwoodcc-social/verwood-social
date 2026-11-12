@@ -33,6 +33,7 @@ DEFAULTS = {
                           "watch": {"enabled": True, "runs": 50, "wickets": 3, "matches": 1, "catches": 2,
                                     "keeper_catches": 2, "active_days": 21, "max": 8}},
     "photo_store": {"source": "github", "site": "", "folder": "Social media photos", "teams": []},
+    "word_docs": {"enabled": False, "site": "", "folder": "Social media kit documents"},
     "backup": {"enabled": False, "site": "", "folder": "Social media kit backups", "keep": 8},
     "expiry_reminders": {"enabled": True, "warn_days": [30, 7], "m365_secret_expires": ""},
     "captain_reports": {"enabled": False, "wait": True, "wait_until": "09:15", "max_length": 700,
