@@ -102,6 +102,9 @@ def pages_html(cfg, data, story=False):
         n = len(data["boards"])
         return [tpl.render(d=data, b=b, page=i, pages=n, story=story, **common)
                 for i, b in enumerate(data["boards"], 1)]
+    if data["kind"] == "countdown":
+        return [env.get_template("countdown.html").render(m=data, pages=1, page=1, story=story,
+                                                         **_common(cfg, "countdown", data))]
     if data["kind"] == "news":
         return [env.get_template("news.html").render(m=data, pages=1, page=1, story=story,
                                                     **_common(cfg, "news", data))]

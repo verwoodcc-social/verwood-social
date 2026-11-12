@@ -68,7 +68,7 @@ posts:
   # Also post a tall version to Instagram and Facebook Stories (after the normal post).
   stories:
     enabled: true
-    for: [match, fixtures, roundup, news, watch, throwback]   # any of: match, fixtures, roundup, news, watch, leaderboards
+    for: [match, fixtures, roundup, news, watch, throwback, countdown]   # any of: match, fixtures, roundup, news, watch, leaderboards
   networks: [facebook, instagram]
   # Feed posts made earlier in the morning wait until this time (UK) to go out: Facebook is busiest from
   # 10:00 to 12:00 (Metricool, November 2026). Stories-only posts (Today, Game off) and runs started by hand go
@@ -252,7 +252,7 @@ photo_store:
 # Match photos as backgrounds, from the match-photos folders in the private photo store
 match_photos:
   enabled: true
-  use_for: [match, milestone, roundup, news, throwback]   # news only when the form has no photo attached
+  use_for: [match, milestone, roundup, news, throwback, countdown]   # news only when the form has no photo attached
 
 # Matchday: a "Today" story each morning listing that day's senior games, home and away
 matchday:
@@ -266,6 +266,16 @@ matchday:
   default_home_ground: "Potterne Park"
   title: "Matchday"
   cta: "Come and support!"
+
+# Countdown to the new season: posts on these days before the first outdoor senior game (read from the
+# Play-Cricket fixtures, so nothing to set each year), from March. A club photo goes behind it when there is one.
+countdown:
+  enabled: true
+  months: [3, 4]
+  days: [49, 42, 35, 28, 21, 14, 7, 3, 1]   # weekly from 7 weeks out, then 3 days and the day before
+  exclude_teams: '\bIndoor\b'
+  title: "Countdown to {year}"
+  cta: "Who's ready?"
 
 # Evening Stories: the day's result Stories go out again in the evening, when Instagram is busiest
 # (Metricool, November 2026: 17:00 to 20:00). Instagram only: Facebook is busiest in the morning.

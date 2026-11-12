@@ -54,6 +54,9 @@ DEFAULTS = {
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
+    "countdown": {"enabled": False, "months": [3, 4], "days": [49, 42, 35, 28, 21, 14, 7, 3, 1],
+                  "exclude_teams": r"\bIndoor\b", "look_ahead_days": 120, "title": "Countdown to {year}",
+                  "cta": "Who's ready?"},
     "evening_stories": {"enabled": False, "time": "18:00", "networks": ["instagram"], "kinds": ["match", "throwback"]},
     "throwback": {"enabled": False, "day": "thursday", "months": [11, 12, 1, 2, 3], "first_season": 2016,
                   "exclude_teams": "", "title": "Throwback Thursday",
@@ -211,7 +214,7 @@ def validate(cfg):
     st = p.get("stories") or {}
     if not isinstance(st.get("enabled", False), bool):
         problems.append("posts → stories → enabled: use true or false.")
-    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch", "tables", "season", "throwback") for k in (st.get("for") or [])):
+    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch", "tables", "season", "throwback", "countdown") for k in (st.get("for") or [])):
         problems.append("posts → stories → for: list any of match, fixtures, roundup, news, like [match, fixtures, roundup].")
     mi = cfg.get("milestones") or {}
     if not isinstance(mi.get("enabled", True), bool):
@@ -239,7 +242,7 @@ def validate(cfg):
         if not isinstance(nw.get(k, True), bool):
             problems.append(f"news → {k}: use true or false.")
     mp = cfg.get("match_photos") or {}
-    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday", "news", "leaderboards", "throwback")]
+    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday", "news", "leaderboards", "throwback", "countdown")]
     if bad:
         problems.append(f"match_photos → use_for: {', '.join(map(str, bad))} isn't a post type. "
                         "Use match, milestone, roundup, fixtures or matchday.")
@@ -256,6 +259,14 @@ def validate(cfg):
     for k in ("enabled", "juniors"):
         if not isinstance(md.get(k, False), bool):
             problems.append(f"matchday → {k}: use true or false.")
+    cd = cfg.get("countdown") or {}
+    if not isinstance(cd.get("enabled", False), bool):
+        problems.append("countdown → enabled: use true or false.")
+    if not all(isinstance(x, int) and x > 0 for x in cd.get("days") or [1]):
+        problems.append("countdown → days: list whole numbers of days before the first game, e.g. [28, 21, 14, 7, 1].")
+    cm = cd.get("months", [3])
+    if not isinstance(cm, list) or not all(isinstance(m, int) and 1 <= m <= 12 for m in cm):
+        problems.append("countdown → months: list month numbers 1 to 12, e.g. [3, 4].")
     es = cfg.get("evening_stories") or {}
     if not isinstance(es.get("enabled", False), bool):
         problems.append("evening_stories → enabled: use true or false.")

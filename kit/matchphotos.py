@@ -83,7 +83,7 @@ def add_backgrounds(cfg, made, photos, today):
             continue
         if kind == "milestone" and d.get("photo_path"):
             continue  # a player photo is already the star of the graphic
-        if kind == "roundup":
+        if kind in ("roundup", "countdown"):
             f = photos.pick(cfg, "", p["key"], today, any_folder=True)
         else:
             f = photos.pick(cfg, d.get("team", ""), p["key"], today)

@@ -79,6 +79,9 @@ def due_jobs(cfg, today, only=None):
         jobs.append("matches")
     if cfg["matchday"]["enabled"] and only in (None, "matchday"):
         jobs.append("matchday")
+    from .countdown import due as cd_due
+    if only == "countdown" or (not only and cd_due(cfg, today)):
+        jobs.append("countdown")
     from .throwbacks import due as tbk_due
     if only == "throwback" or (not only and tbk_due(cfg, today)):
         jobs.append("throwback")
@@ -172,6 +175,10 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
     if "matchday" in jobs:
         p = P.matchday_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
+    if "countdown" in jobs:
+        from .countdown import countdown_post
+        p = countdown_post(cfg, pc, today)
+        (made.append(p) if p else notes.append("No countdown post today (not a countdown day, or no fixtures yet)."))
     if "throwback" in jobs:
         from .throwbacks import throwback_post
         p = throwback_post(cfg, pc, root, today)
@@ -1140,7 +1147,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make")
     m.add_argument("--today")
-    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "game-off", "throwback", "leaderboards", "tables", "season",
+    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "game-off", "throwback", "countdown", "leaderboards", "tables", "season",
                                          "season-fixtures", "all-due"])
     a = sub.add_parser("announce")
     a.add_argument("--sha", required=True)

@@ -1,5 +1,9 @@
 # What's new
 
+## 1.27.0 (12 November 2026)
+
+- Countdown to the new season: a post (and Story) 7, 6, 5, 4, 3, 2 and 1 weeks, 3 days and 1 day before the first outdoor senior game, read from the Play-Cricket fixtures. March and April only; a club photo behind it when there is one. Set in club.yml → countdown.
+
 ## 1.26.0 (12 November 2026)
 
 - Monthly report email: a committee-only section ranking every post of the month on Facebook and Instagram (the kit's and any posted by hand) by views and interactions, with averages by type and kit versus by hand. The sponsor PDF is unchanged. Actions → Top posts shows the same for any month without sending anything.

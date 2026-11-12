@@ -1,0 +1,42 @@
+<!doctype html>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
+.cd-kicker { display: inline-block; align-self: flex-start; font-weight: 800; font-size: 26px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--navy-ink); background: var(--silver); padding: 12px 22px; border-radius: 999px; }
+.cd-body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+.cd-num { font-weight: 900; font-size: 300px; line-height: .85; letter-spacing: -.05em; margin-top: 34px; color: var(--win); }
+.cd-words { font-weight: 900; font-size: 84px; line-height: 1; letter-spacing: -.02em; text-transform: uppercase; margin-top: 12px; }
+.cd-first { margin-top: 44px; font-size: 24px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--silver-dim); }
+.cd-date { font-size: 44px; font-weight: 800; margin-top: 8px; }
+.cd-games { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+.cd-game { display: flex; justify-content: space-between; gap: 20px; font-size: 30px; font-weight: 600; color: var(--silver);
+  padding: 12px 0; border-bottom: 1.5px solid rgba(219,226,234,.16); }
+.cd-game b { color: inherit; font-weight: 800; }
+.cd-game .ha { flex: 0 0 auto; font-size: 22px; font-weight: 800; letter-spacing: .14em; color: var(--silver-dim); }
+.cd-more { margin-top: 12px; font-size: 24px; color: var(--silver-dim); font-weight: 600; }
+.story .cd-body { flex: 0 0 auto; justify-content: flex-start; margin-top: 90px; }
+.story .cd-num { font-size: 380px; }
+.story .cd-words { font-size: 96px; }
+</style></head>
+<body>
+<div class="card {{ 'has-photo' if photo }}">
+  {% include "_photo.html" %}
+  <div class="head">
+    <img class="badge" src="{{ badge }}">
+    <div><div class="club">{{ club.name }}</div></div>
+  </div>
+  <div class="rule"></div>
+  <div class="cd-body">
+    <div class="cd-kicker">{{ m.kicker }}</div>
+    <div class="cd-num">{{ m.days }}</div>
+    <div class="cd-words">{{ m.words }}</div>
+    <div class="cd-first">First game{{ 's' if m.matches|length > 1 }}</div>
+    <div class="cd-date">{{ m.first }}</div>
+    <div class="cd-games">
+      {% for g in m.matches %}<div class="cd-game"><span><b>{{ g.team }}</b> v {{ g.opponent }}</span><span class="ha">{{ 'HOME' if g.home else 'AWAY' }}</span></div>{% endfor %}
+    </div>
+    {% if m.more %}<div class="cd-more">…and {{ m.more }} more</div>{% endif %}
+  </div>
+{% if story and (m.cta or wording.story_cta) %}<div class="cta">{{ m.cta or wording.story_cta }}</div>{% endif %}
+{% include "_foot.html" %}
+</div>
+</body></html>
