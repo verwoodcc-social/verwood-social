@@ -1,5 +1,9 @@
 # What's new
 
+## 1.23.0 (12 November 2026)
+
+- Throwback Thursday: each Thursday from November to March, a standout game from a past season (a century, five-wicket haul, big or very close win, tie or big total), any team, each game once. Actions → Throwback archive finds the games (Wednesday nights, and by hand). Set in club.yml → throwback.
+
 ## 1.22.0 (12 November 2026)
 
 - Game off: a Story when Play-Cricket shows a game as cancelled or abandoned (yesterday, today or tomorrow), once per game. Checked on every Make posts run, plus new checks at 11:47, 13:47 and 16:17 UTC. Set in club.yml → game_off.

@@ -68,7 +68,7 @@ posts:
   # Also post a tall version to Instagram and Facebook Stories (after the normal post).
   stories:
     enabled: true
-    for: [match, fixtures, roundup, news, watch]   # any of: match, fixtures, roundup, news, watch, leaderboards
+    for: [match, fixtures, roundup, news, watch, throwback]   # any of: match, fixtures, roundup, news, watch, leaderboards
   networks: [facebook, instagram]
 
 juniors:
@@ -248,7 +248,7 @@ photo_store:
 # Match photos as backgrounds, from the match-photos folders in the private photo store
 match_photos:
   enabled: true
-  use_for: [match, milestone, roundup, news]   # news only when the form has no photo attached
+  use_for: [match, milestone, roundup, news, throwback]   # news only when the form has no photo attached
 
 # Matchday: a "Today" story each morning listing that day's senior games, home and away
 matchday:
@@ -262,6 +262,17 @@ matchday:
   default_home_ground: "Potterne Park"
   title: "Matchday"
   cta: "Come and support!"
+
+# Throwback Thursday: a standout game from a past season (a century, five-for, big or very close win, tie or big
+# total), each week in winter. Any team. The archive of standout games is built by Actions → Throwback archive.
+throwback:
+  enabled: true
+  day: thursday
+  months: [11, 12, 1, 2, 3]   # November to March
+  first_season: 2016          # Play-Cricket has full scorecards from here on
+  exclude_teams: ""
+  title: "Throwback Thursday"
+  question: "Were you there? Tell us in the comments!"
 
 # Game off: a story when Play-Cricket shows a game as cancelled or abandoned (yesterday, today or tomorrow).
 # Checked on every Make posts run, including the extra midday and afternoon checks. Each game is announced once.

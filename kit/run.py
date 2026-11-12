@@ -79,6 +79,9 @@ def due_jobs(cfg, today, only=None):
         jobs.append("matches")
     if cfg["matchday"]["enabled"] and only in (None, "matchday"):
         jobs.append("matchday")
+    from .throwbacks import due as tbk_due
+    if only == "throwback" or (not only and tbk_due(cfg, today)):
+        jobs.append("throwback")
     if cfg["game_off"]["enabled"] and only in (None, "game-off"):
         jobs.append("game-off")
     from .season_fixtures import due as sf_due
@@ -169,6 +172,10 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
     if "matchday" in jobs:
         p = P.matchday_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
+    if "throwback" in jobs:
+        from .throwbacks import throwback_post
+        p = throwback_post(cfg, pc, root, today)
+        (made.append(p) if p else notes.append("No throwback today (already posted one, or none left: run Throwback archive)."))
     if "game-off" in jobs:
         p = P.game_off_post(cfg, pc, today, state["posted"])
         (made.append(p) if p else notes.append("No games newly called off."))
@@ -705,6 +712,27 @@ def cmd_photos(args, root=C.ROOT, http=None):
     return True
 
 
+def cmd_throwbacks(args, root=C.ROOT, pc=None):
+    """throwbacks build: look through past seasons for standout games (state/throwbacks.json)."""
+    from . import throwbacks as T
+    cfg = C.load(root / "club.yml")
+    rep = Report("Throwback archive")
+    pc = pc or PlayCricket(os.environ.get("PLAYCRICKET_API_TOKEN"), cfg.site_id)
+    today = today_for(cfg)
+    looked, added = T.build(cfg, pc, root, today, limit=args.limit)
+    data = T.load(root)
+    left = sum(1 for m in data["moments"] if m["id"] not in data["used"])
+    rep.add(f"✅ Checked {looked} scorecard(s) from {cfg['throwback']['first_season']} on; {added} new standout game(s). "
+            f"{len(data['moments'])} in the archive, {left} not used yet.")
+    whys = {}
+    for m in data["moments"]:
+        whys[m["why"]] = whys.get(m["why"], 0) + 1
+    if whys:
+        rep.add("By kind: " + ", ".join(f"{k} {v}" for k, v in sorted(whys.items())) + ".")
+    rep.write()
+    return True
+
+
 def cmd_word_docs(args, root=C.ROOT, http=None):
     """Turn the Markdown documents in SharePoint into Word copies."""
     from . import worddocs
@@ -1020,7 +1048,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make")
     m.add_argument("--today")
-    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "game-off", "leaderboards", "tables", "season",
+    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "game-off", "throwback", "leaderboards", "tables", "season",
                                          "season-fixtures", "all-due"])
     a = sub.add_parser("announce")
     a.add_argument("--sha", required=True)
@@ -1039,6 +1067,9 @@ def main(argv=None):
     ph = sub.add_parser("photos")
     ph.add_argument("action", choices=["sync", "folders", "import", "notify"])
     sub.add_parser("word-docs")
+    tbp = sub.add_parser("throwbacks")
+    tbp.add_argument("action", choices=["build"])
+    tbp.add_argument("--limit", type=int, default=None, help="at most this many scorecards this time")
     bk = sub.add_parser("backup")
     bk.add_argument("files", nargs="+")
     ex = sub.add_parser("expiry")
@@ -1060,7 +1091,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "throwbacks": cmd_throwbacks}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")

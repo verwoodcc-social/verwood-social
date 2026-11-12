@@ -54,6 +54,9 @@ DEFAULTS = {
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
+    "throwback": {"enabled": False, "day": "thursday", "months": [11, 12, 1, 2, 3], "first_season": 2016,
+                  "exclude_teams": "", "title": "Throwback Thursday",
+                  "question": "Were you there? Tell us in the comments!"},
     "game_off": {"enabled": False, "juniors": True, "exclude_teams": "", "lookahead_days": 1, "feed": False,
                  "title": "Game off", "cta": ""},
     "show": {"top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},
@@ -203,7 +206,7 @@ def validate(cfg):
     st = p.get("stories") or {}
     if not isinstance(st.get("enabled", False), bool):
         problems.append("posts → stories → enabled: use true or false.")
-    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch", "tables", "season") for k in (st.get("for") or [])):
+    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch", "tables", "season", "throwback") for k in (st.get("for") or [])):
         problems.append("posts → stories → for: list any of match, fixtures, roundup, news, like [match, fixtures, roundup].")
     mi = cfg.get("milestones") or {}
     if not isinstance(mi.get("enabled", True), bool):
@@ -231,7 +234,7 @@ def validate(cfg):
         if not isinstance(nw.get(k, True), bool):
             problems.append(f"news → {k}: use true or false.")
     mp = cfg.get("match_photos") or {}
-    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday", "news", "leaderboards")]
+    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday", "news", "leaderboards", "throwback")]
     if bad:
         problems.append(f"match_photos → use_for: {', '.join(map(str, bad))} isn't a post type. "
                         "Use match, milestone, roundup, fixtures or matchday.")
@@ -248,6 +251,20 @@ def validate(cfg):
     for k in ("enabled", "juniors"):
         if not isinstance(md.get(k, False), bool):
             problems.append(f"matchday → {k}: use true or false.")
+    tb = cfg.get("throwback") or {}
+    if not isinstance(tb.get("enabled", False), bool):
+        problems.append("throwback → enabled: use true or false.")
+    if str(tb.get("day", "thursday")).lower() not in DAYS:
+        problems.append("throwback → day: use a day of the week, e.g. thursday.")
+    tm = tb.get("months", [])
+    if not isinstance(tm, list) or not all(isinstance(m, int) and 1 <= m <= 12 for m in tm):
+        problems.append("throwback → months: list month numbers 1 to 12, e.g. [11, 12, 1, 2, 3].")
+    if not isinstance(tb.get("first_season", 2016), int) or not 1990 <= tb.get("first_season", 2016) <= 2100:
+        problems.append("throwback → first_season: use a year, e.g. 2016.")
+    try:
+        re.compile(tb.get("exclude_teams") or "")
+    except re.error:
+        problems.append("throwback → exclude_teams: that pattern isn't valid.")
     go = cfg.get("game_off") or {}
     for k in ("enabled", "juniors", "feed"):
         if not isinstance(go.get(k, False), bool):

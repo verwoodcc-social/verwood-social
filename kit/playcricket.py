@@ -113,6 +113,11 @@ class PlayCricket:
                 out[str(m["id"])] = m
         return sorted(out.values(), key=lambda m: (parse_date(m["match_date"]), m.get("match_time") or ""))
 
+    def season_results(self, season):
+        """Every match with a result in one Play-Cricket season."""
+        data = self._get("result_summary.json", site_id=self.site_id, season=season)
+        return [m for m in data.get("result_summary", []) if str(m.get("status", "")).lower() != "deleted"]
+
     def season_matches(self, season):
         return self._get("matches.json", site_id=self.site_id, season=season).get("matches", [])
 

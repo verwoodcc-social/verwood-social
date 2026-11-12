@@ -17,7 +17,7 @@ on:
       only:
         description: "Which posts to make now"
         type: choice
-        options: [all-due, fixtures, roundup, matches, matchday, game-off, leaderboards, tables, season, season-fixtures]
+        options: [all-due, fixtures, roundup, matches, matchday, game-off, throwback, leaderboards, tables, season, season-fixtures]
         default: all-due
       date:
         description: "Catch up a missed day: run as if it were this date (YYYY-MM-DD). Leave empty for today."

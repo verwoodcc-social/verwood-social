@@ -18,6 +18,8 @@
 .p .n { font-weight: 700; font-size: 28px; }
 .p .x { font-weight: 500; font-size: 20px; color: var(--silver-dim); margin-top: 2px; }
 .p .f { font-weight: 900; font-size: 38px; }
+.tbk { display: inline-block; margin-top: 10px; padding: 6px 16px; border-radius: 999px; background: var(--silver);
+  color: var(--navy-ink); font-weight: 900; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; }
 .notes { margin-top: 30px; font-size: 22px; color: var(--silver-dim); font-weight: 600; }
 </style></head>
 <body>
@@ -27,13 +29,19 @@
     <img class="badge" src="{{ badge }}">
     <div>
       <div class="club">{{ club.name }}</div>
+      {% if m.throwback %}<div class="tbk">{{ m.throwback.label }}</div>{% endif %}
       <div class="sub" style="margin-top:4px">{{ m.team }} · {{ m.date }}</div>
     </div>
   </div>
   <div class="rule"></div>
 
+  {% if m.throwback %}
+  <div class="verdict W">{{ m.throwback.verdict }}</div>
+  <div class="sumline">{{ m.throwback.ago|capitalize }} · {{ m.summary }}</div>
+  {% else %}
   <div class="verdict {{ m.outcome }}">{{ words.get(m.outcome, 'Match report') }}</div>
   <div class="sumline">{{ m.summary }}</div>
+  {% endif %}
 
   <div class="vs">
     <div class="side us">

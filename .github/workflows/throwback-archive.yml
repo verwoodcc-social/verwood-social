@@ -1,0 +1,53 @@
+name: Throwback archive
+
+# Looks through past Play-Cricket seasons for standout games for Throwback Thursday (club.yml → throwback),
+# saving a short list in state/throwbacks.json. The first run reads every season and can take an hour;
+# after that, each Wednesday night only adds the newest games.
+on:
+  schedule:
+    - cron: "41 22 * * 3"   # 22:41 UTC on Wednesdays, ready for Thursday
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Most scorecards to read this time (empty = all)"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: throwback-archive
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository != 'verwoodcc-social/cricket-social-kit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Find standout games
+        env:
+          PLAYCRICKET_API_TOKEN: ${{ secrets.PLAYCRICKET_API_TOKEN }}
+          LIMIT: ${{ inputs.limit }}
+        run: python -m kit throwbacks build ${LIMIT:+--limit "$LIMIT"}
+
+      - name: Save the archive
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/throwbacks.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "Throwback archive $(date -u +%F)"
+          git pull --rebase --quiet && git push --quiet
