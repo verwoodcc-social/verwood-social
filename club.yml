@@ -70,6 +70,10 @@ posts:
     enabled: true
     for: [match, fixtures, roundup, news, watch, throwback]   # any of: match, fixtures, roundup, news, watch, leaderboards
   networks: [facebook, instagram]
+  # Feed posts made earlier in the morning wait until this time (UK) to go out: Facebook is busiest from
+  # 10:00 to 12:00 (Metricool, November 2026). Stories-only posts (Today, Game off) and runs started by hand go
+  # straight away. "" = post as soon as they're made.
+  post_from: "10:00"
 
 juniors:
   # How players' names appear: initial = "Ben T.", first = "Ben", full, or none
@@ -112,7 +116,7 @@ career_milestones:
 captain_reports:
   enabled: true
   wait: true
-  wait_until: "09:15"
+  wait_until: "09:55"     # just before posts go out at 10:00
   max_length: 700           # characters of report used in the caption
   teams: '.'                # which teams' results wait for a report: all teams (senior and youth)
 

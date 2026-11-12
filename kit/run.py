@@ -243,7 +243,17 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
 
 # --- announce: open issues (review) or post straight away (automatic) ---------
 
-def cmd_announce(args, root=C.ROOT, gh=None, meta=None):
+def hold_until(cfg, now=None):
+    """True when feed posts should wait: before posts → post_from (UK time) on a scheduled run.
+    Runs started by hand (KIT_POST_NOW) post straight away."""
+    t = (cfg["posts"].get("post_from") or "").strip()
+    if not t or os.environ.get("KIT_POST_NOW", "").lower() == "true":
+        return False
+    now = now or datetime.now(cfg.tz)
+    return now.strftime("%H:%M") < t
+
+
+def cmd_announce(args, root=C.ROOT, gh=None, meta=None, now=None):
     rep = Report("Posts ready")
     cfg = C.load(root / "club.yml")
     pending = json.loads((root / PENDING).read_text()) if (root / PENDING).exists() else []
@@ -257,7 +267,12 @@ def cmd_announce(args, root=C.ROOT, gh=None, meta=None):
     nets = cfg["posts"]["networks"]
     auto = cfg["posts"]["approval"] == "automatic"
     opened = []
+    hold = hold_until(cfg, now)
     for p in pending:
+        if hold and not p.get("stories_only"):
+            rep.add(f"- ⏰ **{p['title']}** is ready and goes out at {cfg['posts']['post_from']} "
+                    f"(club.yml → posts → post_from).")
+            continue
         urls = [raw_url(gh.repo, args.sha, f) for f in p["files"]]
         story_urls = [raw_url(gh.repo, args.sha, f) for f in p.get("story_files", [])]
         reminder_url = raw_url(gh.repo, args.sha, p["reminder_file"]) if p.get("reminder_file") else ""

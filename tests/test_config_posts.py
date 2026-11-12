@@ -167,3 +167,17 @@ def test_game_off_is_a_due_job(verwood):
     verwood["game_off"]["enabled"] = True
     assert "game-off" in due_jobs(verwood, date(2026, 10, 27))
     assert due_jobs(verwood, date(2026, 10, 27), "game-off") == ["game-off"]
+
+
+def test_feed_posts_wait_for_post_from(verwood, monkeypatch):
+    from datetime import datetime
+    from kit.run import hold_until
+    verwood["posts"]["post_from"] = "10:00"
+    monkeypatch.delenv("KIT_POST_NOW", raising=False)
+    assert hold_until(verwood, datetime(2026, 11, 12, 6, 20, tzinfo=verwood.tz))
+    assert not hold_until(verwood, datetime(2026, 11, 12, 10, 2, tzinfo=verwood.tz))
+    monkeypatch.setenv("KIT_POST_NOW", "true")   # started by hand
+    assert not hold_until(verwood, datetime(2026, 11, 12, 6, 20, tzinfo=verwood.tz))
+    verwood["posts"]["post_from"] = ""
+    monkeypatch.delenv("KIT_POST_NOW")
+    assert not hold_until(verwood, datetime(2026, 11, 12, 6, 20, tzinfo=verwood.tz))

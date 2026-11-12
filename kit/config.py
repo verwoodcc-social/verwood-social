@@ -66,6 +66,7 @@ DEFAULTS = {
         "match_results": {"enabled": True, "lookback_days": 1},
         "approval": "review",
         "stories": {"enabled": False, "for": ["match", "fixtures", "roundup"]},
+        "post_from": "",
         "networks": ["facebook", "instagram"],
     },
     "juniors": {
@@ -203,6 +204,9 @@ def validate(cfg):
             raise ValueError
     except (TypeError, ValueError):
         problems.append("posts → match_results → lookback_days: use a number from 1 to 7.")
+    pf = str(p.get("post_from") or "")
+    if pf and not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", pf):
+        problems.append('posts → post_from: use a 24-hour time in quotes, e.g. "10:00", or "" to post straight away.')
     st = p.get("stories") or {}
     if not isinstance(st.get("enabled", False), bool):
         problems.append("posts → stories → enabled: use true or false.")

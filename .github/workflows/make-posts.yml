@@ -6,12 +6,13 @@ on:
   schedule:
     - cron: "17 6 * * *"   # 06:17 UTC (06:17 in UK winter, 07:17 in summer). GitHub can start it a little late.
     - cron: "17 8 * * *"   # a second try, in case Play-Cricket was briefly unavailable. Nothing is posted twice.
-    - cron: "23 9 * * *"   # last run of the morning: results still waiting for a captain's report go out now
+    - cron: "1 9 * * *"    # posting runs: posts wait until 10:00 UK (club.yml → posts → post_from), so in summer
+    - cron: "1 10 * * *"   #   the 09:01 UTC run posts them and in winter the 10:01 UTC one does
     - cron: "47 11 * * *"  # midday and afternoon checks for games called off (game off story only)
     - cron: "47 13 * * *"
     - cron: "17 16 * * *"
   issues:
-    types: [opened]        # a captain's report arrived (from the Microsoft Form): post its result straight away
+    types: [opened]        # a captain's report arrived (from the Microsoft Form): its result goes out (from 10:00)
   workflow_dispatch:
     inputs:
       only:
@@ -90,6 +91,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           META_TOKEN: ${{ secrets.META_TOKEN }}
+          KIT_POST_NOW: ${{ github.event_name == 'workflow_dispatch' }}
         run: python -m kit announce --sha "$(git rev-parse HEAD)"
 
       - name: Post scheduled club news and today's event reminders

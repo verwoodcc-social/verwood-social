@@ -1,2 +1,2 @@
 """Cricket Social Kit: Play-Cricket results and fixtures to branded Facebook and Instagram posts."""
-__version__ = "1.23.0"
+__version__ = "1.24.0"

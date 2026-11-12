@@ -1,5 +1,9 @@
 # What's new
 
+## 1.24.0 (12 November 2026)
+
+- Feed posts go out at 10:00 UK time (club.yml → posts → post_from), when Facebook is busiest; they're still made early. Stories-only posts (Today, Game off) and runs started by hand go straight away. Make posts now runs at 06:17, 08:17, 09:01 and 10:01 UTC. Captain's reports are waited for until 09:55.
+
 ## 1.23.0 (12 November 2026)
 
 - Throwback Thursday: each Thursday from November to March, a standout game from a past season (a century, five-wicket haul, big or very close win, tie or big total), any team, each game once. Actions → Throwback archive finds the games (Wednesday nights, and by hand). Set in club.yml → throwback.
