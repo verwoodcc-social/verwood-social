@@ -268,7 +268,7 @@ matchday:
 game_off:
   enabled: true
   juniors: true           # junior games too (no player names are shown)
-  exclude_teams: ""       # e.g. '\bIndoor\b' to leave indoor games out
+  exclude_teams: '\bIndoor\b'   # indoor games are left out
   lookahead_days: 1       # 1 = also tomorrow's games, when they're called off a day early
   feed: false             # false = Stories only; true = also a Facebook and Instagram feed post
   title: "Game off"
