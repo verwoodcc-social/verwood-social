@@ -63,7 +63,7 @@ DEFAULTS = {
                   "question": "Were you there? Tell us in the comments!"},
     "game_off": {"enabled": False, "juniors": True, "exclude_teams": "", "lookahead_days": 1, "feed": False,
                  "title": "Game off", "cta": ""},
-    "show": {"top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},
+    "show": {"result_word": True, "top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},
     "posts": {
         "fixtures": {"enabled": True, "day": "friday"},
         "results_roundup": {"enabled": True, "day": "monday"},

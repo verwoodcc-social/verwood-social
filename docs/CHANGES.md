@@ -1,5 +1,9 @@
 # What's new
 
+## 1.27.1 (13 November 2026)
+
+- Result graphics no longer show the Victory / Defeat word: the line saying who won is shown larger instead, above the scores. club.yml → show → result_word: true brings the word back.
+
 ## 1.27.0 (12 November 2026)
 
 - Countdown to the new season: a post (and Story) 7, 6, 5, 4, 3, 2 and 1 weeks, 3 days and 1 day before the first outdoor senior game, read from the Play-Cricket fixtures. March and April only; a club photo behind it when there is one. Set in club.yml → countdown.

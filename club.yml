@@ -55,6 +55,7 @@ milestones:
 
 # ---- Show or hide (true = show, false = hide) ----------------------------------
 show:
+  result_word: false        # false = no Victory / Defeat word on result graphics, just who won and the scores
   top_performers: true
   toss: true
   ground_on_fixtures: false
