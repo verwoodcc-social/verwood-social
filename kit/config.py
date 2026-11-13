@@ -55,7 +55,7 @@ DEFAULTS = {
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
     "awards": {"enabled": False, "weekly": True, "monthly": True, "week_day": "tuesday", "month_day": 1,
-               "months": [4, 5, 6, 7, 8, 9], "min_points": 50, "exclude_teams": "",
+               "months": [5, 6, 7, 8], "min_points": 50, "exclude_teams": "",
                "low_wicket_teams": r"\b(Pairs|U\s?(8|9|10|11)|Under\s?(8|9|10|11)|All Stars|Dynamos)\b",
                "points": {"fifty": 15, "hundred": 30, "wicket": 20, "wicket_low": 5, "five_for": 20, "catch": 10, "win": 5},
                "week_title": "Player of the Week", "month_title": "Player of the Month"},

@@ -10,10 +10,11 @@ def test_windows():
 
 
 def test_due(verwood):
-    verwood["awards"].update(enabled=True, months=[4, 5, 6, 7, 8, 9])
+    verwood["awards"].update(enabled=True, months=[5, 6, 7, 8])
     assert A.due(verwood, date(2027, 6, 15)) == ["week"]               # a Tuesday in June
     assert A.due(verwood, date(2027, 6, 1)) == ["week", "month"]       # Tuesday 1 June: both
-    assert A.due(verwood, date(2027, 10, 1)) == ["month"]              # September's award
+    assert A.due(verwood, date(2027, 9, 1)) == ["month"]               # August's award
+    assert A.due(verwood, date(2027, 10, 1)) == []                     # nothing for September
     assert A.due(verwood, date(2027, 11, 2)) == []                     # winter
 
 

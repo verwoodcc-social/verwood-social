@@ -278,7 +278,7 @@ awards:
   monthly: true
   week_day: tuesday
   month_day: 1
-  months: [4, 5, 6, 7, 8, 9]     # the games' months: April to September
+  months: [5, 6, 7, 8]           # only games played May to August (the outdoor league season) count
   min_points: 50                 # no award in a week where nobody reaches this
   exclude_teams: ""
   points: {fifty: 15, hundred: 30, wicket: 20, wicket_low: 5, five_for: 20, catch: 10, win: 5}

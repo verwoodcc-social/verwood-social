@@ -1,5 +1,9 @@
 # What's new
 
+## 1.28.2 (13 November 2026)
+
+- Player of the Week and Month: only games played May to August (the outdoor league season) count. Monthly awards for May to August, on 1 June to 1 September.
+
 ## 1.28.1 (13 November 2026)
 
 - Player of the Week: one weekly win per player per month (a week counts in the month its Sunday falls in); the next best player wins instead. Player of the Month can go to anyone. Club-v-club games are left out. Actions → Awards review shows a past season's winners without posting.

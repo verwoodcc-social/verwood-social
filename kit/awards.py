@@ -86,7 +86,11 @@ def scores(cfg, pc, start, end):
     """{player key: entry} over every scorecard from start to end (dates, inclusive)."""
     exclude = cfg["awards"].get("exclude_teams") or ""
     total = {}
+    months = cfg["awards"]["months"]
     for m in pc.results(start, end):
+        d = P.parse_date(m.get("match_date"))
+        if not d or d.month not in months:
+            continue  # only games in the award months (May to August: the outdoor league season)
         try:
             detail = pc.match_detail(m["id"])
         except PlayCricketError:
