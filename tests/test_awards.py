@@ -43,3 +43,16 @@ def test_awards_review_posts_nothing(club_root, pc, capsys):
     assert cmd_awards_review(SimpleNamespace(season="2026"), club_root, pc=pc)
     out = capsys.readouterr().out
     assert "Alex A." in out and "| October | Alex A." in out
+
+
+def test_one_weekly_win_per_player_per_month(verwood):
+    verwood["awards"]["min_points"] = 10
+    e = lambda pts: {"points": pts, "bits": [(pts, "x")], "balls": 0, "conceded": 0, "name": "n"}
+    total = {"leo": e(300), "dave": e(100)}
+    past = {}
+    s1, e1 = date(2027, 5, 3), date(2027, 5, 9)
+    assert A.weekly_winner(verwood, total, s1, e1, past)["key"] == "leo"
+    assert A.weekly_winner(verwood, total, s1, e1, past)["key"] == "leo"           # same week again: same answer
+    assert A.weekly_winner(verwood, total, date(2027, 5, 10), date(2027, 5, 16), past)["key"] == "dave"
+    assert A.weekly_winner(verwood, total, date(2027, 5, 31), date(2027, 6, 6), past)["key"] == "leo"  # June
+    assert A.winner(verwood, total)["key"] == "leo"                                   # the month: anyone

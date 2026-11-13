@@ -5,6 +5,8 @@ Points from the scorecards of the week (Monday to Sunday) or the calendar month:
     20 a wicket (5 in pairs-style junior cricket, where every dismissal counts), +20 for five in an innings
     10 a catch or stumping, +5 a win
 The highest total wins, if it reaches min_points. Ties: fewer balls faced, then fewer runs conceded.
+One weekly win per player per calendar month (a week counts in its Sunday's month); the monthly award can go
+to anyone, including a weekly winner.
 Names follow the usual rules (juniors: first name and initial); a junior's photo is never used.
 """
 import calendar
@@ -108,11 +110,29 @@ def scores(cfg, pc, start, end):
     return total
 
 
-def winner(cfg, total):
-    best = [e for e in total.values() if e["points"] >= int(cfg["awards"]["min_points"]) and e["bits"]]
+def winner(cfg, total, exclude=()):
+    """The top scorer, leaving out the players in exclude (keys), or None."""
+    best = [{**e, "key": k} for k, e in total.items()
+            if k not in exclude and e["points"] >= int(cfg["awards"]["min_points"]) and e["bits"]]
     if not best:
         return None
     return min(best, key=lambda e: (-e["points"], e["balls"], e["conceded"]))
+
+
+def week_month(start, end):
+    """The month a week counts in: the month its Sunday falls in."""
+    return f"{end.year}-{end.month:02d}"
+
+
+def weekly_winner(cfg, total, start, end, past):
+    """Player of the Week, with one weekly win per player per month. past: {week start: {player, month}},
+    updated with this week's winner."""
+    month, wk = week_month(start, end), start.isoformat()
+    already = {v["player"] for k, v in past.items() if v.get("month") == month and k != wk}
+    w = winner(cfg, total, already)
+    if w:
+        past[wk] = {"player": w["key"], "month": month, "name": w["name"]}
+    return w
 
 
 def week_window(today):
@@ -143,11 +163,13 @@ def due(cfg, today):
     return out
 
 
-def award_post(cfg, pc, today, which, photos=None):
-    """The Player of the Week ("week") or Month ("month") post, or None."""
+def award_post(cfg, pc, today, which, photos=None, past=None):
+    """The Player of the Week ("week") or Month ("month") post, or None. past: earlier weekly winners
+    (state → awards → weeks), so nobody wins two weeks in the same month. The month can go to anyone."""
     aw = cfg["awards"]
     start, end = week_window(today) if which == "week" else month_window(today)
-    w = winner(cfg, scores(cfg, pc, start, end))
+    total = scores(cfg, pc, start, end)
+    w = weekly_winner(cfg, total, start, end, past if past is not None else {}) if which == "week" else winner(cfg, total)
     if not w:
         return None
     title = aw["week_title"] if which == "week" else aw["month_title"]

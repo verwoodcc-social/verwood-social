@@ -1,5 +1,9 @@
 # What's new
 
+## 1.28.1 (13 November 2026)
+
+- Player of the Week: one weekly win per player per month (a week counts in the month its Sunday falls in); the next best player wins instead. Player of the Month can go to anyone. Club-v-club games are left out. Actions → Awards review shows a past season's winners without posting.
+
 ## 1.28.0 (13 November 2026)
 
 - Player of the Week (Tuesdays, for Monday to Sunday) and Player of the Month (the 1st, for last month), April to September games, every team including juniors. Points from the scorecards: 1 a run (+15 for 50, +30 for 100), 20 a wicket (5 in pairs-style junior cricket, +20 for five in an innings), 10 a catch or stumping, +5 a win; at least 50 points to win. Adult winners' photos are used when in the photo store; a junior's never. Set in club.yml → awards.

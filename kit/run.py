@@ -185,7 +185,9 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
         if f"award-{which}" in jobs:
             from .awards import award_post
             from .milestones import PhotoStore
-            p = award_post(cfg, pc, today, which, photos=PhotoStore(root / "player-photos"))
+            weeks = state.setdefault("awards", {}).setdefault("weeks", {})
+            p = award_post(cfg, pc, today, which, photos=PhotoStore(root / "player-photos"), past=weeks)
+            save_state(root, state)
             (made.append(p) if p else notes.append(f"No player of the {which} (no games, or nobody reached "
                                                    f"{cfg['awards']['min_points']} points)."))
     if "countdown" in jobs:
@@ -606,10 +608,10 @@ def cmd_awards_review(args, root=C.ROOT, pc=None):
     rep.add("| Week | Player | Team | Points | Best figures |\n| --- | --- | --- | --- | --- |")
     d = date(season, min(months), 1)
     d -= timedelta(days=d.weekday())  # the Monday on or before
-    weeks = 0
+    weeks, past = 0, {}
     while d.month in months or d < date(season, min(months), 1):
         end = d + timedelta(days=6)
-        w = A.winner(cfg, A.scores(cfg, pc, d, end))
+        w = A.weekly_winner(cfg, A.scores(cfg, pc, d, end), d, end, past)
         if w:
             weeks += 1
             bits = "; ".join(b for _, b in sorted(w["bits"], key=lambda x: -x[0])[:3])
