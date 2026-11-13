@@ -1,0 +1,45 @@
+<!doctype html>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
+.aw-kicker { display: inline-block; font-weight: 800; font-size: 26px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--navy-ink); background: var(--silver); padding: 12px 22px; border-radius: 999px; }
+.aw-period { font-weight: 700; font-size: 28px; color: var(--silver-dim); margin-top: 18px; }
+.aw-name { font-weight: 900; font-size: 104px; line-height: .95; letter-spacing: -.025em; margin-top: 26px; }
+.aw-name.l { font-size: 80px; }
+.aw-team { font-weight: 700; font-size: 34px; color: var(--silver); margin-top: 14px; }
+.aw-bits { margin-top: 34px; display: flex; flex-direction: column; }
+.aw-bit { font-size: 34px; font-weight: 700; padding: 14px 0; border-bottom: 1.5px solid rgba(219,226,234,.16); }
+.aw-pts { margin-top: 26px; font-size: 26px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--win); }
+.aw-body { flex: 1; display: flex; align-items: center; gap: 44px; min-height: 0; }
+.aw-photo { flex: 0 0 400px; height: 600px; border-radius: 32px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  border: 6px solid var(--silver); }
+.aw-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; display: block; }
+.aw-text { flex: 1; min-width: 0; }
+.has-pp .aw-name { font-size: 72px; } .has-pp .aw-name.l { font-size: 58px; } .has-pp .aw-bit { font-size: 28px; }
+.story .aw-body { flex-direction: column; align-items: flex-start; justify-content: flex-start; flex: 0 0 auto; margin-top: 60px; }
+.story .aw-photo { flex: 0 0 auto; width: 460px; height: 520px; }
+.story .aw-text { width: 100%; flex: 0 0 auto; }
+.story.ms .aw-body { margin-top: 120px; }
+</style></head>
+<body>
+<div class="card {{ 'has-photo' if photo }} {{ 'has-pp' if player_photo }}">
+  {% include "_photo.html" %}
+  <div class="head">
+    <img class="badge" src="{{ badge }}">
+    <div><div class="club">{{ club.name }}</div></div>
+  </div>
+  <div class="rule"></div>
+  <div class="aw-body">
+    {% if player_photo %}<div class="aw-photo"><img src="{{ player_photo }}" alt=""></div>{% endif %}
+    <div class="aw-text">
+      <div class="aw-kicker">{{ m.label }}</div>
+      <div class="aw-period">{{ m.period }}</div>
+      <div class="aw-name {{ 'l' if m.name|length > 14 }}">{{ m.name }}</div>
+      <div class="aw-team">{{ m.team }}</div>
+      <div class="aw-bits">{% for b in m.bits %}<div class="aw-bit">{{ b }}</div>{% endfor %}</div>
+      <div class="aw-pts">{{ m.points }} points</div>
+    </div>
+  </div>
+{% if story and wording.story_cta %}<div class="cta">{{ wording.story_cta }}</div>{% endif %}
+{% include "_foot.html" %}
+</div>
+</body></html>

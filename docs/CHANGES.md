@@ -1,5 +1,9 @@
 # What's new
 
+## 1.28.0 (13 November 2026)
+
+- Player of the Week (Tuesdays, for Monday to Sunday) and Player of the Month (the 1st, for last month), April to September games, every team including juniors. Points from the scorecards: 1 a run (+15 for 50, +30 for 100), 20 a wicket (5 in pairs-style junior cricket, +20 for five in an innings), 10 a catch or stumping, +5 a win; at least 50 points to win. Adult winners' photos are used when in the photo store; a junior's never. Set in club.yml → awards.
+
 ## 1.27.1 (13 November 2026)
 
 - Result graphics no longer show the Victory / Defeat word: the line saying who won is shown larger instead, above the scores. club.yml → show → result_word: true brings the word back.

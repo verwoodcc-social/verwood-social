@@ -69,7 +69,7 @@ posts:
   # Also post a tall version to Instagram and Facebook Stories (after the normal post).
   stories:
     enabled: true
-    for: [match, fixtures, roundup, news, watch, throwback, countdown]   # any of: match, fixtures, roundup, news, watch, leaderboards
+    for: [match, fixtures, roundup, news, watch, throwback, countdown, award]   # any of: match, fixtures, roundup, news, watch, leaderboards
   networks: [facebook, instagram]
   # Feed posts made earlier in the morning wait until this time (UK) to go out: Facebook is busiest from
   # 10:00 to 12:00 (Metricool, November 2026). Stories-only posts (Today, Game off) and runs started by hand go
@@ -253,7 +253,7 @@ photo_store:
 # Match photos as backgrounds, from the match-photos folders in the private photo store
 match_photos:
   enabled: true
-  use_for: [match, milestone, roundup, news, throwback, countdown]   # news only when the form has no photo attached
+  use_for: [match, milestone, roundup, news, throwback, countdown, award]   # news only when the form has no photo attached
 
 # Matchday: a "Today" story each morning listing that day's senior games, home and away
 matchday:
@@ -267,6 +267,21 @@ matchday:
   default_home_ground: "Potterne Park"
   title: "Matchday"
   cta: "Come and support!"
+
+# Player of the Week (Tuesdays, for Monday to Sunday) and Player of the Month (the 1st, for last month), from the
+# scorecards of every team, juniors included. Points: 1 a run, +15 for 50, +30 for 100; 20 a wicket (5 in pairs-style
+# junior cricket), +20 for five in an innings; 10 a catch or stumping; +5 a win. Juniors are named as usual (first
+# name and initial) and their photo is never used.
+awards:
+  enabled: true
+  weekly: true
+  monthly: true
+  week_day: tuesday
+  month_day: 1
+  months: [4, 5, 6, 7, 8, 9]     # the games' months: April to September
+  min_points: 50                 # no award in a week where nobody reaches this
+  exclude_teams: ""
+  points: {fifty: 15, hundred: 30, wicket: 20, wicket_low: 5, five_for: 20, catch: 10, win: 5}
 
 # Countdown to the new season: posts on these days before the first outdoor senior game (read from the
 # Play-Cricket fixtures, so nothing to set each year), from March. A club photo goes behind it when there is one.

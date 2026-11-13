@@ -15,7 +15,7 @@ KIND_NAMES = {"match": "Match results", "roundup": "Weekly results summaries", "
               "milestone": "Milestones", "matchday": "Matchday Stories", "news": "Club news and events",
               "throwback": "Throwback Thursday", "watch": "Milestone watch", "career": "Career milestones",
               "leaderboards": "Leaderboards", "tables": "League tables", "season": "Season review",
-              "season_fixtures": "Season fixture lists", "gameoff": "Game off", "countdown": "Season countdown"}
+              "season_fixtures": "Season fixture lists", "gameoff": "Game off", "countdown": "Season countdown", "award": "Player of the week / month"}
 BY_HAND = "Posted by hand"
 OLDER = "Automatic (earlier Metricool version)"
 

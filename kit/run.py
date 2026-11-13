@@ -79,6 +79,11 @@ def due_jobs(cfg, today, only=None):
         jobs.append("matches")
     if cfg["matchday"]["enabled"] and only in (None, "matchday"):
         jobs.append("matchday")
+    from .awards import due as aw_due
+    if only in ("award-week", "award-month"):
+        jobs.append(only)
+    elif not only:
+        jobs += [f"award-{w}" for w in aw_due(cfg, today)]
     from .countdown import due as cd_due
     if only == "countdown" or (not only and cd_due(cfg, today)):
         jobs.append("countdown")
@@ -175,6 +180,13 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
     if "matchday" in jobs:
         p = P.matchday_post(cfg, pc, today)
         (made.append(p) if p else notes.append("No matchday story today (no games, or outside the matchday months)."))
+    for which in ("week", "month"):
+        if f"award-{which}" in jobs:
+            from .awards import award_post
+            from .milestones import PhotoStore
+            p = award_post(cfg, pc, today, which, photos=PhotoStore(root / "player-photos"))
+            (made.append(p) if p else notes.append(f"No player of the {which} (no games, or nobody reached "
+                                                   f"{cfg['awards']['min_points']} points)."))
     if "countdown" in jobs:
         from .countdown import countdown_post
         p = countdown_post(cfg, pc, today)
@@ -1147,7 +1159,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     m = sub.add_parser("make")
     m.add_argument("--today")
-    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "game-off", "throwback", "countdown", "leaderboards", "tables", "season",
+    m.add_argument("--only", choices=["fixtures", "roundup", "matches", "matchday", "game-off", "throwback", "countdown", "award-week", "award-month", "leaderboards", "tables", "season",
                                          "season-fixtures", "all-due"])
     a = sub.add_parser("announce")
     a.add_argument("--sha", required=True)

@@ -54,6 +54,11 @@ DEFAULTS = {
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
+    "awards": {"enabled": False, "weekly": True, "monthly": True, "week_day": "tuesday", "month_day": 1,
+               "months": [4, 5, 6, 7, 8, 9], "min_points": 50, "exclude_teams": "",
+               "low_wicket_teams": r"\b(Pairs|U\s?(8|9|10|11)|Under\s?(8|9|10|11)|All Stars|Dynamos)\b",
+               "points": {"fifty": 15, "hundred": 30, "wicket": 20, "wicket_low": 5, "five_for": 20, "catch": 10, "win": 5},
+               "week_title": "Player of the Week", "month_title": "Player of the Month"},
     "countdown": {"enabled": False, "months": [3, 4], "days": [49, 42, 35, 28, 21, 14, 7, 3, 1],
                   "exclude_teams": r"\bIndoor\b", "look_ahead_days": 120, "title": "Countdown to {year}",
                   "cta": "Who's ready?"},
@@ -214,7 +219,7 @@ def validate(cfg):
     st = p.get("stories") or {}
     if not isinstance(st.get("enabled", False), bool):
         problems.append("posts → stories → enabled: use true or false.")
-    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch", "tables", "season", "throwback", "countdown") for k in (st.get("for") or [])):
+    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch", "tables", "season", "throwback", "countdown", "award") for k in (st.get("for") or [])):
         problems.append("posts → stories → for: list any of match, fixtures, roundup, news, like [match, fixtures, roundup].")
     mi = cfg.get("milestones") or {}
     if not isinstance(mi.get("enabled", True), bool):
@@ -242,7 +247,7 @@ def validate(cfg):
         if not isinstance(nw.get(k, True), bool):
             problems.append(f"news → {k}: use true or false.")
     mp = cfg.get("match_photos") or {}
-    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday", "news", "leaderboards", "throwback", "countdown")]
+    bad = [k for k in (mp.get("use_for") or []) if k not in ("match", "milestone", "roundup", "fixtures", "matchday", "news", "leaderboards", "throwback", "countdown", "award")]
     if bad:
         problems.append(f"match_photos → use_for: {', '.join(map(str, bad))} isn't a post type. "
                         "Use match, milestone, roundup, fixtures or matchday.")
@@ -259,6 +264,19 @@ def validate(cfg):
     for k in ("enabled", "juniors"):
         if not isinstance(md.get(k, False), bool):
             problems.append(f"matchday → {k}: use true or false.")
+    aw = cfg.get("awards") or {}
+    for k in ("enabled", "weekly", "monthly"):
+        if not isinstance(aw.get(k, True), bool):
+            problems.append(f"awards → {k}: use true or false.")
+    if str(aw.get("week_day", "tuesday")).lower() not in DAYS:
+        problems.append("awards → week_day: use a day of the week, e.g. tuesday.")
+    if not isinstance(aw.get("month_day", 1), int) or not 1 <= aw.get("month_day", 1) <= 28:
+        problems.append("awards → month_day: use a day of the month from 1 to 28.")
+    for k in ("exclude_teams", "low_wicket_teams"):
+        try:
+            re.compile(aw.get(k) or "")
+        except re.error:
+            problems.append(f"awards → {k}: that pattern isn't valid.")
     cd = cfg.get("countdown") or {}
     if not isinstance(cd.get("enabled", False), bool):
         problems.append("countdown → enabled: use true or false.")

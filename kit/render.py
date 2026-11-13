@@ -102,6 +102,11 @@ def pages_html(cfg, data, story=False):
         n = len(data["boards"])
         return [tpl.render(d=data, b=b, page=i, pages=n, story=story, **common)
                 for i, b in enumerate(data["boards"], 1)]
+    if data["kind"] == "award":
+        pp = data.get("photo_path")
+        player_photo = _data_uri(pp, max_px=1400) if pp and Path(pp).exists() else ""
+        return [env.get_template("award.html").render(m=data, pages=1, page=1, story=story, player_photo=player_photo,
+                                                     **_common(cfg, "award", data))]
     if data["kind"] == "countdown":
         return [env.get_template("countdown.html").render(m=data, pages=1, page=1, story=story,
                                                          **_common(cfg, "countdown", data))]
