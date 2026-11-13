@@ -276,6 +276,7 @@ photo_results:
   enabled: true
   days_after: 3
   follow_up: true
+  photos_from: "2026-11-14"   # photos added before this (the bulk import) never lead a result
 
 # Player of the Week (Tuesdays, for Monday to Sunday) and Player of the Month (the 1st, for last month), from the
 # scorecards of every team, juniors included. Points: 1 a run, +15 for 50, +30 for 100; 20 a wicket (5 in pairs-style

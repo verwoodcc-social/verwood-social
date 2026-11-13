@@ -26,6 +26,8 @@ def test_fresh_photo_is_from_the_game(verwood, tmp_path):
     assert fresh_photo(verwood, mp, "1st XI", date(2026, 10, 20)) is None        # nothing within 3 days
     assert fresh_photo(verwood, mp, "2nd XI", date(2026, 10, 26)) is None        # never another team's folder
     assert fresh_photo(verwood, mp, "1st XI", date(2026, 10, 26), {"1st XI/game.jpg"}) is None
+    verwood["photo_results"]["photos_from"] = "2026-10-28"
+    assert fresh_photo(verwood, mp, "1st XI", date(2026, 10, 26)) is None        # added before photos_from
 
 
 def test_lead_and_follow_up(verwood, pc, tmp_path):

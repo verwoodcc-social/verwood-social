@@ -80,12 +80,15 @@ def fresh_photo(cfg, photos, team, match_date, used=()):
     if not found:
         return None
     last = match_date + timedelta(days=int(cfg["photo_results"]["days_after"]))
+    since = cfg["photo_results"].get("photos_from") or ""
     best = None
     for f in found[1]:
         rel = str(f.relative_to(photos.root))
         if rel in used:
             continue
         added = date.fromtimestamp(f.stat().st_mtime)
+        if since and added.isoformat() < since:
+            continue  # added before photo-led results started (e.g. photos imported in bulk)
         if match_date <= added <= last and (best is None or f.stat().st_mtime > best.stat().st_mtime):
             best = f
     return best
