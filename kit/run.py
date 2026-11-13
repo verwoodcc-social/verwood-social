@@ -8,11 +8,12 @@
   python -m kit expiry                       # remind the committee before a key expires
 """
 import argparse
+import calendar
 import json
 import logging
 import os
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from . import config as C
@@ -589,6 +590,45 @@ def published_issues(gh, since):
         if len(batch) < 100:
             break
     return out
+
+
+def cmd_awards_review(args, root=C.ROOT, pc=None):
+    """Who would have won Player of the Week and Month in a season. Posts nothing."""
+    from . import awards as A
+    cfg = C.load(root / "club.yml")
+    pc = pc or PlayCricket(os.environ.get("PLAYCRICKET_API_TOKEN"), cfg.site_id)
+    season = int(args.season)
+    cache = {}
+    real = pc.match_detail
+    pc.match_detail = lambda mid: cache[mid] if mid in cache else cache.setdefault(mid, real(mid))
+    months = cfg["awards"]["months"]
+    rep = Report(f"Player of the Week and Month, {season} (review: nothing posted)")
+    rep.add("| Week | Player | Team | Points | Best figures |\n| --- | --- | --- | --- | --- |")
+    d = date(season, min(months), 1)
+    d -= timedelta(days=d.weekday())  # the Monday on or before
+    weeks = 0
+    while d.month in months or d < date(season, min(months), 1):
+        end = d + timedelta(days=6)
+        w = A.winner(cfg, A.scores(cfg, pc, d, end))
+        if w:
+            weeks += 1
+            bits = "; ".join(b for _, b in sorted(w["bits"], key=lambda x: -x[0])[:3])
+            rep.add(f"| {P.date_range([d, end])} | {w['name']} | {' & '.join(w['teams'])} | {w['points']} | {bits} |")
+        d += timedelta(days=7)
+        if d.year > season:
+            break
+    rep.add(f"\n{weeks} weeks with a winner.\n\n| Month | Player | Team | Points | Best figures |\n| --- | --- | --- | --- | --- |")
+    for m in months:
+        start = date(season, m, 1)
+        end = date(season, m, calendar.monthrange(season, m)[1])
+        w = A.winner(cfg, A.scores(cfg, pc, start, end))
+        if w:
+            bits = "; ".join(b for _, b in sorted(w["bits"], key=lambda x: -x[0])[:3])
+            rep.add(f"| {calendar.month_name[m]} | {w['name']} | {' & '.join(w['teams'])} | {w['points']} | {bits} |")
+        else:
+            rep.add(f"| {calendar.month_name[m]} | – | | | |")
+    rep.write()
+    return True
 
 
 def cmd_top_posts(args, root=C.ROOT, gh=None, meta=None):
@@ -1191,6 +1231,8 @@ def main(argv=None):
     rp = sub.add_parser("report")
     rp.add_argument("--month", help="YYYY-MM (default: last month)")
     rp.add_argument("--today")
+    ar = sub.add_parser("awards-review")
+    ar.add_argument("--season", required=True)
     tp = sub.add_parser("top-posts")
     tp.add_argument("--month", help="YYYY-MM (default: this month so far)")
     ri = sub.add_parser("report-issue")
@@ -1205,7 +1247,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "evening-stories": cmd_evening_stories, "top-posts": cmd_top_posts, "throwbacks": cmd_throwbacks}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "evening-stories": cmd_evening_stories, "top-posts": cmd_top_posts, "awards-review": cmd_awards_review, "throwbacks": cmd_throwbacks}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")

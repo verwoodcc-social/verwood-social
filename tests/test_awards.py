@@ -33,3 +33,13 @@ def test_pairs_cricket_wickets_count_less(verwood):
     import re
     assert re.search(verwood["awards"]["low_wicket_teams"], "Under 9 Indoor")
     assert not re.search(verwood["awards"]["low_wicket_teams"], "U13 Indoor")
+
+
+def test_awards_review_posts_nothing(club_root, pc, capsys):
+    from types import SimpleNamespace
+    from kit.run import cmd_awards_review
+    y = (club_root / "club.yml").read_text() + "\nawards:\n  enabled: true\n  months: [10]\n"
+    (club_root / "club.yml").write_text(y)
+    assert cmd_awards_review(SimpleNamespace(season="2026"), club_root, pc=pc)
+    out = capsys.readouterr().out
+    assert "Alex A." in out and "| October | Alex A." in out
