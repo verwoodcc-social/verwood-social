@@ -298,19 +298,25 @@ def caption_roundup(cfg, data):
     return "\n".join(lines + ([f"\nFull scorecards: {site}"] if site else [])) + _tags(cfg)
 
 
-def caption_match(cfg, m):
-    head = {"W": "🏆 Win for our", "L": "Result for our", "D": "Draw for our", "T": "Tie for our"}.get(m["outcome"], "Update from our")
+def perf_line(m):
+    """The 'X top-scored with …' line of a result caption, or ""."""
     perf = []
     if m["top_batting"]:
         perf.append(f"{m['top_batting'][0]['name']} top-scored with {m['top_batting'][0]['figures']}")
     if m["top_bowling"]:
         perf.append(f"{m['top_bowling'][0]['name']} took {m['top_bowling'][0]['figures']}")
+    return " · ".join(perf) + "." if perf else ""
+
+
+def caption_match(cfg, m):
+    head = {"W": "🏆 Win for our", "L": "Result for our", "D": "Draw for our", "T": "Tie for our"}.get(m["outcome"], "Update from our")
+    perf = [perf_line(m)] if perf_line(m) else []
     us_ov = f" ({m['us_overs']})" if m["us_overs"] else ""
     op_ov = f" ({m['opp_overs']})" if m["opp_overs"] else ""
     lines = [f"{head} {m['team']}! {m['summary']} v {m['opponent']} {m['opponent_team']}.".replace("  ", " "),
              f"{cfg.short_name} {m['us_score']}{us_ov} · {m['opponent']} {m['opp_score']}{op_ov}"]
     if perf:
-        lines.append(" · ".join(perf) + ".")
+        lines.append(perf[0])
     return "\n".join(lines) + _tags(cfg)
 
 

@@ -54,6 +54,7 @@ DEFAULTS = {
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
+    "photo_results": {"enabled": False, "days_after": 3, "follow_up": True},
     "awards": {"enabled": False, "weekly": True, "monthly": True, "week_day": "tuesday", "month_day": 1,
                "months": [5, 6, 7, 8], "min_points": 50, "exclude_teams": "",
                "low_wicket_teams": r"\b(Pairs|U\s?(8|9|10|11)|Under\s?(8|9|10|11)|All Stars|Dynamos)\b",

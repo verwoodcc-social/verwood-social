@@ -268,6 +268,15 @@ matchday:
   title: "Matchday"
   cta: "Come and support!"
 
+# Photo-led results: when a photo from the game is in the team's own folder in the photo store (added on the day
+# of the game or up to days_after later, e.g. emailed in and moved out of To check), the result goes out as that
+# photo with the score in a banner. If it arrives after the result has gone out, a "From the game" post follows.
+# No player names on the graphic; for junior teams none in the caption either.
+photo_results:
+  enabled: true
+  days_after: 3
+  follow_up: true
+
 # Player of the Week (Tuesdays, for Monday to Sunday) and Player of the Month (the 1st, for last month), from the
 # scorecards of every team, juniors included. Points: 1 a run, +15 for 50, +30 for 100; 20 a wicket (5 in pairs-style
 # junior cricket), +20 for five in an innings; 10 a catch or stumping; +5 a win. Juniors are named as usual (first

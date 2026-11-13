@@ -1,0 +1,46 @@
+<!doctype html>
+<html class="{{ 'story' if story }}"><head><meta charset="utf-8"><style>{{ css|safe }}
+.card.pl { padding: 0; background: var(--navy-deep); }
+.card.pl::before { display: none; }
+.pl-photo { position: absolute !important; inset: 0; background-size: cover; background-position: 50% 35%; }
+.pl-shade { position: absolute !important; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 48%, rgba(5,12,40,.82) 72%, rgba(5,12,40,.96) 100%); }
+.pl-top { position: absolute !important; top: 48px; left: 56px; right: 56px; display: flex; align-items: center; gap: 20px; }
+.pl-top .badge { width: 84px; height: 96px; }
+.pl-top .club { font-size: 26px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+.pl-top .sub { margin-top: 6px; font-size: 24px; color: rgba(255,255,255,.88); text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+.pl-banner { position: absolute !important; left: 56px; right: 56px; bottom: 136px; }
+.pl-sum { font-weight: 900; font-size: 62px; line-height: 1.02; letter-spacing: -.02em; }
+.pl-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 26px; }
+.pl-score { background: rgba(255,255,255,.12); border: 1.5px solid rgba(219,226,234,.25); border-radius: 20px; padding: 18px 22px; }
+.pl-score.us { background: var(--silver); color: var(--navy-ink); border-color: var(--silver); }
+.pl-score .nm { font-weight: 800; font-size: 22px; line-height: 1.15; }
+.pl-score .sc { font-weight: 900; font-size: 52px; letter-spacing: -.03em; margin-top: 6px; white-space: nowrap; }
+.pl-score .sc.long { font-size: 40px; }
+.pl-score .ov { font-weight: 600; font-size: 18px; opacity: .75; }
+.pl-foot { position: absolute !important; left: 56px; right: 56px; bottom: 40px; }
+.story .pl-banner { bottom: 240px; }
+.story .pl-foot { bottom: 120px; }
+.story .pl-sum { font-size: 72px; }
+.story .pl-top { top: 120px; }
+</style></head>
+<body>
+<div class="card pl">
+  <div class="pl-photo" style="background-image:url('{{ lead }}')"></div>
+  <div class="pl-shade"></div>
+  <div class="pl-top">
+    <img class="badge" src="{{ badge }}">
+    <div><div class="club">{{ club.name }}</div><div class="sub">{{ m.team }} · {{ m.date }}</div></div>
+  </div>
+  <div class="pl-banner">
+    <div class="pl-sum">{{ m.summary }}</div>
+    <div class="pl-scores">
+      <div class="pl-score us"><div class="nm">{{ club.short_name }} {{ m.team }}</div>
+        <div class="sc {{ 'long' if m.us_score|length > 7 }}">{{ m.us_score }}</div><div class="ov">{{ m.us_overs }}</div></div>
+      <div class="pl-score"><div class="nm">{{ m.opponent }} {{ m.opponent_team }}</div>
+        <div class="sc {{ 'long' if m.opp_score|length > 7 }}">{{ m.opp_score }}</div><div class="ov">{{ m.opp_overs }}</div></div>
+    </div>
+  </div>
+  <div class="pl-foot">{% include "_foot.html" %}</div>
+</div>
+</body></html>

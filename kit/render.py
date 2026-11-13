@@ -80,6 +80,10 @@ def _common(cfg, kind, data=None):
 
 def pages_html(cfg, data, story=False):
     env = Environment(loader=FileSystemLoader(_template_dirs(cfg)), autoescape=True)
+    if data["kind"] == "match" and data.get("lead_photo") and Path(data["lead_photo"]).exists():
+        return [env.get_template("match_photo.html").render(
+            m=data, pages=1, page=1, story=story, lead=_data_uri(data["lead_photo"], max_px=2200),
+            **_common(cfg, "match", data))]
     if data["kind"] == "match":
         return [env.get_template("match.html").render(m=data, pages=1, page=1, story=story, **_common(cfg, "match", data))]
     if data["kind"] == "season_fixtures":

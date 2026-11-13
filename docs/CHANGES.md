@@ -1,5 +1,9 @@
 # What's new
 
+## 1.29.0 (13 November 2026)
+
+- Photo-led results: when a photo from the game is in the team's own folder (added on the day of the game or up to 3 days after), the result goes out as that photo, full size, with the score in a banner. A photo that arrives after the result has gone out gets a "From the game" post instead, once per game. No player names on the graphic; for junior teams none in the caption either. The photo sync now keeps the date each photo was added to SharePoint. Set in club.yml → photo_results.
+
 ## 1.28.2 (13 November 2026)
 
 - Player of the Week and Month: only games played May to August (the outdoor league season) count. Monthly awards for May to August, on 1 June to 1 September.

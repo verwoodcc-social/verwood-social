@@ -103,11 +103,26 @@ def sync(cfg, env, dest, http=None):
                             continue
                     else:
                         out.write_bytes(r.content)
+                    _stamp(out, k.get("createdDateTime"))
                     count += 1
                 else:
                     log.warning("Couldn't download %s (%s)", rel / k["name"], r.status_code)
     walk(root, Path("."))
     return count
+
+
+def _stamp(path, when):
+    """Give the copy the date the photo was added to SharePoint (moving it from To check keeps that date),
+    so a photo-led result post can tell which photos are from the game."""
+    if not when:
+        return
+    import os
+    from datetime import datetime
+    try:
+        t = datetime.fromisoformat(when.replace("Z", "+00:00")).timestamp()
+        os.utime(path, (t, t))
+    except (ValueError, OSError):
+        pass
 
 
 def import_dir(cfg, env, src, http=None):

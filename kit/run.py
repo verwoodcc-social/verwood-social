@@ -230,6 +230,14 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
             notes += waits
         except GitHubError as e:
             notes.append(f"Captain's reports not checked: {e}")
+    if "matches" in jobs and cfg["photo_results"]["enabled"]:
+        from .matchphotos import MatchPhotos
+        from . import photoresults as PR
+        mp = MatchPhotos(root / "player-photos")
+        PR.lead(cfg, made, mp, state.setdefault("photo_results", {}))
+        made += [p for p in PR.follow_ups(cfg, pc, mp, state, today, {p["key"] for p in made})
+                 if p["key"] not in state["posted"]]
+        save_state(root, state)
     if made:
         from .matchphotos import MatchPhotos, add_backgrounds
         used = state.setdefault("match_photos_used", {})

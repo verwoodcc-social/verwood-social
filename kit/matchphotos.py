@@ -72,6 +72,25 @@ class MatchPhotos:
         return best
 
 
+def fresh_photo(cfg, photos, team, match_date, used=()):
+    """A photo from the game: in the team's OWN folder, added on the day of the game or up to
+    photo_results → days_after it, and not led a post before. The newest one, or None."""
+    from datetime import date, timedelta
+    found = photos.folders.get(_key(team))
+    if not found:
+        return None
+    last = match_date + timedelta(days=int(cfg["photo_results"]["days_after"]))
+    best = None
+    for f in found[1]:
+        rel = str(f.relative_to(photos.root))
+        if rel in used:
+            continue
+        added = date.fromtimestamp(f.stat().st_mtime)
+        if match_date <= added <= last and (best is None or f.stat().st_mtime > best.stat().st_mtime):
+            best = f
+    return best
+
+
 def add_backgrounds(cfg, made, photos, today):
     """Give match, milestone and round-up posts a match photo background when there is one."""
     if not photos or not cfg["match_photos"]["enabled"]:
