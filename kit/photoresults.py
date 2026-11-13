@@ -5,8 +5,8 @@ later, e.g. emailed in and moved out of To check), the result is posted as that 
 score in a banner, instead of the usual graphic. If the photo arrives after the result has gone out, a
 "From the game" post follows with it, once per game.
 
-ECB: the graphic never shows player names. For junior teams the names come out of the caption too, so a
-child's photo and name never appear together.
+The graphic never shows player names. The caption keeps the usual "top-scored with" line (junior names
+shortened as usual); photo_results → junior_names_in_caption: false takes it out for junior teams.
 """
 from datetime import date, timedelta
 
@@ -17,7 +17,7 @@ from .playcricket import PlayCricketError
 
 def _no_names(cfg, card, caption):
     line = P.perf_line(card)
-    if cfg.is_junior(card["team"]) and line:
+    if cfg.is_junior(card["team"]) and line and not cfg["photo_results"].get("junior_names_in_caption", True):
         caption = caption.replace("\n" + line, "")
     return caption
 

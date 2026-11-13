@@ -47,8 +47,8 @@ def test_lead_and_follow_up(verwood, pc, tmp_path):
     assert fu2[0]["data"]["lead_photo"].endswith("game.jpg")
 
 
-def test_junior_names_left_out_of_caption(verwood, pc, tmp_path):
-    verwood["photo_results"].update(enabled=True)
+def test_junior_names_can_be_left_out_of_caption(verwood, pc, tmp_path):
+    verwood["photo_results"].update(enabled=True, junior_names_in_caption=False)
     card = P.match_card(verwood, pc.match_detail("7700001"))
     card = {**card, "team": "Under 13", "date_obj": date(2026, 10, 26)}
     cap = P.caption_match(verwood, card)
