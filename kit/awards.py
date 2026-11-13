@@ -89,6 +89,10 @@ def scores(cfg, pc, start, end):
             detail = pc.match_detail(m["id"])
         except PlayCricketError:
             continue
+        side = P.Side(cfg)
+        if side.of({k: v for k, v in detail.items() if k.startswith("home_")}) and \
+                side.of({k: v for k, v in detail.items() if k.startswith("away_")}):
+            continue  # a club game (e.g. President's XI v the club): both teams are ours
         card = P.match_card(cfg, detail)
         if not card or not card["show_names"] or (exclude and re.search(exclude, card["team"], re.I)):
             continue  # no scorecard, or a youth card with initials only: nobody can be named
