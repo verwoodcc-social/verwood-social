@@ -837,6 +837,26 @@ def cmd_photos(args, root=C.ROOT, http=None):
     return True
 
 
+def cmd_ig_archive(args, root=C.ROOT, meta=None, http=None):
+    """Save the photos from the club's own Instagram posts to SharePoint → Social media photos → Instagram archive."""
+    from . import igarchive, photostore
+    from .backup import BackupError
+    cfg = C.load(root / "club.yml")
+    rep = Report("Instagram archive")
+    try:
+        sp = photostore._sp(os.environ, http)
+        meta = meta or Meta(os.environ.get("META_TOKEN"), cfg["facebook"].get("page_id"))
+        for line in igarchive.run(cfg, os.environ, meta, sp.http.get, sp, root, years=float(args.years),
+                                  do_crops=not args.no_crops):
+            rep.add(line)
+    except (BackupError, MetaError) as e:
+        rep.add(f"❌ {e}")
+        rep.write()
+        return False
+    rep.write()
+    return True
+
+
 def cmd_debuts(args, root=C.ROOT, pc=None):
     """debuts build: read past scorecards to learn who has played for the club (state/debuts.json)."""
     from . import debuts as DB
@@ -1259,6 +1279,9 @@ def main(argv=None):
     ph.add_argument("action", choices=["sync", "folders", "import", "notify"])
     sub.add_parser("word-docs")
     sub.add_parser("evening-stories")
+    iga = sub.add_parser("ig-archive")
+    iga.add_argument("--years", default="2")
+    iga.add_argument("--no-crops", action="store_true")
     dbp = sub.add_parser("debuts")
     dbp.add_argument("action", choices=["build"])
     tbp = sub.add_parser("throwbacks")
@@ -1289,7 +1312,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "evening-stories": cmd_evening_stories, "top-posts": cmd_top_posts, "awards-review": cmd_awards_review, "throwbacks": cmd_throwbacks, "debuts": cmd_debuts}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "evening-stories": cmd_evening_stories, "top-posts": cmd_top_posts, "awards-review": cmd_awards_review, "throwbacks": cmd_throwbacks, "debuts": cmd_debuts, "ig-archive": cmd_ig_archive}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")
@@ -1297,7 +1320,7 @@ def main(argv=None):
         return 1
     if args.cmd == "check" and result is False:
         return 1
-    if args.cmd in ("publish", "backup", "photos", "word-docs", "evening-stories") and result is False:
+    if args.cmd in ("publish", "backup", "photos", "word-docs", "evening-stories", "ig-archive") and result is False:
         return 1
     return 0
 

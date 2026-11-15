@@ -1,0 +1,55 @@
+name: Instagram archive
+
+# Saves the photos from the club's own Instagram posts (not the kit's graphics) to the club SharePoint:
+# Social media photos → Instagram archive → <month>, with head-and-shoulders crops of each clear face in a
+# Crops folder. Safe to run again: photos already saved are skipped. The photos never go into this repository.
+on:
+  workflow_dispatch:
+    inputs:
+      years:
+        description: "How many years back"
+        type: string
+        default: "2"
+      crops:
+        description: "Also save person crops"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram-archive
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -r requirements.txt "opencv-python-headless==4.10.0.84"
+      - name: Save the photos to SharePoint
+        env:
+          META_TOKEN: ${{ secrets.META_TOKEN }}
+          M365_TENANT_ID: ${{ secrets.M365_TENANT_ID }}
+          M365_CLIENT_ID: ${{ secrets.M365_CLIENT_ID }}
+          M365_CLIENT_SECRET: ${{ secrets.M365_CLIENT_SECRET }}
+          REPORT_EMAIL_FROM: ${{ secrets.REPORT_EMAIL_FROM }}
+          REPORT_EMAIL_TO: ${{ secrets.REPORT_EMAIL_TO }}
+          YEARS: ${{ inputs.years }}
+          CROPS: ${{ inputs.crops }}
+        run: python -m kit ig-archive --years "$YEARS" $([ "$CROPS" = "false" ] && echo --no-crops)
+      - name: Remember which photos are saved (ids only)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          [ -f state/ig-archive.json ] && git add state/ig-archive.json
+          git diff --cached --quiet || git commit -m "Instagram archive $(date -u +%F)"
+          git pull --rebase --quiet && git push --quiet

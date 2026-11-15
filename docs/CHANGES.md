@@ -1,5 +1,9 @@
 # What's new
 
+## 1.31.0 (15 November 2026)
+
+- Instagram archive (Actions → Instagram archive): saves the photos from the club's own Instagram posts (not the kit's graphics; a video's cover image) to SharePoint → Social media photos → Instagram archive → <month>, named by date and caption, keeping their Instagram date, with head-and-shoulders crops of each clear face in a Crops folder (face detection only, no recognition). The photo sync leaves the archive out. Safe to rerun.
+
 ## 1.30.0 (15 November 2026)
 
 - Debuts: a post when someone plays their first adult game for the club (club debut), or a youth player who has only played junior cricket for us plays their first adult game (adult debut, "From our juniors"). Junior debuts aren't posted. Who has played before is learnt from every scorecard since 2016 plus the CricketStatz history (state/debuts.json: ids and dates only), built with the Throwback archive job; no debut posts until that's complete. Set in club.yml → debuts.

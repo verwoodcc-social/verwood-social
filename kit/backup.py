@@ -67,11 +67,16 @@ class SharePoint:
             parent = hit["id"]
         return parent
 
-    def upload(self, drive, parent, file):
+    def upload(self, drive, parent, file, created=None):
+        """Upload a file (in chunks). created: an ISO date-time to keep as the file's own date."""
         file = Path(file)
         size = file.stat().st_size
-        sess = self._req("POST", f"/drives/{drive}/items/{parent}:/{file.name}:/createUploadSession",
-                         json={"item": {"@microsoft.graph.conflictBehavior": "replace"}})
+        item = {"@microsoft.graph.conflictBehavior": "replace"}
+        if created:
+            item["fileSystemInfo"] = {"createdDateTime": created, "lastModifiedDateTime": created}
+        from urllib.parse import quote
+        sess = self._req("POST", f"/drives/{drive}/items/{parent}:/{quote(file.name)}:/createUploadSession",
+                         json={"item": item})
         url, done = sess["uploadUrl"], {}
         with file.open("rb") as f:
             start = 0
