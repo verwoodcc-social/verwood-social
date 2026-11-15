@@ -22,7 +22,6 @@ PHOTO_TYPES = (".jpg", ".jpeg", ".png", ".webp")
 HEIC = (".heic", ".heif")   # iPhone photos: converted to JPEG when they're copied in
 GENERIC = ["Indoor", "Juniors", "Club"]
 TO_CHECK = "To check"   # emailed-in photos wait here until someone moves them into a team folder
-ARCHIVE = "Instagram archive"   # photos saved from past Instagram posts: moved into team folders by hand
 
 
 def _sp(env, http=None):
@@ -84,8 +83,7 @@ def sync(cfg, env, dest, http=None):
         nonlocal count
         for k in _children(sp, drive, item):
             if "folder" in k:
-                if k["name"].strip().lower() not in (TO_CHECK.lower(), ARCHIVE.lower()):
-                    # never use photos nobody has checked, or the Instagram archive (sorted by hand)
+                if k["name"].strip().lower() != TO_CHECK.lower():  # never use photos nobody has checked
                     walk(k["id"], rel / k["name"])
             elif Path(k["name"]).suffix.lower() in PHOTO_TYPES + HEIC:
                 out = dest / rel / k["name"]

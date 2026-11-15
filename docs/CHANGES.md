@@ -1,5 +1,9 @@
 # What's new
 
+## 1.31.1 (15 November 2026)
+
+- Instagram archive removed (the saved photos were deleted from SharePoint at the club's request).
+
 ## 1.31.0 (15 November 2026)
 
 - Instagram archive (Actions → Instagram archive): saves the photos from the club's own Instagram posts (not the kit's graphics; a video's cover image) to SharePoint → Social media photos → Instagram archive → <month>, named by date and caption, keeping their Instagram date, with head-and-shoulders crops of each clear face in a Crops folder (face detection only, no recognition). The photo sync leaves the archive out. Safe to rerun.
