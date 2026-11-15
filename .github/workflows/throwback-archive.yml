@@ -43,11 +43,17 @@ jobs:
           LIMIT: ${{ inputs.limit }}
         run: python -m kit throwbacks build ${LIMIT:+--limit "$LIMIT"}
 
+      - name: Learn who has played for the club (for debut posts)
+        if: always()
+        env:
+          PLAYCRICKET_API_TOKEN: ${{ secrets.PLAYCRICKET_API_TOKEN }}
+        run: python -m kit debuts build
+
       - name: Save the archive
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add state/throwbacks.json 2>/dev/null || true
+          for f in state/throwbacks.json state/debuts.json; do [ -f "$f" ] && git add "$f"; done
           git diff --cached --quiet || git commit -m "Throwback archive $(date -u +%F)"
           git pull --rebase --quiet && git push --quiet

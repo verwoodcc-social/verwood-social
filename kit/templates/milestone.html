@@ -5,6 +5,9 @@
   color: var(--silver); margin-top: 10px; }
 .ms-figures { font-weight: 900; font-size: 210px; line-height: .9; letter-spacing: -.04em; margin-top: 18px; white-space: nowrap; }
 .ms-detail { font-weight: 600; font-size: 30px; color: var(--silver-dim); margin-top: 10px; }
+.ms-debut .ms-name { font-size: 110px; line-height: .95; margin-top: 30px; }
+.ms-debut .ms-detail { font-size: 40px; font-weight: 800; color: var(--win); margin-top: 22px; }
+.has-pp.ms-debut .ms-name { font-size: 76px; }
 .ms-name { font-weight: 900; font-size: 64px; line-height: 1.02; margin-top: 34px; }
 .ms-match { font-weight: 600; font-size: 28px; color: var(--silver); margin-top: 16px; line-height: 1.3; }
 .ms-body { flex: 1; display: flex; align-items: center; gap: 44px; min-height: 0; }
@@ -25,7 +28,7 @@
 .story .ms-solo .ms-body { margin-top: 120px; }
 </style></head>
 <body>
-<div class="card {{ 'has-photo' if photo }} {{ 'has-pp' if player_photo else 'ms-solo' }}">
+<div class="card {{ 'has-photo' if photo }} {{ 'has-pp' if player_photo else 'ms-solo' }} {{ 'ms-debut' if m.type == 'debut' }}">
   {% include "_photo.html" %}
   {% if not player_photo %}<img class="ms-watermark" src="{{ badge }}" alt="">{% endif %}
   <div class="head">
@@ -40,11 +43,16 @@
   <div class="ms-body">
     {% if player_photo %}<div class="ms-photo"><img src="{{ player_photo }}" alt=""></div>{% endif %}
     <div class="ms-text">
-      <div class="ms-kicker">{{ 'Career milestone' if m.career else 'Milestone' }}</div>
+      <div class="ms-kicker">{{ m.kicker or ('Career milestone' if m.career else 'Milestone') }}</div>
       <div class="ms-label">{{ m.label }}</div>
-      <div class="ms-figures">{{ m.figures }}</div>
+      {% if m.figures %}<div class="ms-figures">{{ m.figures }}</div>{% endif %}
+      {% if m.type == 'debut' %}
+      {% if m.name %}<div class="ms-name">{{ m.name }}</div>{% endif %}
+      {% if m.detail %}<div class="ms-detail">{{ m.detail }}</div>{% endif %}
+      {% else %}
       {% if m.detail %}<div class="ms-detail">{{ m.detail }}</div>{% endif %}
       {% if m.name %}<div class="ms-name">{{ m.name }}</div>{% endif %}
+      {% endif %}
       <div class="ms-match">{% if m.context %}{{ m.context }}{% else %}for our {{ m.team }}<br>v {{ m.opponent }}{% endif %}</div>
     </div>
   </div>

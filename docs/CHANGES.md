@@ -1,5 +1,9 @@
 # What's new
 
+## 1.30.0 (15 November 2026)
+
+- Debuts: a post when someone plays their first adult game for the club (club debut), or a youth player who has only played junior cricket for us plays their first adult game (adult debut, "From our juniors"). Junior debuts aren't posted. Who has played before is learnt from every scorecard since 2016 plus the CricketStatz history (state/debuts.json: ids and dates only), built with the Throwback archive job; no debut posts until that's complete. Set in club.yml → debuts.
+
 ## 1.29.0 (13 November 2026)
 
 - Photo-led results: when a photo from the game is in the team's own folder (added on the day of the game or up to 3 days after), the result goes out as that photo, full size, with the score in a banner. A photo that arrives after the result has gone out gets a "From the game" post instead, once per game. No player names on the graphic; for junior teams none in the caption either. The photo sync now keeps the date each photo was added to SharePoint. Set in club.yml → photo_results.

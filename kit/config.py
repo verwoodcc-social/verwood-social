@@ -54,6 +54,8 @@ DEFAULTS = {
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
+    "debuts": {"enabled": False, "club_debuts": True, "adult_debuts": True, "first_season": 2016,
+               "exclude_teams": "", "max_per_match": 4},
     "photo_results": {"enabled": False, "days_after": 3, "follow_up": True, "photos_from": "",
                       "junior_names_in_caption": True},
     "awards": {"enabled": False, "weekly": True, "monthly": True, "week_day": "tuesday", "month_day": 1,

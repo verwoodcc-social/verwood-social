@@ -230,6 +230,21 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
             notes += waits
         except GitHubError as e:
             notes.append(f"Captain's reports not checked: {e}")
+    if "matches" in jobs and cfg["debuts"]["enabled"]:
+        from . import debuts as DB
+        from .milestones import PhotoStore
+        dd = DB.load(root)
+        ps = PhotoStore(root / "player-photos")
+        for mp_ in [p for p in made if p["kind"] == "match" and p.get("match_id")]:
+            try:
+                detail = pc.match_detail(mp_["match_id"])
+            except PlayCricketError as e:
+                notes.append(f"Debuts not checked for {mp_['title']}: {e}")
+                continue
+            made += [x for x in DB.debut_posts(cfg, root, dd, detail, mp_["data"], ps) if x["key"] not in state["posted"]]
+        DB.save(root, dd)
+        if not dd["built"]:
+            notes.append("Debut posts start once the player history is built (Actions → Throwback archive).")
     if "matches" in jobs and cfg["photo_results"]["enabled"]:
         from .matchphotos import MatchPhotos
         from . import photoresults as PR
@@ -822,6 +837,21 @@ def cmd_photos(args, root=C.ROOT, http=None):
     return True
 
 
+def cmd_debuts(args, root=C.ROOT, pc=None):
+    """debuts build: read past scorecards to learn who has played for the club (state/debuts.json)."""
+    from . import debuts as DB
+    cfg = C.load(root / "club.yml")
+    rep = Report("Debut history")
+    pc = pc or PlayCricket(os.environ.get("PLAYCRICKET_API_TOKEN"), cfg.site_id)
+    n = DB.build(cfg, pc, root, today_for(cfg))
+    d = DB.load(root)
+    adults = sum(1 for r in d["players"].values() if r.get("a"))
+    rep.add(f"✅ Read {n} new scorecard(s). {len(d['players'])} players known ({adults} have played adult cricket). "
+            + ("History complete: debut posts are on." if d["built"] else "Not finished yet: run it again."))
+    rep.write()
+    return True
+
+
 def cmd_throwbacks(args, root=C.ROOT, pc=None):
     """throwbacks build: look through past seasons for standout games (state/throwbacks.json)."""
     from . import throwbacks as T
@@ -1229,6 +1259,8 @@ def main(argv=None):
     ph.add_argument("action", choices=["sync", "folders", "import", "notify"])
     sub.add_parser("word-docs")
     sub.add_parser("evening-stories")
+    dbp = sub.add_parser("debuts")
+    dbp.add_argument("action", choices=["build"])
     tbp = sub.add_parser("throwbacks")
     tbp.add_argument("action", choices=["build"])
     tbp.add_argument("--limit", type=int, default=None, help="at most this many scorecards this time")
@@ -1257,7 +1289,7 @@ def main(argv=None):
                   "check": cmd_check, "preview": cmd_preview,
                   "news": cmd_news, "due": cmd_due,
                   "report": cmd_report, "report-issue": cmd_report_issue,
-                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "evening-stories": cmd_evening_stories, "top-posts": cmd_top_posts, "awards-review": cmd_awards_review, "throwbacks": cmd_throwbacks}[args.cmd](args)
+                  "alert": cmd_alert, "resolved": cmd_resolved, "expiry": cmd_expiry, "backup": cmd_backup, "photos": cmd_photos, "word-docs": cmd_word_docs, "evening-stories": cmd_evening_stories, "top-posts": cmd_top_posts, "awards-review": cmd_awards_review, "throwbacks": cmd_throwbacks, "debuts": cmd_debuts}[args.cmd](args)
     except (C.ConfigError, PlayCricketError, MetaError, GitHubError) as e:
         rep = Report("Something needs attention")
         rep.add(f"❌ {e}")
