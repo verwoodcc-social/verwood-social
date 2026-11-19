@@ -163,11 +163,25 @@ def headline(card, why):
             }.get(why, card["summary"])
 
 
-def throwback_post(cfg, pc, root, today):
-    """The Throwback Thursday post, or None when there's nothing left to look back on."""
+def throwback_post(cfg, pc, root, today, posted=()):
+    """The Throwback Thursday post, or None when there's nothing left to look back on.
+    Posts are made early and held until posts → post_from, so a later run the same day makes the SAME game
+    again (until it's in `posted`, the keys already posted) rather than giving up or picking another."""
     data = load(root)
-    if today.isoformat() in data["used"].values():
-        return None  # already looked back today
+    by_id = {m["id"]: m for m in data["moments"]}
+    todays = [i for i, d in data["used"].items() if d == today.isoformat()]
+    if todays:
+        if f"throwback-{todays[0]}" in posted or todays[0] not in by_id:
+            return None  # already looked back today
+        m = by_id[todays[0]]
+        try:
+            card = P.match_card(cfg, pc.match_detail(m["id"]))
+        except PlayCricketError as e:
+            log.warning("throwback %s: %s", m["id"], e)
+            return None
+        if not card:
+            return None
+        return _post(cfg, card, m, today)
     for _ in range(5):  # a game that can no longer be read is skipped
         m = pick(cfg, data, today)
         if not m:
@@ -185,6 +199,10 @@ def throwback_post(cfg, pc, root, today):
         return None
     data["used"][m["id"]] = today.isoformat()
     save(root, data)
+    return _post(cfg, card, m, today)
+
+
+def _post(cfg, card, m, today):
     tb = cfg["throwback"]
     ago = _years_ago(card["date_obj"], today)
     head = headline(card, m["why"])

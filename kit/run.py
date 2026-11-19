@@ -196,7 +196,7 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
         (made.append(p) if p else notes.append("No countdown post today (not a countdown day, or no fixtures yet)."))
     if "throwback" in jobs:
         from .throwbacks import throwback_post
-        p = throwback_post(cfg, pc, root, today)
+        p = throwback_post(cfg, pc, root, today, state["posted"])
         (made.append(p) if p else notes.append("No throwback today (already posted one, or none left: run Throwback archive)."))
     if "game-off" in jobs:
         p = P.game_off_post(cfg, pc, today, state["posted"])

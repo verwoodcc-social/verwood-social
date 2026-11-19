@@ -53,4 +53,6 @@ def test_build_and_post(verwood, pc, tmp_path):
     assert p["key"] == "throwback-7700001" and p["kind"] == "throwback"
     assert p["data"]["throwback"]["verdict"] == "Thriller" and "#ThrowbackThursday" in p["caption"]
     assert T.load(tmp_path)["used"]["7700001"] == "2026-11-12"
-    assert T.throwback_post(verwood, pc, tmp_path, date(2026, 11, 12)) is None   # once a day
+    again = T.throwback_post(verwood, pc, tmp_path, date(2026, 11, 12))   # held until 10:00: made again
+    assert again["key"] == "throwback-7700001"
+    assert T.throwback_post(verwood, pc, tmp_path, date(2026, 11, 12), {"throwback-7700001": {}}) is None  # once a day

@@ -1,5 +1,9 @@
 # What's new
 
+## 1.31.2 (19 November 2026)
+
+- Fix: Throwback Thursday was made at 06:17 but then skipped by the later runs that post at 10:00. Later runs now make the same game again until it has gone out.
+
 ## 1.31.1 (15 November 2026)
 
 - Instagram archive removed (the saved photos were deleted from SharePoint at the club's request).
