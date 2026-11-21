@@ -119,7 +119,7 @@ class Meta:
             try:
                 return self._instagram_story(image_url)
             except MetaError as e:
-                if "does not exist" not in str(e) or n == tries - 1:
+                if not any(t in str(e) for t in ("does not exist", "not available")) or n == tries - 1:
                     raise
                 self.sleep(30 * (n + 1))
 

@@ -1,5 +1,9 @@
 # What's new
 
+## 1.31.3 (21 November 2026)
+
+- Instagram Stories that fail with "Media ID is not available" are now retried, like "does not exist".
+
 ## 1.31.2 (19 November 2026)
 
 - Fix: Throwback Thursday was made at 06:17 but then skipped by the later runs that post at 10:00. Later runs now make the same game again until it has gone out.
