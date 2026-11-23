@@ -54,6 +54,7 @@ DEFAULTS = {
                  "no_default_ground_teams": r"\bIndoor\b", "exclude_teams": "",
                  "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], "title": "Matchday",
                  "cta": "Come and support!"},
+    "group_results": {"enabled": False, "min_matches": 3},
     "debuts": {"enabled": False, "club_debuts": True, "adult_debuts": True, "first_season": 2016,
                "exclude_teams": "", "max_per_match": 4},
     "photo_results": {"enabled": False, "days_after": 3, "follow_up": True, "photos_from": "",
@@ -223,7 +224,7 @@ def validate(cfg):
     st = p.get("stories") or {}
     if not isinstance(st.get("enabled", False), bool):
         problems.append("posts → stories → enabled: use true or false.")
-    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch", "tables", "season", "throwback", "countdown", "award") for k in (st.get("for") or [])):
+    if any(k not in ("match", "fixtures", "roundup", "news", "leaderboards", "watch", "tables", "season", "throwback", "countdown", "award", "results_day") for k in (st.get("for") or [])):
         problems.append("posts → stories → for: list any of match, fixtures, roundup, news, like [match, fixtures, roundup].")
     mi = cfg.get("milestones") or {}
     if not isinstance(mi.get("enabled", True), bool):

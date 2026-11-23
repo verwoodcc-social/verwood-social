@@ -106,6 +106,9 @@ def pages_html(cfg, data, story=False):
         n = len(data["boards"])
         return [tpl.render(d=data, b=b, page=i, pages=n, story=story, **common)
                 for i, b in enumerate(data["boards"], 1)]
+    if data["kind"] == "results_day":
+        summary = pages_html(cfg, {**data, "kind": "results"}, story=story)
+        return summary + [h for c in data["cards"] for h in pages_html(cfg, c, story=story)]
     if data["kind"] == "award":
         pp = data.get("photo_path")
         player_photo = _data_uri(pp, max_px=1400) if pp and Path(pp).exists() else ""

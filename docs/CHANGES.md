@@ -1,5 +1,9 @@
 # What's new
 
+## 1.32.0 (23 November 2026)
+
+- Same-day results grouped: when 3 or more results from one day go out together they're one carousel post: a summary slide (like the round-up), then each game's card. Up to 8 games per post (a busier day is split). Captain's reports go in the caption, cut to two sentences. Milestones and debuts stay separate. Re-shared as an evening Story like single results. Set in club.yml → group_results.
+
 ## 1.31.3 (21 November 2026)
 
 - Instagram Stories that fail with "Media ID is not available" are now retried, like "does not exist".

@@ -94,6 +94,7 @@ def attach(cfg, gh, made, reports, state, now):
             at = min(cut, tags_at)
             p["caption"] = p["caption"][:at] + "\n" + caption_extra(rep) + p["caption"][at:]
             p["report_issue"] = rep["issue"]
+            p["report"] = {"captain": rep["captain"], "text": rep["text"], "potm": rep.get("potm") or ""}
             kept.append(p)
         elif cr.get("wait") and waiting_ok and re.search(cr["teams"], card["team"] or "", re.I) \
                 and card.get("date_obj") == now.date() - timedelta(days=1):

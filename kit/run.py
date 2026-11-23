@@ -259,6 +259,9 @@ def cmd_make(args, root=C.ROOT, pc=None, renderer=None, gh=None, now=None):
         add_backgrounds(cfg, made, MatchPhotos(root / "player-photos", used), today)
         save_state(root, state)
 
+    if made and cfg["group_results"]["enabled"]:
+        from .grouping import group
+        made = group(cfg, made)
     out_dir = Path("posts") / today.isoformat()
     pending = []
     if made:
@@ -333,13 +336,15 @@ def cmd_announce(args, root=C.ROOT, gh=None, meta=None, now=None):
                 rep.add(f"- ✅ Posted **{p['title']}** · {issue['html_url']}")
         else:
             rep.add(f"- 👀 **{p['title']}** is waiting for approval · {issue['html_url']}")
-        if p.get("report_issue"):
+        for ri in ([p["report_issue"]] if p.get("report_issue") else []) + list(p.get("report_issues") or []):
             from .captains import close_used
             try:
-                close_used(gh, p["report_issue"], issue["number"])
+                close_used(gh, ri, issue["number"])
             except GitHubError:
                 pass
         state["posted"][p["key"]] = {"issue": issue["number"], "made": date.today().isoformat()}
+        for k in p.get("also_keys") or []:  # the results grouped into this post
+            state["posted"][k] = {"issue": issue["number"], "made": date.today().isoformat(), "in": p["key"]}
         save_state(root, state)  # after each, so a failure part-way doesn't repeat earlier posts
         opened.append(issue["number"])
     (root / PENDING).unlink(missing_ok=True)

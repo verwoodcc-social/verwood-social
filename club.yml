@@ -69,7 +69,7 @@ posts:
   # Also post a tall version to Instagram and Facebook Stories (after the normal post).
   stories:
     enabled: true
-    for: [match, fixtures, roundup, news, watch, throwback, countdown, award]   # any of: match, fixtures, roundup, news, watch, leaderboards
+    for: [match, results_day, fixtures, roundup, news, watch, throwback, countdown, award]   # any of: match, fixtures, roundup, news, watch, leaderboards
   networks: [facebook, instagram]
   # Feed posts made earlier in the morning wait until this time (UK) to go out: Facebook is busiest from
   # 10:00 to 12:00 (Metricool, November 2026). Stories-only posts (Today, Game off) and runs started by hand go
@@ -268,6 +268,12 @@ matchday:
   title: "Matchday"
   cta: "Come and support!"
 
+# Same-day results grouped: when 3 or more results from one day go out together, they're one carousel post
+# (a summary slide, then each game's card) instead of separate posts. Milestones and debuts stay separate.
+group_results:
+  enabled: true
+  min_matches: 3
+
 # Debuts: a post when someone plays their first adult game for the club (club debut), or a youth player who has
 # only played junior cricket for us plays their first adult game (adult debut). A youngster's first junior game
 # doesn't get a post. Who has played before comes from Play-Cricket scorecards from first_season on, plus the
@@ -322,7 +328,7 @@ evening_stories:
   enabled: true
   time: "18:00"
   networks: [instagram]
-  kinds: [match, throwback]   # match results and Throwback Thursday
+  kinds: [match, results, throwback]   # match results (single or grouped) and Throwback Thursday
 
 # Throwback Thursday: a standout game from a past season (a century, five-for, big or very close win, tie or big
 # total), each week in winter, oldest first. Any team. The archive of standout games is built by Actions → Throwback archive.

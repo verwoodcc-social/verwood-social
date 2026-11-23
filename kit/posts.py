@@ -242,6 +242,7 @@ def match_card(cfg, detail):
     show_names = not (junior and rule == "none")
     return {
         "kind": "match", "id": row["id"], "date": long_date(row["date_obj"]), "date_obj": row["date_obj"],
+        "home": row["home"],
         "team": row["team"], "opponent": row["opp_club"], "opponent_team": row["opp_team"],
         "outcome": row["outcome"],
         "summary": f"{cfg.short_name} {row['summary'][0].lower()}{row['summary'][1:]}" if row["outcome"] in "WL" else row["summary"],
