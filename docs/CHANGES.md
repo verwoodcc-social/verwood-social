@@ -1,5 +1,9 @@
 # What's new
 
+## 1.32.1 (26 November 2026)
+
+- Throwback Thursday captions include a link to the full scorecard on the club's Play-Cricket site (club.yml → throwback → scorecard_link).
+
 ## 1.32.0 (23 November 2026)
 
 - Same-day results grouped: when 3 or more results from one day go out together they're one carousel post: a summary slide (like the round-up), then each game's card. Up to 8 games per post (a busier day is split). Captain's reports go in the caption, cut to two sentences. Milestones and debuts stay separate. Re-shared as an evening Story like single results. Set in club.yml → group_results.

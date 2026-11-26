@@ -202,6 +202,11 @@ def throwback_post(cfg, pc, root, today, posted=()):
     return _post(cfg, card, m, today)
 
 
+def scorecard_url(cfg, match_id):
+    site = (cfg["club"].get("website") or "www.play-cricket.com").strip().removeprefix("https://").strip("/")
+    return f"https://{site}/website/results/{match_id}"
+
+
 def _post(cfg, card, m, today):
     tb = cfg["throwback"]
     ago = _years_ago(card["date_obj"], today)
@@ -214,6 +219,7 @@ def _post(cfg, card, m, today):
              f"{head} for our {card['team']} v {card['opponent']} {card['opponent_team']}.".replace("  ", " ")
              if head != card["summary"] else f"Our {card['team']} v {card['opponent']} {card['opponent_team']}.".replace("  ", " "),
              f"{card['summary']}. {cfg.short_name} {card['us_score']}{us_ov} · {card['opponent']} {card['opp_score']}{op_ov}",
+             f"Full scorecard: {scorecard_url(cfg, card['id'])}" if tb.get("scorecard_link", True) else None,
              "", tb["question"]]
     return {"key": f"throwback-{m['id']}", "kind": "throwback", "match_id": m["id"],
             "title": f"{tb['title']}: {card['team']} v {card['opponent']} ({card['date']})",

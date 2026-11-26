@@ -70,7 +70,7 @@ DEFAULTS = {
     "evening_stories": {"enabled": False, "time": "18:00", "networks": ["instagram"], "kinds": ["match", "throwback"]},
     "throwback": {"enabled": False, "day": "thursday", "months": [11, 12, 1, 2, 3], "first_season": 2016,
                   "exclude_teams": "", "title": "Throwback Thursday",
-                  "question": "Were you there? Tell us in the comments!"},
+                  "question": "Were you there? Tell us in the comments!", "scorecard_link": True},
     "game_off": {"enabled": False, "juniors": True, "exclude_teams": "", "lookahead_days": 1, "feed": False,
                  "title": "Game off", "cta": ""},
     "show": {"result_word": True, "top_performers": True, "toss": True, "ground_on_fixtures": False, "handle_and_website": True},

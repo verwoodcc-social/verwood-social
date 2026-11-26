@@ -52,6 +52,7 @@ def test_build_and_post(verwood, pc, tmp_path):
     p = T.throwback_post(verwood, pc, tmp_path, date(2026, 11, 12))
     assert p["key"] == "throwback-7700001" and p["kind"] == "throwback"
     assert p["data"]["throwback"]["verdict"] == "Thriller" and "#ThrowbackThursday" in p["caption"]
+    assert "Full scorecard: https://" in p["caption"] and p["caption"].count("/website/results/7700001") == 1
     assert T.load(tmp_path)["used"]["7700001"] == "2026-11-12"
     again = T.throwback_post(verwood, pc, tmp_path, date(2026, 11, 12))   # held until 10:00: made again
     assert again["key"] == "throwback-7700001"

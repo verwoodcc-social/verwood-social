@@ -340,6 +340,7 @@ throwback:
   exclude_teams: ""
   title: "Throwback Thursday"
   question: "Were you there? Tell us in the comments!"
+  scorecard_link: true        # "Full scorecard: <link>" in the caption
 
 # Game off: a story when Play-Cricket shows a game as cancelled or abandoned (yesterday, today or tomorrow).
 # Checked on every Make posts run, including the extra midday and afternoon checks. Each game is announced once.
